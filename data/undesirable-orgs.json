@@ -1,0 +1,3372 @@
+[
+  {
+    "name": "«Национальный фонд в поддержку демократии» (The National Endowment for Democracy)",
+    "type": "undesirable",
+    "aliases": [
+      "Национальный фонд в поддержку демократии"
+    ],
+    "is_person": false,
+    "dateIn": "29.07.2015"
+  },
+  {
+    "name": "Институт Открытое Общество Фонд Содействия (OSI Assistance Foundation)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "01.12.2015"
+  },
+  {
+    "name": "Фонд Открытое общество (Open Society Foundation)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "01.12.2015"
+  },
+  {
+    "name": "«Американо-российский фонд по экономическому и правовому развитию» (U.S. RUSSIA FOUNDATION FOR ECONOMIC ADVANCEMENT AND THE RULE OF LAW)",
+    "type": "undesirable",
+    "aliases": [
+      "Американо-российский фонд по экономическому и правовому развитию"
+    ],
+    "is_person": false,
+    "dateIn": "07.12.2015"
+  },
+  {
+    "name": "Национальный Демократический Институт Международных Отношений (National Democratic Institute for International Affairs)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "17.03.2016"
+  },
+  {
+    "name": "MEDIA DEVELOPMENT INVESTMENT FUND, Inc.",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "22.08.2016"
+  },
+  {
+    "name": "Корпорация «Международный Республиканский Институт» (International Republican Institute)",
+    "type": "undesirable",
+    "aliases": [
+      "Международный Республиканский Институт"
+    ],
+    "is_person": false,
+    "dateIn": "22.08.2016"
+  },
+  {
+    "name": "Open Russia Civic Movement, Open Russia (Общественное сетевое движение «Открытая Россия») (Великобритания)",
+    "type": "undesirable",
+    "aliases": [
+      "Открытая Россия"
+    ],
+    "is_person": false,
+    "dateIn": "27.04.2017"
+  },
+  {
+    "name": "OR (Otkrytaya Rossia) («Открытая Россия») (Великобритания) (с 08.11.2017 – HUMAN RIGHTS PROJECT MANAGEMENT)",
+    "type": "undesirable",
+    "aliases": [
+      "Открытая Россия"
+    ],
+    "is_person": false,
+    "dateIn": "27.04.2017"
+  },
+  {
+    "name": "Institute of Modern Russia, Inc («Институт современной России») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Институт современной России"
+    ],
+    "is_person": false,
+    "dateIn": "27.04.2017"
+  },
+  {
+    "name": "The Black Sea Trust for Regional Cooperation (Черноморский фонд регионального сотрудничества) (Румыния)",
+    "type": "undesirable",
+    "aliases": [
+      "Черноморский фонд регионального сотрудничества"
+    ],
+    "is_person": false,
+    "dateIn": "03.07.2017"
+  },
+  {
+    "name": "European Platform for Democratic Elections (EPDE) (Европейская Платформа за Демократические Выборы) (Федеративная Республика Германия)",
+    "type": "undesirable",
+    "aliases": [
+      "Европейская Платформа за Демократические Выборы",
+      "Федеративная Республика Германия"
+    ],
+    "is_person": false,
+    "dateIn": "13.03.2018"
+  },
+  {
+    "name": "International elections study center (IESC) (Международный центр электоральных исследований)  (Литовская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Литовская Республика",
+      "Международный центр электоральных исследований"
+    ],
+    "is_person": false,
+    "dateIn": "13.03.2018"
+  },
+  {
+    "name": "The German Marshall Fund of the United States (GMF) (Германский фонд Маршалла Соединенных Штатов) (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Германский фонд Маршалла Соединенных Штатов"
+    ],
+    "is_person": false,
+    "dateIn": "21.03.2018"
+  },
+  {
+    "name": "Pacific Environment (PERC) (Тихоокеанский центр защиты окружающей среды и природных ресурсов) (Соединенные Штаты Америки)",
+    "type": "undesirable",
+    "aliases": [
+      "Соединенные Штаты Америки",
+      "Тихоокеанский центр защиты окружающей среды и природных ресурсов"
+    ],
+    "is_person": false,
+    "dateIn": "28.08.2018"
+  },
+  {
+    "name": "Free Russia Foundation (Free Russia) (Фонд «Свободная Россия») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Свободная Россия"
+    ],
+    "is_person": false,
+    "dateIn": "28.06.2019"
+  },
+  {
+    "name": "Ukrainian World Congress («Всемирный конгресс украинцев») (Канада)",
+    "type": "undesirable",
+    "aliases": [
+      "Всемирный конгресс украинцев"
+    ],
+    "is_person": false,
+    "dateIn": "17.07.2019"
+  },
+  {
+    "name": "Atlantic council of the United States (Atlantic council) («Атлантический совет») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Атлантический совет"
+    ],
+    "is_person": false,
+    "dateIn": "29.07.2019"
+  },
+  {
+    "name": "«Člověk v tísni, o.p.s» («People In Need», «Человек в беде») (Чешская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Člověk v tísni, o.p.s",
+      "People In Need",
+      "Человек в беде",
+      "Чешская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "12.11.2019"
+  },
+  {
+    "name": "European Endowment for Democracy («Европейский фонд за демократию», «Европейский фонд в поддержку демократии») (Королевство Бельгия)",
+    "type": "undesirable",
+    "aliases": [
+      "Европейский фонд за демократию",
+      "Европейский фонд в поддержку демократии",
+      "Королевство Бельгия"
+    ],
+    "is_person": false,
+    "dateIn": "12.03.2020"
+  },
+  {
+    "name": "The Jamestown foundation (JF), («Джеймстаунский фонд») (Соединенные Штаты Америки)",
+    "type": "undesirable",
+    "aliases": [
+      "Джеймстаунский фонд",
+      "Соединенные Штаты Америки"
+    ],
+    "is_person": false,
+    "dateIn": "09.04.2020"
+  },
+  {
+    "name": "Project Harmony, Inc. (PH International) («Прожект Хармони, Инк.») (Соединенные Штаты Америки)",
+    "type": "undesirable",
+    "aliases": [
+      "Прожект Хармони, Инк.",
+      "Соединенные Штаты Америки"
+    ],
+    "is_person": false,
+    "dateIn": "23.04.2020"
+  },
+  {
+    "name": "Dragon Springs Buddhist Inc. («Буддистское сообщество «Родники дракона») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Родники дракона",
+      "Буддистское сообщество «Родники дракона"
+    ],
+    "is_person": false,
+    "dateIn": "21.07.2020"
+  },
+  {
+    "name": "Doctors Against Forced Organ Harvesting (DAFOH) («Врачи против насильственного извлечения органов») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Врачи против насильственного извлечения органов"
+    ],
+    "is_person": false,
+    "dateIn": "21.07.2020"
+  },
+  {
+    "name": "The European Falun Dafa Association («Европейская ассоциация «Фалунь Дафа») (Великобритания)",
+    "type": "undesirable",
+    "aliases": [
+      "Фалунь Дафа",
+      "Европейская ассоциация «Фалунь Дафа"
+    ],
+    "is_person": false,
+    "dateIn": "21.07.2020"
+  },
+  {
+    "name": "Friends of Falun Gong Inc. («Друзья Фалуньгун») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Друзья Фалуньгун"
+    ],
+    "is_person": false,
+    "dateIn": "21.07.2020"
+  },
+  {
+    "name": "Global Mission to Rescure Persecuted Falun Gong Practitioners Inc. (GMRPFGP) («Всемирный совет по спасению подвергаемых гонениям адептов «Фалуньгун») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Всемирный совет по спасению подвергаемых гонениям адептов «Фалуньгун"
+    ],
+    "is_person": false,
+    "dateIn": "21.07.2020"
+  },
+  {
+    "name": "Coalition to Investigate the Persecution of Falun Gong in China («Коалиция по расследованию преследования в отношении Фалуньгун в Китае») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Коалиция по расследованию преследования в отношении Фалуньгун в Китае"
+    ],
+    "is_person": false,
+    "dateIn": "21.07.2020"
+  },
+  {
+    "name": "World Organization to Investigate the Persecution of Falun Gong Inc. (WOIPFG) («Всемирная организация по расследованию преследований Фалуньгун») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Всемирная организация по расследованию преследований Фалуньгун"
+    ],
+    "is_person": false,
+    "dateIn": "21.07.2020"
+  },
+  {
+    "name": "Prague Civil Society Centre («Пражский Центр Гражданского Общества», «Пражский гражданский центр») (Чешская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Пражский Центр Гражданского Общества",
+      "Пражский гражданский центр",
+      "Чешская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "25.12.2020"
+  },
+  {
+    "name": "Association of Schools of Political Studies of the Council of Europe («Ассоциация школ политических исследований при Совете Европы») (Франция)",
+    "type": "undesirable",
+    "aliases": [
+      "Ассоциация школ политических исследований при Совете Европы"
+    ],
+    "is_person": false,
+    "dateIn": "25.12.2020"
+  },
+  {
+    "name": "Zentrum für die Liberale Moderne GmbH («Центр либеральной современности», «ЦЛС») (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Центр либеральной современности"
+    ],
+    "is_person": false,
+    "dateIn": "02.06.2021"
+  },
+  {
+    "name": "Forum Russischsprachiger Europäer e.V. («Форум русскоязычных европейцев», «ФРЕ») (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Форум русскоязычных европейцев"
+    ],
+    "is_person": false,
+    "dateIn": "02.06.2021"
+  },
+  {
+    "name": "Deutsch-Russischer Austausch e.V. («Немецко-русский обмен», «НРО») (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Немецко-русский обмен"
+    ],
+    "is_person": false,
+    "dateIn": "02.06.2021"
+  },
+  {
+    "name": "Бард колледж (Bard College), США",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "30.06.2021"
+  },
+  {
+    "name": "European Choice («Европейский выбор»), Франция",
+    "type": "undesirable",
+    "aliases": [
+      "Европейский выбор"
+    ],
+    "is_person": false,
+    "dateIn": "09.07.2021"
+  },
+  {
+    "name": "Khodorkovsky Foundation («Фонд Ходорковского»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Ходорковского"
+    ],
+    "is_person": false,
+    "dateIn": "09.07.2021"
+  },
+  {
+    "name": "Oxford Russia Fund («Оксфордский российский фонд»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Оксфордский российский фонд"
+    ],
+    "is_person": false,
+    "dateIn": "09.07.2021"
+  },
+  {
+    "name": "Future of Russia Foundation («Фонд Будущее России»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Будущее России"
+    ],
+    "is_person": false,
+    "dateIn": "09.07.2021"
+  },
+  {
+    "name": "Spolecnost Svobody Informace, Z.S. («Компания свободы информации, з.с.», «Общество свободы информации, з.с.») (Чешская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Компания свободы информации, з.с.",
+      "Общество свободы информации, з.с.",
+      "Чешская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "09.07.2021"
+  },
+  {
+    "name": "Project Media, Inc. («Проект Медиа») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Проект Медиа"
+    ],
+    "is_person": false,
+    "dateIn": "23.07.2021"
+  },
+  {
+    "name": "International Partnership for Human Rights (IPHR) («Международное партнерство за права человека») (Королевство Бельгия)",
+    "type": "undesirable",
+    "aliases": [
+      "Международное партнерство за права человека",
+      "Королевство Бельгия"
+    ],
+    "is_person": false,
+    "dateIn": "17.08.2021"
+  },
+  {
+    "name": "Духовне Управлiння Євангельських Християн Української Християнської Церкви «Нове Поколiння» (Духовное Управление Евангельских Христиан Украинской Христианской Церкви «Новое Поколение») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Нове Поколiння",
+      "Новое Поколение"
+    ],
+    "is_person": false,
+    "dateIn": "30.08.2021"
+  },
+  {
+    "name": "Evaņgēlisko kristiešu baznīca «Jaunā Paaudze» (Евангельская христианская церковь «Новое Поколение») (Латвийская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Jaunā Paaudze",
+      "Новое Поколение",
+      "Латвийская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "30.08.2021"
+  },
+  {
+    "name": "Духовний Навчальний Заклад Міжнародний Біблійний Коледж «Нове Покоління» (Духовное Учебное Заведение Международный Библейский Колледж «Новое Поколение») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Нове Покоління",
+      "Новое Поколение"
+    ],
+    "is_person": false,
+    "dateIn": "30.08.2021"
+  },
+  {
+    "name": "Международное христианское движение «Новое поколение» (Латвийская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Новое поколение",
+      "Латвийская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "30.08.2021"
+  },
+  {
+    "name": "WORLD INSTITUTE OF SCIENTOLOGY ENTERPRISES INTERNATIONAL (World Institute of Scientology Enterprises International, WISE Int., «Всемирный Институт Саентологических Предприятий») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Всемирный Институт Саентологических Предприятий"
+    ],
+    "is_person": false,
+    "dateIn": "01.10.2021"
+  },
+  {
+    "name": "CHURCH OF SPIRITUAL TECHNOLOGY (Church of Spiritual Technology, CST, «Церковь Духовной Технологии», использующая также наименование «L. Ron Hubbard Library» («Библиотека Л. Рона Хаббарда») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Церковь Духовной Технологии",
+      "L. Ron Hubbard Library",
+      "Библиотека Л. Рона Хаббарда"
+    ],
+    "is_person": false,
+    "dateIn": "01.10.2021"
+  },
+  {
+    "name": "European Network of Election Monitoring Organizations (ENEMO) («Европейская сеть организаций по наблюдению за выборами»)",
+    "type": "undesirable",
+    "aliases": [
+      "Европейская сеть организаций по наблюдению за выборами"
+    ],
+    "is_person": false,
+    "dateIn": "01.10.2021"
+  },
+  {
+    "name": "WOT Foundation («ВОТ ФОНД»), Республика Польша",
+    "type": "undesirable",
+    "aliases": [
+      "ВОТ ФОНД"
+    ],
+    "is_person": false,
+    "dateIn": "04.02.2022"
+  },
+  {
+    "name": "«ГРОМАДСЬКА ОРГАНI3АЦIЯ «ВIЛЬНИЙ IДЕЛЬ-УРАЛ» (ГО «IДЕЛЬ») («СВОБОДНЫЙ ИДЕЛЬ-УРАЛ», «Свободный Идель-Урал») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "ВIЛЬНИЙ IДЕЛЬ-УРАЛ",
+      "IДЕЛЬ",
+      "СВОБОДНЫЙ ИДЕЛЬ-УРАЛ"
+    ],
+    "is_person": false,
+    "dateIn": "28.02.2022"
+  },
+  {
+    "name": "Journalism Development Network INC («Ассоциация развития журналистики», JDN), США",
+    "type": "undesirable",
+    "aliases": [
+      "Ассоциация развития журналистики"
+    ],
+    "is_person": false,
+    "dateIn": "05.03.2022"
+  },
+  {
+    "name": "IStories fonds, Латвийская Республика",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "05.03.2022"
+  },
+  {
+    "name": "The Royal Institute of International Affairs (Chatham House, «Королевский Институт Международных Отношений») (Великобритания)",
+    "type": "undesirable",
+    "aliases": [
+      "Королевский Институт Международных Отношений"
+    ],
+    "is_person": false,
+    "dateIn": "13.04.2022"
+  },
+  {
+    "name": "«ГРОМАДСЬКА ОРГАНIЗАЦIЯ «КРИМСЬКА ПРАВОЗАХИСНА ГРУПА» (CRIMEAN HUMAN RIGHT, «КРЫМСКАЯ ПРАВОЗАЩИТНАЯ ГРУППА») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "КРИМСЬКА ПРАВОЗАХИСНА ГРУПА",
+      "КРЫМСКАЯ ПРАВОЗАЩИТНАЯ ГРУППА"
+    ],
+    "is_person": false,
+    "dateIn": "13.05.2022"
+  },
+  {
+    "name": "Heinrich-Böll-Stiftung e.V. (Heinrich Böll Stiftung, «Фонд имени Генриха Бёлля») (Германия)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд имени Генриха Бёлля"
+    ],
+    "is_person": false,
+    "dateIn": "31.05.2022"
+  },
+  {
+    "name": "Stichting Bellingcat (Нидерланды)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "26.07.2022"
+  },
+  {
+    "name": "Bellingcat Ltd. (Великобритания)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "26.07.2022"
+  },
+  {
+    "name": "The Insider (Латвия)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "26.07.2022"
+  },
+  {
+    "name": "«Институт правовой инициативы Центральной и Восточной Европы» (CEELI Institute) (Чехия)",
+    "type": "undesirable",
+    "aliases": [
+      "Институт правовой инициативы Центральной и Восточной Европы"
+    ],
+    "is_person": false,
+    "dateIn": "26.07.2022"
+  },
+  {
+    "name": "«Фонд Открытой Эстонии» (Avatud Eesti Fond SA, Open Estonia Foundation) Эстонская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Открытой Эстонии"
+    ],
+    "is_person": false,
+    "dateIn": "29.07.2022"
+  },
+  {
+    "name": "Calvert 22 Foundation, Великобритания",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "12.08.2022"
+  },
+  {
+    "name": "«Канадский украинский конгресс», «Конгресс украинцев Канады» (Ukrainian Canadian Congress), Канада",
+    "type": "undesirable",
+    "aliases": [
+      "Канадский украинский конгресс",
+      "Конгресс украинцев Канады"
+    ],
+    "is_person": false,
+    "dateIn": "19.08.2022"
+  },
+  {
+    "name": "«Институт Макдональда-Лорье» (Macdonald-Laurier Institute), Канада",
+    "type": "undesirable",
+    "aliases": [
+      "Институт Макдональда-Лорье"
+    ],
+    "is_person": false,
+    "dateIn": "19.08.2022"
+  },
+  {
+    "name": "«Украинская национальная федерация Канады» (Ukrainian National Federation of Canada), Канада",
+    "type": "undesirable",
+    "aliases": [
+      "Украинская национальная федерация Канады"
+    ],
+    "is_person": false,
+    "dateIn": "19.08.2022"
+  },
+  {
+    "name": "Dekabristen e.V. («Декабристы») (Германия)",
+    "type": "undesirable",
+    "aliases": [
+      "Декабристы"
+    ],
+    "is_person": false,
+    "dateIn": "25.10.2022"
+  },
+  {
+    "name": "Международный научный центр им. Вудро Вильсона (Woodrow Wilson International Center for Scholars), США",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "25.11.2022"
+  },
+  {
+    "name": "«Свободная пресса» (Open Press), Французская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Свободная пресса"
+    ],
+    "is_person": false,
+    "dateIn": "25.11.2022"
+  },
+  {
+    "name": "«БЛАГОДIЙНИЙ ФОНД «ВIДРОДЖЕННЯ» ВОЛОДИМИРА МУНТЯНА» («Благотворительный фонд «Возрождение» Владимира Мунтяна») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "ВIДРОДЖЕННЯ",
+      "БЛАГОДIЙНИЙ ФОНД «ВIДРОДЖЕННЯ» ВОЛОДИМИРА МУНТЯНА",
+      "Благотворительный фонд «Возрождение",
+      "Благотворительный фонд «Возрождение» Владимира Мунтяна"
+    ],
+    "is_person": false,
+    "dateIn": "25.11.2022"
+  },
+  {
+    "name": "«РЕЛIГIЙНА ОРГАНIЗАЦIЯ «ВСЕУКРАIНСЬКИЙ ДУХОВНИЙ ЦЕНТР «ВIДРОДЖЕННЯ» («Религиозная организация «Всеукраинский духовный центр «Возрождение») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "ВIДРОДЖЕННЯ",
+      "Религиозная организация «Всеукраинский духовный центр «Возрождение"
+    ],
+    "is_person": false,
+    "dateIn": "25.11.2022"
+  },
+  {
+    "name": "Riddle (аналитический Центр «Риддл»), Литовская Республика",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "13.12.2022"
+  },
+  {
+    "name": "Ryska Antikrigskommitteten i Sverige («Русский антивоенный комитет в Швеции»), Швеция",
+    "type": "undesirable",
+    "aliases": [
+      "Русский антивоенный комитет в Швеции"
+    ],
+    "is_person": false,
+    "dateIn": "10.01.2023"
+  },
+  {
+    "name": "Limited liability company (SIA) «Medusa Project» («Проект Медуза»), Латвийская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Medusa Project",
+      "Проект Медуза"
+    ],
+    "is_person": false,
+    "dateIn": "07.02.2023"
+  },
+  {
+    "name": "«The Andrei Sakharov foundation» («Фонд Андрея Сахарова»), США",
+    "type": "undesirable",
+    "aliases": [
+      "The Andrei Sakharov foundation",
+      "Фонд Андрея Сахарова"
+    ],
+    "is_person": false,
+    "dateIn": "07.02.2023"
+  },
+  {
+    "name": "«Форум свободной России» (Литовская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Форум свободной России",
+      "Литовская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "13.02.2023"
+  },
+  {
+    "name": "«Free Nations League» («Лига Свободных Наций»), Литва",
+    "type": "undesirable",
+    "aliases": [
+      "Free Nations League",
+      "Лига Свободных Наций"
+    ],
+    "is_person": false,
+    "dateIn": "10.03.2023"
+  },
+  {
+    "name": "«Transparеncy International», Федеративная Республика Германия",
+    "type": "undesirable",
+    "aliases": [
+      "Transparеncy International"
+    ],
+    "is_person": false,
+    "dateIn": "21.03.2023"
+  },
+  {
+    "name": "«Free Nations of PostRussia Forum» («Форум Свободных Народов ПостРоссии»), Польша",
+    "type": "undesirable",
+    "aliases": [
+      "Free Nations of PostRussia Forum",
+      "Форум Свободных Народов ПостРоссии"
+    ],
+    "is_person": false,
+    "dateIn": "31.03.2023"
+  },
+  {
+    "name": "Solidarität mit der Bürgerbewegung in Russland e.V. («Солидарность с гражданским движением в России – Solidarus»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Солидарность с гражданским движением в России – Solidarus"
+    ],
+    "is_person": false,
+    "dateIn": "05.04.2023"
+  },
+  {
+    "name": "«КрымSOS» (CrimeaSOS) (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "КрымSOS"
+    ],
+    "is_person": false,
+    "dateIn": "05.04.2023"
+  },
+  {
+    "name": "Briva Universitate («Свободный университет»), Латвийская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Свободный университет"
+    ],
+    "is_person": false,
+    "dateIn": "18.04.2023"
+  },
+  {
+    "name": "The Institute for Statecraft («Институт государственного управления»),  Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Институт государственного управления"
+    ],
+    "is_person": false,
+    "dateIn": "25.04.2023"
+  },
+  {
+    "name": "«Форум гражданского общества Россия – ЕС» («EU – Russia Civil Society Forum e.V.»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Форум гражданского общества Россия – ЕС",
+      "EU – Russia Civil Society Forum e.V."
+    ],
+    "is_person": false,
+    "dateIn": "25.04.2023"
+  },
+  {
+    "name": "Miljøstiftelsen Bellona (Экологический фонд «Беллона», Экологическое объединение «Беллона») (Королевство Норвегия)",
+    "type": "undesirable",
+    "aliases": [
+      "Беллона",
+      "Королевство Норвегия"
+    ],
+    "is_person": false,
+    "dateIn": "02.05.2023"
+  },
+  {
+    "name": "«Союз жителей островов Тисима и Хабомаи» («Союз бывших жителей Чисимских и Хабомайских островов») (Япония)",
+    "type": "undesirable",
+    "aliases": [
+      "Союз жителей островов Тисима и Хабомаи",
+      "Союз бывших жителей Чисимских и Хабомайских островов"
+    ],
+    "is_person": false,
+    "dateIn": "11.05.2023"
+  },
+  {
+    "name": "«Съезд народных депутатов» («Kongres Deputowanych Ludowych»), Польша",
+    "type": "undesirable",
+    "aliases": [
+      "Съезд народных депутатов",
+      "Kongres Deputowanych Ludowych"
+    ],
+    "is_person": false,
+    "dateIn": "18.05.2023"
+  },
+  {
+    "name": "Greenpeace International (Stichting Greenpeace Council) («Гринпис Интернешнл», «Фонд Гринпис Совет», «ГРИНПИС») (Нидерланды)",
+    "type": "undesirable",
+    "aliases": [
+      "Гринпис Интернешнл",
+      "Фонд Гринпис Совет",
+      "ГРИНПИС"
+    ],
+    "is_person": false,
+    "dateIn": "29.05.2023"
+  },
+  {
+    "name": "Anti-Corruption Foundation International, Inc. («Фонд борьбы с коррупцией Инк.») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд борьбы с коррупцией Инк."
+    ],
+    "is_person": false,
+    "dateIn": "01.06.2023"
+  },
+  {
+    "name": "«Завет церквей TCCN» (Transformation Center Covenant Network TCCN, Transformation Center Church International), США",
+    "type": "undesirable",
+    "aliases": [
+      "Завет церквей TCCN"
+    ],
+    "is_person": false,
+    "dateIn": "27.06.2023"
+  },
+  {
+    "name": "«Law Sofia Foundation» (Фонд «Право-София», Международная правозащитная группа «Агора»), Болгария",
+    "type": "undesirable",
+    "aliases": [
+      "Law Sofia Foundation",
+      "Право-София"
+    ],
+    "is_person": false,
+    "dateIn": "28.06.2023"
+  },
+  {
+    "name": "«World Wide Fund for Nature» («World Wildlife Fund», «WWF», «Всемирный фонд природы») (Швейцария)",
+    "type": "undesirable",
+    "aliases": [
+      "World Wide Fund for Nature",
+      "World Wildlife Fund",
+      "Всемирный фонд природы"
+    ],
+    "is_person": false,
+    "dateIn": "05.07.2023"
+  },
+  {
+    "name": "BDR Novaja Gazeta-Europe (Латвийская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Латвийская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "14.07.2023"
+  },
+  {
+    "name": "«The Altai Project» («Алтай проект») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "The Altai Project",
+      "Алтай проект"
+    ],
+    "is_person": false,
+    "dateIn": "17.07.2023"
+  },
+  {
+    "name": "Educational Human Rights House Chernihiv («Образовательный дом прав человека Чернигов») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Образовательный дом прав человека Чернигов"
+    ],
+    "is_person": false,
+    "dateIn": "24.07.2023"
+  },
+  {
+    "name": "Human Rights House Foundation (HRHF, «Фонд Дом Прав Человека») (Норвегия)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Дом Прав Человека"
+    ],
+    "is_person": false,
+    "dateIn": "24.07.2023"
+  },
+  {
+    "name": "The Barys Zvozskau Belarusian Human Rights House («Белорусский дом прав человека имени Бориса Звозскова») (Литовская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Белорусский дом прав человека имени Бориса Звозскова",
+      "Литовская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "24.07.2023"
+  },
+  {
+    "name": "Human Rights House Tbilisi («Дом прав человека Тбилиси») (Грузия)",
+    "type": "undesirable",
+    "aliases": [
+      "Дом прав человека Тбилиси"
+    ],
+    "is_person": false,
+    "dateIn": "24.07.2023"
+  },
+  {
+    "name": "Human Rights House Yerevan («Дом прав человека Ереван») (Республика Армения)",
+    "type": "undesirable",
+    "aliases": [
+      "Дом прав человека Ереван",
+      "Республика Армения"
+    ],
+    "is_person": false,
+    "dateIn": "24.07.2023"
+  },
+  {
+    "name": "Human Rights House Crimea («Дом прав человека Крым») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Дом прав человека Крым"
+    ],
+    "is_person": false,
+    "dateIn": "24.07.2023"
+  },
+  {
+    "name": "Wild Salmon Center («Центр дикого лосося») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Центр дикого лосося"
+    ],
+    "is_person": false,
+    "dateIn": "02.08.2023"
+  },
+  {
+    "name": "TVR Studios B.V., Королевство Нидерландов",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "04.08.2023"
+  },
+  {
+    "name": "SIA TV Rain («ТВ Дождь»), Латвийская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "ТВ Дождь"
+    ],
+    "is_person": false,
+    "dateIn": "04.08.2023"
+  },
+  {
+    "name": "«Центр европейских исследований им. Вилфрида Мартенса» («Martens Centre»), Королевство Бельгия",
+    "type": "undesirable",
+    "aliases": [
+      "Центр европейских исследований им. Вилфрида Мартенса",
+      "Martens Centre"
+    ],
+    "is_person": false,
+    "dateIn": "15.08.2023"
+  },
+  {
+    "name": "Conflict Intelligence Team, CIT («Сетевое объединение журналистов расследователей»), Украина",
+    "type": "undesirable",
+    "aliases": [
+      "Сетевое объединение журналистов расследователей"
+    ],
+    "is_person": false,
+    "dateIn": "18.08.2023"
+  },
+  {
+    "name": "Громадська Спiлка «Мiжнародний Громадський Рух «АЛЛАТРА» (Общественный Союз «Международное Общественное Движение «Аллатра», Международное общественное движение «АЛЛАТРА», «МОД «АЛЛАТРА», «АллатРа») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Международное Общественное Движение «Аллатра"
+    ],
+    "is_person": false,
+    "dateIn": "18.08.2023"
+  },
+  {
+    "name": "Stowarzyszenie «Za Wolna Rosje» (Ассоциация «За свободную Россию») (Республика Польша)",
+    "type": "undesirable",
+    "aliases": [
+      "Za Wolna Rosje",
+      "За свободную Россию",
+      "Республика Польша"
+    ],
+    "is_person": false,
+    "dateIn": "23.08.2023"
+  },
+  {
+    "name": "Free Buryatia Foundation (Фонд «Свободная Бурятия»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Свободная Бурятия"
+    ],
+    "is_person": false,
+    "dateIn": "12.09.2023"
+  },
+  {
+    "name": "URALIC Keskus MTÜ (URALIC Centre of Indigenous Peoples, MTÜ Polisrahvaste Arengu Keskus, «Центр «Uralic», «Центр развития коренных народов») (Эстония)",
+    "type": "undesirable",
+    "aliases": [
+      "Uralic",
+      "Центр развития коренных народов",
+      "Центр «Uralic"
+    ],
+    "is_person": false,
+    "dateIn": "14.09.2023"
+  },
+  {
+    "name": "UnKremlin e.V. (ФРГ)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "18.09.2023"
+  },
+  {
+    "name": "«Международная федерация транспортных рабочих» («International Transport Workers Federation»), Великобритания, Лондон",
+    "type": "undesirable",
+    "aliases": [
+      "Международная федерация транспортных рабочих",
+      "International Transport Workers Federation"
+    ],
+    "is_person": false,
+    "dateIn": "18.09.2023"
+  },
+  {
+    "name": "«Объединение торговых палат ИстЧам Финланд» (EastCham Finland kauppakamariyhdistys ry) («Восточная торговая палата Финляндии», «Зарегистрированная ассоциация Торговая палата ИстЧам Финланд», «ИстЧам Финланд», EastCham Finland) (Финляндия)",
+    "type": "undesirable",
+    "aliases": [
+      "Объединение торговых палат ИстЧам Финланд",
+      "Восточная торговая палата Финляндии",
+      "Зарегистрированная ассоциация Торговая палата ИстЧам Финланд",
+      "ИстЧам Финланд"
+    ],
+    "is_person": false,
+    "dateIn": "26.09.2023"
+  },
+  {
+    "name": "Hudson Institute («Гудзоновский институт»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Гудзоновский институт"
+    ],
+    "is_person": false,
+    "dateIn": "26.09.2023"
+  },
+  {
+    "name": "Foundation for Democratic Development  («Фонд Демократического Развития») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Демократического Развития"
+    ],
+    "is_person": false,
+    "dateIn": "11.10.2023"
+  },
+  {
+    "name": "«Объединение «Комитет-2024» (Республика Польша)",
+    "type": "undesirable",
+    "aliases": [
+      "Комитет-2024",
+      "Республика Польша"
+    ],
+    "is_person": false,
+    "dateIn": "17.10.2023"
+  },
+  {
+    "name": "Central European University («Центрально-Европейский университет»), Австрия",
+    "type": "undesirable",
+    "aliases": [
+      "Центрально-Европейский университет"
+    ],
+    "is_person": false,
+    "dateIn": "01.11.2023"
+  },
+  {
+    "name": "Zentrum fur Osteuropa – und internationale Studien (ZOiS) gGmbH («Центр восточноевропейских и международных исследований»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Центр восточноевропейских и международных исследований"
+    ],
+    "is_person": false,
+    "dateIn": "01.11.2023"
+  },
+  {
+    "name": "Wachtturm Bible und Traktat Gesellschaft der Zeugen Jehovas («Общество Сторожевой башни, Библии и трактатов Свидетелей Иеговы Зельтерс/Таунус») Германия",
+    "type": "undesirable",
+    "aliases": [
+      "Общество Сторожевой башни, Библии и трактатов Свидетелей Иеговы Зельтерс/Таунус"
+    ],
+    "is_person": false,
+    "dateIn": "08.11.2023"
+  },
+  {
+    "name": "Релiгiйна органiзацiя «Релiгiйний Центр Свiдкiв Єгови в Українi» («Религиозный центр «Свидетелей Иеговы» в Украине»), Украина",
+    "type": "undesirable",
+    "aliases": [
+      "Релiгiйний Центр Свiдкiв Єгови в Українi",
+      "Свидетелей Иеговы"
+    ],
+    "is_person": false,
+    "dateIn": "08.11.2023"
+  },
+  {
+    "name": "Watch Tower Bible and Tract Society of Pensilvania («Общество Сторожевой башни, Библии и трактатов Пенсильвании»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Общество Сторожевой башни, Библии и трактатов Пенсильвании"
+    ],
+    "is_person": false,
+    "dateIn": "08.11.2023"
+  },
+  {
+    "name": "Civil Council («Гражданский Совет») (Республика Польша)",
+    "type": "undesirable",
+    "aliases": [
+      "Гражданский Совет",
+      "Республика Польша"
+    ],
+    "is_person": false,
+    "dateIn": "21.11.2023"
+  },
+  {
+    "name": "Center for European Policy Analysis, CEPA («Центр анализа европейской политики»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Центр анализа европейской политики"
+    ],
+    "is_person": false,
+    "dateIn": "27.11.2023"
+  },
+  {
+    "name": "Akademisches Netzwerk Osteuropa e.V. («Академическая сеть Восточная Европа»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Академическая сеть Восточная Европа"
+    ],
+    "is_person": false,
+    "dateIn": "04.12.2023"
+  },
+  {
+    "name": "«Российский комитет действия» (Литовская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Российский комитет действия",
+      "Литовская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "04.12.2023"
+  },
+  {
+    "name": "RAND Corporation («РЭНД корпорейшн»), США",
+    "type": "undesirable",
+    "aliases": [
+      "РЭНД корпорейшн"
+    ],
+    "is_person": false,
+    "dateIn": "06.12.2023"
+  },
+  {
+    "name": "Russian America for Democracy  in Russia («Русская Америка за демократию в России»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Русская Америка за демократию в России"
+    ],
+    "is_person": false,
+    "dateIn": "25.12.2023"
+  },
+  {
+    "name": "True Russia Limited («Настоящая Россия»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Настоящая Россия"
+    ],
+    "is_person": false,
+    "dateIn": "25.12.2023"
+  },
+  {
+    "name": "Global Investigative Journalism Network («Глобальная сеть журналистов-расследователей») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Глобальная сеть журналистов-расследователей"
+    ],
+    "is_person": false,
+    "dateIn": "25.12.2023"
+  },
+  {
+    "name": "Nodibinājums «Helpdesk Media Foundation» («Медиа-фонд «Служба поддержки», «Служба поддержки») (Латвийская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Helpdesk Media Foundation",
+      "Служба поддержки",
+      "Латвийская Республика",
+      "Медиа-фонд «Служба поддержки"
+    ],
+    "is_person": false,
+    "dateIn": "26.12.2023"
+  },
+  {
+    "name": "Freies Russland Berlin e.V. («Свободная Россия Берлин»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Свободная Россия Берлин"
+    ],
+    "is_person": false,
+    "dateIn": "26.01.2024"
+  },
+  {
+    "name": "Freies Russland NRW e.V. («Свободная Россия Северный Рейн-Вестфалия»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Свободная Россия Северный Рейн-Вестфалия"
+    ],
+    "is_person": false,
+    "dateIn": "26.01.2024"
+  },
+  {
+    "name": "GlobalGiving Foundation Inc. («Фонд глобальной помощи») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд глобальной помощи"
+    ],
+    "is_person": false,
+    "dateIn": "26.01.2024"
+  },
+  {
+    "name": "Russian antiwar committee («Антивоенный комитет России»)",
+    "type": "undesirable",
+    "aliases": [
+      "Антивоенный комитет России"
+    ],
+    "is_person": false,
+    "dateIn": "31.01.2024"
+  },
+  {
+    "name": "Russie-Libertes (Франция)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "31.01.2024"
+  },
+  {
+    "name": "La Asocicion de Rusos Libres (Испания)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "31.01.2024"
+  },
+  {
+    "name": "«Союз за возвращение Северных территорий» («Союз борьбы за возвращение Северных территорий») (Япония)",
+    "type": "undesirable",
+    "aliases": [
+      "Союз за возвращение Северных территорий",
+      "Союз борьбы за возвращение Северных территорий"
+    ],
+    "is_person": false,
+    "dateIn": "05.02.2024"
+  },
+  {
+    "name": "Громадська органiзацiя «Кримськотатарський Ресурсний Центр» («Крымскотатарский Ресурсный Центр») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Кримськотатарський Ресурсний Центр",
+      "Крымскотатарский Ресурсный Центр"
+    ],
+    "is_person": false,
+    "dateIn": "05.02.2024"
+  },
+  {
+    "name": "IndustriALL Global Union («Глобальный союз IndustriALL») (Швейцария)",
+    "type": "undesirable",
+    "aliases": [
+      "Глобальный союз IndustriALL"
+    ],
+    "is_person": false,
+    "dateIn": "05.02.2024"
+  },
+  {
+    "name": "Russian Election Monitor (REM), ФРГ",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "07.02.2024"
+  },
+  {
+    "name": "Article 19 (Великобритания)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "08.02.2024"
+  },
+  {
+    "name": "Mnenie media z.s. («Мнение медиа»), Чешская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Мнение медиа"
+    ],
+    "is_person": false,
+    "dateIn": "08.02.2024"
+  },
+  {
+    "name": "Anarchist Black Cross Federation (ABCF, «Федерация анархического черного креста») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Федерация анархического черного креста"
+    ],
+    "is_person": false,
+    "dateIn": "16.02.2024"
+  },
+  {
+    "name": "Radio Free Europe/Radio Liberty (RFE/RL) («Радио Свободная Европа/Радио Свобода», «РСЕ/РС») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Радио Свободная Европа/Радио Свобода",
+      "РСЕ/РС"
+    ],
+    "is_person": false,
+    "dateIn": "20.02.2024"
+  },
+  {
+    "name": "Deutsche Gesellschaft für Osteuropakunde («Германское общество изучения Восточной Европы»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Германское общество изучения Восточной Европы"
+    ],
+    "is_person": false,
+    "dateIn": "01.03.2024"
+  },
+  {
+    "name": "Friedrich-Ebert-Stiftung e.V. (Friedrich Ebert Stiftung, «Зарегистрированный Союз «Фонд имени Фридриха Эберта») (Германия)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд имени Фридриха Эберта",
+      "Зарегистрированный Союз «Фонд имени Фридриха Эберта"
+    ],
+    "is_person": false,
+    "dateIn": "01.03.2024"
+  },
+  {
+    "name": "XZ gGmbH, ФРГ",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "01.03.2024"
+  },
+  {
+    "name": "OWEN – Mobile Akademie für Geschlechterdemokratie e.V. («Мобильная академия поддержки гендерной демократии и миротворчества»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Мобильная академия поддержки гендерной демократии и миротворчества"
+    ],
+    "is_person": false,
+    "dateIn": "01.03.2024"
+  },
+  {
+    "name": "Lew Kopelew Forum («Форум имени Льва Копелева») (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Форум имени Льва Копелева"
+    ],
+    "is_person": false,
+    "dateIn": "13.03.2024"
+  },
+  {
+    "name": "American Councils for International Education (США)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "18.03.2024"
+  },
+  {
+    "name": "Cultural Vistas (США)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "18.03.2024"
+  },
+  {
+    "name": "Institute of International Education (США)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "18.03.2024"
+  },
+  {
+    "name": "Russians Against War Antalya (RAWA) («Антивоенное движение Антальи», «Антивоенное сообщество Антальи») (Турецкая Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Антивоенное движение Антальи",
+      "Антивоенное сообщество Антальи",
+      "Турецкая Республика"
+    ],
+    "is_person": false,
+    "dateIn": "18.03.2024"
+  },
+  {
+    "name": "Fundacja Otwarty Dialog («Фонд «Открытый диалог»), Республика Польша",
+    "type": "undesirable",
+    "aliases": [
+      "Открытый диалог",
+      "Фонд «Открытый диалог"
+    ],
+    "is_person": false,
+    "dateIn": "25.03.2024"
+  },
+  {
+    "name": "Munk School of Global Affairs  and Public Policy («Школа международных отношений и государственной политики им. Питера Мунка»), Канада",
+    "type": "undesirable",
+    "aliases": [
+      "Школа международных отношений и государственной политики им. Питера Мунка"
+    ],
+    "is_person": false,
+    "dateIn": "02.04.2024"
+  },
+  {
+    "name": "Russian Canadian Democratic Alliance, RCDA («Российско-канадский демократический альянс»), Канада",
+    "type": "undesirable",
+    "aliases": [
+      "Российско-канадский демократический альянс"
+    ],
+    "is_person": false,
+    "dateIn": "02.04.2024"
+  },
+  {
+    "name": "Norman Paterson School of International Affairs («Школа международных отношений им. Нормана Патерсона»), Канада",
+    "type": "undesirable",
+    "aliases": [
+      "Школа международных отношений им. Нормана Патерсона"
+    ],
+    "is_person": false,
+    "dateIn": "02.04.2024"
+  },
+  {
+    "name": "Center for Civil Liberties («Центр Громадянських Свобод», «Общественная организация «Центр Гражданских Свобод») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Центр Громадянських Свобод",
+      "Центр Гражданских Свобод"
+    ],
+    "is_person": false,
+    "dateIn": "16.04.2024"
+  },
+  {
+    "name": "Boris Nemtsov Foundation for Freedom («Фонд Бориса Немцова за Свободу») (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Бориса Немцова за Свободу"
+    ],
+    "is_person": false,
+    "dateIn": "16.04.2024"
+  },
+  {
+    "name": "Friedrich-Naumann-Stiftung für die Freiheit (Friedrich Naumann Foundation, «Фонд имени Фридриха Науманна за свободу») (Германия)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд имени Фридриха Науманна за свободу"
+    ],
+    "is_person": false,
+    "dateIn": "16.04.2024"
+  },
+  {
+    "name": "Feminist Antiwar Resistance («Феминистское антивоенное сопротивление», «ФАС»)",
+    "type": "undesirable",
+    "aliases": [
+      "Феминистское антивоенное сопротивление"
+    ],
+    "is_person": false,
+    "dateIn": "25.04.2024"
+  },
+  {
+    "name": "Ğalğay Kortamuqalen Komitet («Комитет Ингушской Независимости», «КИН», «Комитет независимости Ингушетии») (Турецкая Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Комитет Ингушской Независимости",
+      "Комитет независимости Ингушетии",
+      "Турецкая Республика"
+    ],
+    "is_person": false,
+    "dateIn": "02.05.2024"
+  },
+  {
+    "name": "«Центр дослiдження безпекового середовища «Прометей» («Центр исследования среды безопасности «Прометей») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Центр исследования среды безопасности «Прометей"
+    ],
+    "is_person": false,
+    "dateIn": "15.05.2024"
+  },
+  {
+    "name": "ККК - Stop Occupation of Karelia, Эстонская Республика",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "17.05.2024"
+  },
+  {
+    "name": "Мiжнародний благодiйний фонд «Повернись живим» («Международный благотворительный фонд «Вернись живым») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Повернись живим",
+      "Вернись живым",
+      "Международный благотворительный фонд «Вернись живым"
+    ],
+    "is_person": false,
+    "dateIn": "17.05.2024"
+  },
+  {
+    "name": "Freedom House, Inc. («Фридом Хаус») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Фридом Хаус"
+    ],
+    "is_person": false,
+    "dateIn": "21.05.2024"
+  },
+  {
+    "name": "SOTA media («СОТА медиа») (Литовская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "СОТА медиа",
+      "Литовская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "24.05.2024"
+  },
+  {
+    "name": "«Лiберально-демократична Лiга Украïни»  (Liberal Democratic League of Ukraine,  «Либерально-демократическая Лига Украины») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Лiберально-демократична Лiга Украïни",
+      "Либерально-демократическая Лига Украины"
+    ],
+    "is_person": false,
+    "dateIn": "03.06.2024"
+  },
+  {
+    "name": "Deutsches Historisches Institut Moskau  («Германский исторический институт в Москве»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Германский исторический институт в Москве"
+    ],
+    "is_person": false,
+    "dateIn": "14.06.2024"
+  },
+  {
+    "name": "Great Commission Media Ministries (GCMM, «Медиа Министерство Великое Поручение», «Служба СМИ миссии «Великого поручения») (Канада)",
+    "type": "undesirable",
+    "aliases": [
+      "Медиа Министерство Великое Поручение",
+      "Великого поручения"
+    ],
+    "is_person": false,
+    "dateIn": "21.06.2024"
+  },
+  {
+    "name": "International Russian Radio & Television (IRR/TV, «Международное русское радио и телевидение») (Финляндия)",
+    "type": "undesirable",
+    "aliases": [
+      "Международное русское радио и телевидение"
+    ],
+    "is_person": false,
+    "dateIn": "21.06.2024"
+  },
+  {
+    "name": "Great Commission Media Ministries (GCMM, «Медиа Министерство Великое Поручение», «Служба СМИ миссии «Великого поручения») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Медиа Министерство Великое Поручение",
+      "Великого поручения"
+    ],
+    "is_person": false,
+    "dateIn": "21.06.2024"
+  },
+  {
+    "name": "Dekoder – gGmbH  (Dekoder – gGesselschaft mbH, Dekoder), ФРГ",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "01.07.2024"
+  },
+  {
+    "name": "Center for Strategic  and International Studies (CSIS, «Центр стратегических и международных исследований») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Центр стратегических и международных исследований"
+    ],
+    "is_person": false,
+    "dateIn": "01.07.2024"
+  },
+  {
+    "name": "Venajan Demokratian Puolesta («Демократическое сообщество русскоязычных в Финляндии», ДСРФ), Финляндская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Демократическое сообщество русскоязычных в Финляндии"
+    ],
+    "is_person": false,
+    "dateIn": "08.07.2024"
+  },
+  {
+    "name": "Vuoksi Ry («Вуокси РЮ»), Финляндская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Вуокси РЮ"
+    ],
+    "is_person": false,
+    "dateIn": "08.07.2024"
+  },
+  {
+    "name": "MitOst e.V. (Германия)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "10.07.2024"
+  },
+  {
+    "name": "The John Smith Trust (JST, «Фонд Джона Смита») (Великобритания)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Джона Смита"
+    ],
+    "is_person": false,
+    "dateIn": "10.07.2024"
+  },
+  {
+    "name": "The Moscow Times («Москоу Таймс») (Королевство Нидерландов)",
+    "type": "undesirable",
+    "aliases": [
+      "Москоу Таймс",
+      "Королевство Нидерландов"
+    ],
+    "is_person": false,
+    "dateIn": "17.07.2024"
+  },
+  {
+    "name": "Carnegie Endowment for International Peace («Фонд Карнеги за Международный Мир») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Карнеги за Международный Мир"
+    ],
+    "is_person": false,
+    "dateIn": "18.07.2024"
+  },
+  {
+    "name": "Assemblée des Peuples du Caucase (Assembly of the Peoples of the Caucasus, «Ассамблея народов Кавказа») (Французская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Ассамблея народов Кавказа",
+      "Французская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "02.08.2024"
+  },
+  {
+    "name": "EF Education First, Швейцария",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "05.08.2024"
+  },
+  {
+    "name": "Fundacja OSTMOST («Фонд «ОСТМОСТ») (Республика Польша)",
+    "type": "undesirable",
+    "aliases": [
+      "Республика Польша",
+      "Фонд «ОСТМОСТ"
+    ],
+    "is_person": false,
+    "dateIn": "05.08.2024"
+  },
+  {
+    "name": "Konrad-Adenauer-Stiftung e.V. («Конрад-Аденауэр-Штифтунг е.Ф.», «Фонд имени Конрада Аденауэра», «Зарегистрированное некоммерческое объединение «Фонд им. Конрада Аденауэра») (Германия)",
+    "type": "undesirable",
+    "aliases": [
+      "Конрад-Аденауэр-Штифтунг е.Ф.",
+      "Фонд имени Конрада Аденауэра",
+      "Фонд им. Конрада Аденауэра"
+    ],
+    "is_person": false,
+    "dateIn": "14.08.2024"
+  },
+  {
+    "name": "Kulturus, z. s. («Культурус») (Чешская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Культурус",
+      "Чешская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "14.08.2024"
+  },
+  {
+    "name": "MRR-Fund gemeinnützige UG (haftungsbeschränkt) («Фонд MRR») (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд MRR"
+    ],
+    "is_person": false,
+    "dateIn": "14.08.2024"
+  },
+  {
+    "name": "Russland hinter gittern e.V. («Россия  за решеткой») (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Россия  за решеткой"
+    ],
+    "is_person": false,
+    "dateIn": "14.08.2024"
+  },
+  {
+    "name": "Za vaši a naši svobodu, z. s. («За вашу  и нашу свободу») (Чешская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "За вашу  и нашу свободу",
+      "Чешская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "14.08.2024"
+  },
+  {
+    "name": "«Депутаты Мирной России» (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Депутаты Мирной России"
+    ],
+    "is_person": false,
+    "dateIn": "27.08.2024"
+  },
+  {
+    "name": "Clooney Foundation for Justice («Фонд Клуни за справедливость»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Клуни за справедливость"
+    ],
+    "is_person": false,
+    "dateIn": "27.08.2024"
+  },
+  {
+    "name": "Belsat (Belsat TV, Belarusian Satellite) «Белсат» («Белсат ТВ», «Белорусское спутниковое»), Республика Польша",
+    "type": "undesirable",
+    "aliases": [
+      "Белсат ТВ",
+      "Белорусское спутниковое",
+      "Белсат"
+    ],
+    "is_person": false,
+    "dateIn": "01.10.2024"
+  },
+  {
+    "name": "Благодiйна органiзацiя «Фонд 24.02» (Фонд 24.02, Charitable organization «Fund 24.02», Fund 24.02, Благотворительная организация «Фонд 24.02») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд 24.02",
+      "Fund 24.02"
+    ],
+    "is_person": false,
+    "dateIn": "04.10.2024"
+  },
+  {
+    "name": "Media in Cooperation and Transition gGmbH (MiCT) («Средства массовой информации в сотрудничестве и трансформации»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Средства массовой информации в сотрудничестве и трансформации"
+    ],
+    "is_person": false,
+    "dateIn": "30.10.2024"
+  },
+  {
+    "name": "Internationale Assoziation  für Intellektuelle Spiele (IAIS, «Международная ассоциация интеллектуальных игр», МАИИ) (Княжество Лихтенштейн)",
+    "type": "undesirable",
+    "aliases": [
+      "Международная ассоциация интеллектуальных игр",
+      "Княжество Лихтенштейн"
+    ],
+    "is_person": false,
+    "dateIn": "14.11.2024"
+  },
+  {
+    "name": "Young Presidents Organization  (YPO, «Организация молодых президентов») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Организация молодых президентов"
+    ],
+    "is_person": false,
+    "dateIn": "14.11.2024"
+  },
+  {
+    "name": "«Центр iнформацiï про права людини» («Центр информации о правах человека»), другое используемое наименование: «Центр прав людини ZMINA» («Центр прав человека ЗМИНА») (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Центр iнформацiï про права людини",
+      "Центр информации о правах человека",
+      "Центр прав людини ZMINA",
+      "Центр прав человека ЗМИНА"
+    ],
+    "is_person": false,
+    "dateIn": "20.11.2024"
+  },
+  {
+    "name": "The Satanic Temple («Сатанинский храм», «Храм сатаны»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Сатанинский храм",
+      "Храм сатаны"
+    ],
+    "is_person": false,
+    "dateIn": "19.12.2024"
+  },
+  {
+    "name": "Recorded Future («Записанное будущее») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Записанное будущее"
+    ],
+    "is_person": false,
+    "dateIn": "09.01.2025"
+  },
+  {
+    "name": "Canadian Center for Development of Democracy in Russia (Canadian Centre for Development of Democracy in Russia, «Канадский центр по развитию демократии в России», «КЦРД») (Канада)",
+    "type": "undesirable",
+    "aliases": [
+      "Канадский центр по развитию демократии в России"
+    ],
+    "is_person": false,
+    "dateIn": "10.01.2025"
+  },
+  {
+    "name": "Commission on Security and Cooperation in Europe (U.S. Helsinki Commission, CSCE, «Комиссия по безопасности и сотрудничеству  в Европе», «Хельсинкская комиссия США»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Комиссия по безопасности и сотрудничеству  в Европе",
+      "Хельсинкская комиссия США"
+    ],
+    "is_person": false,
+    "dateIn": "17.01.2025"
+  },
+  {
+    "name": "Help Heroes Of Ukraine («Помоги героям Украины») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Помоги героям Украины"
+    ],
+    "is_person": false,
+    "dateIn": "17.01.2025"
+  },
+  {
+    "name": "International Religious Freedom or Belief Alliance (IRFBA, «Международный альянс за свободу вероисповедания»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Международный альянс за свободу вероисповедания"
+    ],
+    "is_person": false,
+    "dateIn": "17.01.2025"
+  },
+  {
+    "name": "OpenText Corporation («Корпорация Открытый текст») (Канада)",
+    "type": "undesirable",
+    "aliases": [
+      "Корпорация Открытый текст"
+    ],
+    "is_person": false,
+    "dateIn": "30.01.2025"
+  },
+  {
+    "name": "Independent Institute of Philosophy (Institut de philosophie indépendant) («Независимый институт философии»), Франция",
+    "type": "undesirable",
+    "aliases": [
+      "Независимый институт философии"
+    ],
+    "is_person": false,
+    "dateIn": "30.01.2025"
+  },
+  {
+    "name": "Journalists in Need Network (JINN gGmbH, «Сеть журналистов  в бедственном положении»), Федеративная Республика Германия",
+    "type": "undesirable",
+    "aliases": [
+      "Сеть журналистов  в бедственном положении"
+    ],
+    "is_person": false,
+    "dateIn": "30.01.2025"
+  },
+  {
+    "name": "Compelson s.r.o. («Компелсон») (Чешская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Компелсон",
+      "Чешская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "30.01.2025"
+  },
+  {
+    "name": "Register of Damage Caused by the Aggression of the Russian Federation against Ukraine («Реестр ущерба, нанесенного агрессией Российской Федерации против Украины») (Королевство Нидерландов)",
+    "type": "undesirable",
+    "aliases": [
+      "Реестр ущерба, нанесенного агрессией Российской Федерации против Украины",
+      "Королевство Нидерландов"
+    ],
+    "is_person": false,
+    "dateIn": "07.02.2025"
+  },
+  {
+    "name": "The Independent Barents Observer AS («Независимый Баренц Обозреватель») (Королевство Норвегия)",
+    "type": "undesirable",
+    "aliases": [
+      "Независимый Баренц Обозреватель",
+      "Королевство Норвегия"
+    ],
+    "is_person": false,
+    "dateIn": "18.02.2025"
+  },
+  {
+    "name": "Associaão de russos livres («Ассоциация свободных россиян») (Португальская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Ассоциация свободных россиян",
+      "Португальская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "03.03.2025"
+  },
+  {
+    "name": "Руско демократско друштво (Russian Democratic Society, «Российское демократическое общество», «РДО») (Республика Сербия)",
+    "type": "undesirable",
+    "aliases": [
+      "Российское демократическое общество",
+      "Республика Сербия"
+    ],
+    "is_person": false,
+    "dateIn": "05.03.2025"
+  },
+  {
+    "name": "Alliance of Liberals and Democrats for Europe Party, сокращенное наименование ALDE Party («Партия «Альянс демократов и либералов  за Европу», «Партия «АЛДЕ») (Бельгия)",
+    "type": "undesirable",
+    "aliases": [
+      "Альянс демократов и либералов  за Европу",
+      "Партия «Альянс демократов и либералов  за Европу"
+    ],
+    "is_person": false,
+    "dateIn": "17.03.2025"
+  },
+  {
+    "name": "European Liberal Youth (LYMEC, «Европейская либеральная молодежь») (Бельгия)",
+    "type": "undesirable",
+    "aliases": [
+      "Европейская либеральная молодежь"
+    ],
+    "is_person": false,
+    "dateIn": "17.03.2025"
+  },
+  {
+    "name": "Rasmussen Global (Rasmussen Global Consulting, «Расмуссен Глобал», «Расмуссен Глобал Консалтинг»), Королевство Дания.",
+    "type": "undesirable",
+    "aliases": [
+      "Расмуссен Глобал",
+      "Расмуссен Глобал Консалтинг"
+    ],
+    "is_person": false,
+    "dateIn": "24.03.2025"
+  },
+  {
+    "name": "«Ассоциация развития русского гражданского общества  и поддержки российских эмигрантов» («АРЭМ») (Латвийская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Ассоциация развития русского гражданского общества  и поддержки российских эмигрантов",
+      "Латвийская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "24.03.2025"
+  },
+  {
+    "name": "Pour lʼUkraine, pour leur liberté et la nôtre!  («За Украину, за их и за нашу свободу!») (Французская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "За Украину, за их и за нашу свободу!",
+      "Французская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "26.03.2025"
+  },
+  {
+    "name": "The European Leadership Network («Европейская сеть лидеров»)",
+    "type": "undesirable",
+    "aliases": [
+      "Европейская сеть лидеров"
+    ],
+    "is_person": false,
+    "dateIn": "01.04.2025"
+  },
+  {
+    "name": "Deutsche Gesellschaft für Auswärtige Politik e.V. («Германское общество внешней политики»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Германское общество внешней политики"
+    ],
+    "is_person": false,
+    "dateIn": "01.04.2025"
+  },
+  {
+    "name": "Elton John AIDS Foundation («Фонд Элтона Джона  по борьбе со СПИДом»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Элтона Джона  по борьбе со СПИДом"
+    ],
+    "is_person": false,
+    "dateIn": "14.04.2025"
+  },
+  {
+    "name": "Justice for Journalists Foundation (Фонд «Справедливость  для журналистов»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Справедливость  для журналистов"
+    ],
+    "is_person": false,
+    "dateIn": "14.04.2025"
+  },
+  {
+    "name": "Elton John AIDS Foundation («Фонд Элтона Джона по борьбе  со СПИДом»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Элтона Джона по борьбе  со СПИДом"
+    ],
+    "is_person": false,
+    "dateIn": "14.04.2025"
+  },
+  {
+    "name": "Hanns-Seidel-Stiftung e.V. (HSS, «Фонд имени Ханнса Зайделя», «ФХЗ») (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд имени Ханнса Зайделя"
+    ],
+    "is_person": false,
+    "dateIn": "18.04.2025"
+  },
+  {
+    "name": "«Ассоциация по вопросам северных территорий» (Япония)",
+    "type": "undesirable",
+    "aliases": [
+      "Ассоциация по вопросам северных территорий"
+    ],
+    "is_person": false,
+    "dateIn": "18.04.2025"
+  },
+  {
+    "name": "«Hope Harbor Society» (Общество «Гавань надежды»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Hope Harbor Society",
+      "Гавань надежды"
+    ],
+    "is_person": false,
+    "dateIn": "22.04.2025"
+  },
+  {
+    "name": "Comunità dei Russi Liberi in Italia (Comunità dei Russi Liberi, «Сообщество свободных россиян Италии») (Итальянская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Сообщество свободных россиян Италии",
+      "Итальянская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "07.05.2025"
+  },
+  {
+    "name": "International Indigenous Fund for Development and Solidarity Batani («Международный фонд развития и солидарности коренных народов Батани») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Международный фонд развития и солидарности коренных народов Батани"
+    ],
+    "is_person": false,
+    "dateIn": "14.05.2025"
+  },
+  {
+    "name": "Sdružení investigativních novinářů – Fond 19/29, z.s. («Содружество журналистов-расследователей – Фонд 19/29») (Чешская Республика)",
+    "type": "undesirable",
+    "aliases": [
+      "Содружество журналистов-расследователей – Фонд 19/29",
+      "Чешская Республика"
+    ],
+    "is_person": false,
+    "dateIn": "22.05.2025"
+  },
+  {
+    "name": "Stowarzyszenie Wspólnota Polska (Ассоциация «Вспульнота Польска»), Республика Польша",
+    "type": "undesirable",
+    "aliases": [
+      "Вспульнота Польска"
+    ],
+    "is_person": false,
+    "dateIn": "22.05.2025"
+  },
+  {
+    "name": "Amnesty International Ltd (AMNESTY INTERNATIONAL LIMITED) («Международная Амнистия Лимитед», «МЕЖДУНАРОДНАЯ АМНИСТИЯ ЛИМИТЕД»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Международная Амнистия Лимитед"
+    ],
+    "is_person": false,
+    "dateIn": "28.05.2025"
+  },
+  {
+    "name": "Eurasian Coalition on Health, Rights, Gender and Sexual Diversity («Евразийская коалиция по здоровью, правам, гендерному и сексуальному многообразию»), Эстонская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Евразийская коалиция по здоровью, правам, гендерному и сексуальному многообразию"
+    ],
+    "is_person": false,
+    "dateIn": "28.05.2025"
+  },
+  {
+    "name": "Brigham Young University («Университет Бригама Янга») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Университет Бригама Янга"
+    ],
+    "is_person": false,
+    "dateIn": "02.06.2025"
+  },
+  {
+    "name": "Körber-Stiftung («Фонд Кёрбера»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Кёрбера"
+    ],
+    "is_person": false,
+    "dateIn": "02.06.2025"
+  },
+  {
+    "name": "Association for Slavic, East European and Eurasian Studies («Ассоциация славянских, восточноевропейских и евразийских исследований»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Ассоциация славянских, восточноевропейских и евразийских исследований"
+    ],
+    "is_person": false,
+    "dateIn": "03.06.2025"
+  },
+  {
+    "name": "Radio Echo GmbH («Радио Эхо») (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Радио Эхо"
+    ],
+    "is_person": false,
+    "dateIn": "03.06.2025"
+  },
+  {
+    "name": "ASSOCIATION INSTITUT FÜR DIE WISSENSCHAFTEN VOM MENSCHEN (IWM) (АССОЦИАЦИЯ «ИНСТИТУТ ГУМАНИТАРНЫХ НАУК», ИГН, «Институт наук о человеке»), Австрия",
+    "type": "undesirable",
+    "aliases": [
+      "ИНСТИТУТ ГУМАНИТАРНЫХ НАУК",
+      "Институт наук о человеке"
+    ],
+    "is_person": false,
+    "dateIn": "03.06.2025"
+  },
+  {
+    "name": "No war  («Нет войне», «Антивоенное движение No war»), Монголия",
+    "type": "undesirable",
+    "aliases": [
+      "Нет войне",
+      "Антивоенное движение No war"
+    ],
+    "is_person": false,
+    "dateIn": "11.06.2025"
+  },
+  {
+    "name": "The British Council («Британский Совет»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Британский Совет"
+    ],
+    "is_person": false,
+    "dateIn": "11.06.2025"
+  },
+  {
+    "name": "Global Network of Sex Work Projects («Глобальная сеть проектов по секс-работе»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Глобальная сеть проектов по секс-работе"
+    ],
+    "is_person": false,
+    "dateIn": "19.06.2025"
+  },
+  {
+    "name": "«Демократическое сообщество россиян на Кипре» («ДСРК»), Республика Кипр",
+    "type": "undesirable",
+    "aliases": [
+      "Демократическое сообщество россиян на Кипре"
+    ],
+    "is_person": false,
+    "dateIn": "19.06.2025"
+  },
+  {
+    "name": "Razom for Ukraine (Razom Inc, «Разом для Украины», «Вместе  для Украины», Корпорация «Вместе»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Разом для Украины",
+      "Вместе  для Украины"
+    ],
+    "is_person": false,
+    "dateIn": "24.06.2025"
+  },
+  {
+    "name": "Sex Worker`s Rights Advocacy Network («Сеть по защите прав  секс-работников»), Венгрия",
+    "type": "undesirable",
+    "aliases": [
+      "Сеть по защите прав  секс-работников"
+    ],
+    "is_person": false,
+    "dateIn": "24.06.2025"
+  },
+  {
+    "name": "Eurasian Harm Reduction Association («Евразийская ассоциация снижения вреда»), Литовская республика",
+    "type": "undesirable",
+    "aliases": [
+      "Евразийская ассоциация снижения вреда"
+    ],
+    "is_person": false,
+    "dateIn": "02.07.2025"
+  },
+  {
+    "name": "European Resilience Initiative Centre (ERIC, «Европейский инициативный центр устойчивости», «Центр европейской инициативы  по устойчивости») (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Европейский инициативный центр устойчивости",
+      "Центр европейской инициативы  по устойчивости"
+    ],
+    "is_person": false,
+    "dateIn": "02.07.2025"
+  },
+  {
+    "name": "«Норвежский Хельсинкский комитет» (Den Norske Helsingforskomité), Королевство Норвегия",
+    "type": "undesirable",
+    "aliases": [
+      "Норвежский Хельсинкский комитет"
+    ],
+    "is_person": false,
+    "dateIn": "11.07.2025"
+  },
+  {
+    "name": "Yale University («Йельский Университет»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Йельский Университет"
+    ],
+    "is_person": false,
+    "dateIn": "11.07.2025"
+  },
+  {
+    "name": "«Благодійний фонд «Армія SOS» («Благотворительный фонд «Армия СОС», Army SOS), Украина",
+    "type": "undesirable",
+    "aliases": [
+      "Армія SOS",
+      "Армия СОС",
+      "Благотворительный фонд «Армия СОС"
+    ],
+    "is_person": false,
+    "dateIn": "11.07.2025"
+  },
+  {
+    "name": "«Гражданское сетевое движение «Мир. Прогресс. Права человека» («Гражданское сетевое (общественное, демократическое) движение «Мир. Прогресс. Права человека»)",
+    "type": "undesirable",
+    "aliases": [
+      "Мир. Прогресс. Права человека"
+    ],
+    "is_person": false,
+    "dateIn": "22.07.2025"
+  },
+  {
+    "name": "Institut Andrei Sakharov (L'Institut Andrei Sakharov, «Институт Андрея Сахарова», «Институт имени Андрея Сахарова») (Франция)",
+    "type": "undesirable",
+    "aliases": [
+      "Институт Андрея Сахарова",
+      "Институт имени Андрея Сахарова"
+    ],
+    "is_person": false,
+    "dateIn": "22.07.2025"
+  },
+  {
+    "name": "«Фонд Роберта Карра для сетей гражданского общества» (Robert Carr Fund For Civil Society Networks), Нидерланды",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Роберта Карра для сетей гражданского общества"
+    ],
+    "is_person": false,
+    "dateIn": "01.08.2025"
+  },
+  {
+    "name": "«East View Information Services Inc.», США",
+    "type": "undesirable",
+    "aliases": [
+      "East View Information Services Inc."
+    ],
+    "is_person": false,
+    "dateIn": "04.08.2025"
+  },
+  {
+    "name": "Netzwerk für Osteuropa-Berichterstattung – n-ost e.V.  («Журналистская сеть по освещению событий в Восточной Европе»), Федеративная Республика Германия",
+    "type": "undesirable",
+    "aliases": [
+      "Журналистская сеть по освещению событий в Восточной Европе"
+    ],
+    "is_person": false,
+    "dateIn": "04.08.2025"
+  },
+  {
+    "name": "Rosa-Luxemburg-Stiftung Gesellschaftsanalyse und politische Bildung e.V. («Фонд имени Розы Люксембург», «Фонд социального анализа и политического образования имени Розы Люксембург»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд имени Розы Люксембург",
+      "Фонд социального анализа и политического образования имени Розы Люксембург"
+    ],
+    "is_person": false,
+    "dateIn": "04.08.2025"
+  },
+  {
+    "name": "International House World Organisation («Всемирная организация \"Международный дом\"»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Всемирная организация \"Международный дом\""
+    ],
+    "is_person": false,
+    "dateIn": "07.08.2025"
+  },
+  {
+    "name": "«UnMode – community Movement  for Access to Justice» (UNMODE, «Анмуд – общественное движение  за доступность правосудия») (Грузия)",
+    "type": "undesirable",
+    "aliases": [
+      "UnMode – community Movement  for Access to Justice",
+      "Анмуд – общественное движение  за доступность правосудия"
+    ],
+    "is_person": false,
+    "dateIn": "07.08.2025"
+  },
+  {
+    "name": "Helsińska Fundacja Praw Człowieka (Helsinki Foundation for Human Rights, «Хельсинский Фонд по Правам Человека»), Польша",
+    "type": "undesirable",
+    "aliases": [
+      "Хельсинский Фонд по Правам Человека"
+    ],
+    "is_person": false,
+    "dateIn": "11.08.2025"
+  },
+  {
+    "name": "Group 36 («Группа 36») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Группа 36"
+    ],
+    "is_person": false,
+    "dateIn": "14.08.2025"
+  },
+  {
+    "name": "Reporters sans Frontières (RSF), («Репортеры без границ»), Франция",
+    "type": "undesirable",
+    "aliases": [
+      "Репортеры без границ"
+    ],
+    "is_person": false,
+    "dateIn": "14.08.2025"
+  },
+  {
+    "name": "Stiftung Erinnerung, Verantwortung und Zukunft e.V (EVZ, Фонд «Память, ответственность и будущее»), Германия",
+    "type": "undesirable",
+    "aliases": [
+      "Память, ответственность и будущее"
+    ],
+    "is_person": false,
+    "dateIn": "18.08.2025"
+  },
+  {
+    "name": "Zimin Foundation («Фонд Зимина»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Зимина"
+    ],
+    "is_person": false,
+    "dateIn": "18.08.2025"
+  },
+  {
+    "name": "Stichting Nederlands Helsinki Comité («Фонд Нидерландского Хельсинкского Комитета», «Нидерландский Хельсинкский Комитет»), Королевство Нидерландов",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Нидерландского Хельсинкского Комитета",
+      "Нидерландский Хельсинкский Комитет"
+    ],
+    "is_person": false,
+    "dateIn": "18.08.2025"
+  },
+  {
+    "name": "Demokrati-JA e.V. (Германия)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "21.08.2025"
+  },
+  {
+    "name": "ProtectDefenders.eu («Защити защитников.ЕС») (Королевство Бельгия)",
+    "type": "undesirable",
+    "aliases": [
+      "Защити защитников.ЕС",
+      "Королевство Бельгия"
+    ],
+    "is_person": false,
+    "dateIn": "26.08.2025"
+  },
+  {
+    "name": "Civic Solidarity Platform («Платформа гражданской солидарности»)",
+    "type": "undesirable",
+    "aliases": [
+      "Платформа гражданской солидарности"
+    ],
+    "is_person": false,
+    "dateIn": "26.08.2025"
+  },
+  {
+    "name": "Human Rights Funders Network  (HRFN, «Сеть спонсоров прав человека») (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Сеть спонсоров прав человека"
+    ],
+    "is_person": false,
+    "dateIn": "04.09.2025"
+  },
+  {
+    "name": "«Королевский объединенный институт оборонных исследований»  (The Royal United Services Institute for Defence and Security Studies, RUSI), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Королевский объединенный институт оборонных исследований"
+    ],
+    "is_person": false,
+    "dateIn": "04.09.2025"
+  },
+  {
+    "name": "International Baccalaureate  («Международный бакалавриат»), Швейцария",
+    "type": "undesirable",
+    "aliases": [
+      "Международный бакалавриат"
+    ],
+    "is_person": false,
+    "dateIn": "04.09.2025"
+  },
+  {
+    "name": "Friede Allen e.V. («Мир Всем»), Германия",
+    "type": "undesirable",
+    "aliases": [
+      "Мир Всем"
+    ],
+    "is_person": false,
+    "dateIn": "16.09.2025"
+  },
+  {
+    "name": "AFS Intercultural Programs Inc («Межкультурные программы АФС»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Межкультурные программы АФС"
+    ],
+    "is_person": false,
+    "dateIn": "25.09.2025"
+  },
+  {
+    "name": "Initiative for Resistance and Dialogues (Initiative FoReDi ry, «Инициатива по сопротивлению и диалогу»), Финляндская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Инициатива по сопротивлению и диалогу"
+    ],
+    "is_person": false,
+    "dateIn": "01.10.2025"
+  },
+  {
+    "name": "Eurasian Network of People who use drugs (ENPUD, «Евразийская Сеть Людей, употребляющих наркотики», ЕСЛУН), Грузия",
+    "type": "undesirable",
+    "aliases": [
+      "Евразийская Сеть Людей, употребляющих наркотики"
+    ],
+    "is_person": false,
+    "dateIn": "01.10.2025"
+  },
+  {
+    "name": "Bart Marsho (Bart-Marsho, «Барт Маршо», «Барт-Маршо», «Единство и Свобода»), Французская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Барт Маршо",
+      "Барт-Маршо",
+      "Единство и Свобода"
+    ],
+    "is_person": false,
+    "dateIn": "02.10.2025"
+  },
+  {
+    "name": "Assemblee des Tchétchènes ďEurope (The Assembly of Chechens of Europe, «Ассамблея чеченцев Европы»), Французская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Ассамблея чеченцев Европы"
+    ],
+    "is_person": false,
+    "dateIn": "02.10.2025"
+  },
+  {
+    "name": "CORRECTIV – Recherchen für die Gesellschaft gemeinnützige GmbH («КОРРЕКТИВ» – расследования для общества»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "КОРРЕКТИВ"
+    ],
+    "is_person": false,
+    "dateIn": "08.10.2025"
+  },
+  {
+    "name": "The International Center for Journalists (ICFJ, «Международный центр для журналистов»), (США)",
+    "type": "undesirable",
+    "aliases": [
+      "Международный центр для журналистов"
+    ],
+    "is_person": false,
+    "dateIn": "30.10.2025"
+  },
+  {
+    "name": "Truth Hounds («Трус Хаундс»), (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Трус Хаундс"
+    ],
+    "is_person": false,
+    "dateIn": "30.10.2025"
+  },
+  {
+    "name": "Ideas  for Change («Идеи для перемен»), (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "Идеи для перемен"
+    ],
+    "is_person": false,
+    "dateIn": "30.10.2025"
+  },
+  {
+    "name": "JX Fund gGmbH («Европейский фонд журналистики в изгнании»), (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Европейский фонд журналистики в изгнании"
+    ],
+    "is_person": false,
+    "dateIn": "30.10.2025"
+  },
+  {
+    "name": "The Nordic Council of Ministers («Совет министров Северных стран», «Северный Совет Министров»), Королевство Дания",
+    "type": "undesirable",
+    "aliases": [
+      "Совет министров Северных стран",
+      "Северный Совет Министров"
+    ],
+    "is_person": false,
+    "dateIn": "07.11.2025"
+  },
+  {
+    "name": "Equal Rights Trust (ERT, «Фонд равных прав», «Ассоциация равных прав»), Великобритания",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд равных прав",
+      "Ассоциация равных прав"
+    ],
+    "is_person": false,
+    "dateIn": "13.11.2025"
+  },
+  {
+    "name": "Free Peoples of Russia House («Дом народов свободной России»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Дом народов свободной России"
+    ],
+    "is_person": false,
+    "dateIn": "24.11.2025"
+  },
+  {
+    "name": "Organized Crime and Corruption Reporting Project («Центр по исследованию коррупции и организованной преступности»), Королевство Нидерланды",
+    "type": "undesirable",
+    "aliases": [
+      "Центр по исследованию коррупции и организованной преступности"
+    ],
+    "is_person": false,
+    "dateIn": "24.11.2025"
+  },
+  {
+    "name": "Human Rights Watch, Inc. («Защита прав человека»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Защита прав человека"
+    ],
+    "is_person": false,
+    "dateIn": "28.11.2025"
+  },
+  {
+    "name": "GSC Game World («ГСК Игровой мир»), (Украина)",
+    "type": "undesirable",
+    "aliases": [
+      "ГСК Игровой мир"
+    ],
+    "is_person": false,
+    "dateIn": "28.11.2025"
+  },
+  {
+    "name": "Fédération internationale pour les droits humains («Международная федерация за права человека»), Французская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Международная федерация за права человека"
+    ],
+    "is_person": false,
+    "dateIn": "01.12.2025"
+  },
+  {
+    "name": "Громадська органiзацiя «Харкiвська правозахисна група» (Kharkiv Human Rights Protection Group, KHPG, «Харьковская правозащитная группа», ХПГ), Украина",
+    "type": "undesirable",
+    "aliases": [
+      "Харкiвська правозахисна група",
+      "Харьковская правозащитная группа"
+    ],
+    "is_person": false,
+    "dateIn": "02.12.2025"
+  },
+  {
+    "name": "«Тюркский фронт возрождения», Турецкая Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Тюркский фронт возрождения"
+    ],
+    "is_person": false,
+    "dateIn": "04.12.2025"
+  },
+  {
+    "name": "IMKANDER («Ассоциация защиты человека и братства Imkander», «Общество защиты человека и братства»), Турецкая Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Ассоциация защиты человека и братства Imkander",
+      "Общество защиты человека и братства"
+    ],
+    "is_person": false,
+    "dateIn": "04.12.2025"
+  },
+  {
+    "name": "Fundacja Wsparcia Rady Obywatelskiej («Фонд поддержки Гражданского Совета») Республика Польша",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд поддержки Гражданского Совета"
+    ],
+    "is_person": false,
+    "dateIn": "04.12.2025"
+  },
+  {
+    "name": "Allianz für ein freiheitlich-demokratisches Russland e.V. («Альянс за свободную демократическую Россию»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Альянс за свободную демократическую Россию"
+    ],
+    "is_person": false,
+    "dateIn": "15.12.2025"
+  },
+  {
+    "name": "Natur og Ungdom («Природа и молодежь»), Королевство Норвегия",
+    "type": "undesirable",
+    "aliases": [
+      "Природа и молодежь"
+    ],
+    "is_person": false,
+    "dateIn": "15.12.2025"
+  },
+  {
+    "name": "For Free Russia («За свободную Россию»), Республика Болгария",
+    "type": "undesirable",
+    "aliases": [
+      "За свободную Россию"
+    ],
+    "is_person": false,
+    "dateIn": "15.12.2025"
+  },
+  {
+    "name": "MTÜ Ingeri Marja («Дом Ингрии»), Эстонская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Дом Ингрии"
+    ],
+    "is_person": false,
+    "dateIn": "15.12.2025"
+  },
+  {
+    "name": "медиакорпорация Deutsche Welle («Немецкая волна»), Федеративная Республика Германия",
+    "type": "undesirable",
+    "aliases": [
+      "Немецкая волна"
+    ],
+    "is_person": false,
+    "dateIn": "15.12.2025"
+  },
+  {
+    "name": "Stichting Justice Initiative (SJI, Фонд «Правовая инициатива»), Нидерланды",
+    "type": "undesirable",
+    "aliases": [
+      "Правовая инициатива"
+    ],
+    "is_person": false,
+    "dateIn": "18.12.2025"
+  },
+  {
+    "name": "Rubikus e.V. («Зарегистрированное объединение «Рубикус») (ФРГ)",
+    "type": "undesirable",
+    "aliases": [
+      "Зарегистрированное объединение «Рубикус"
+    ],
+    "is_person": false,
+    "dateIn": "29.12.2025"
+  },
+  {
+    "name": "«Русскоязычные демократки и демократы» (Russischsprachige Demokratinnen und Demokraten e.V.), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Русскоязычные демократки и демократы"
+    ],
+    "is_person": false,
+    "dateIn": "29.12.2025"
+  },
+  {
+    "name": "MB Action4life LT («Действие ради жизни»), Литовская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Действие ради жизни"
+    ],
+    "is_person": false,
+    "dateIn": "29.12.2025"
+  },
+  {
+    "name": "Nordic Ukraine Forum (NUF, объединение «Северный Украинский Форум»), Королевство Швеция",
+    "type": "undesirable",
+    "aliases": [
+      "Северный Украинский Форум"
+    ],
+    "is_person": false,
+    "dateIn": "29.12.2025"
+  },
+  {
+    "name": "LexCollective (США)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "29.12.2025"
+  },
+  {
+    "name": "OAK Foundation LTD, Швейцарская Конфедерация",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "12.01.2026"
+  },
+  {
+    "name": "MTÜ SupportNet, Эстония",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "12.01.2026"
+  },
+  {
+    "name": "Casimir Pulaski Foundation («Фонд им. Казимира Пулаского»), Республика Польша",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд им. Казимира Пулаского"
+    ],
+    "is_person": false,
+    "dateIn": "12.01.2026"
+  },
+  {
+    "name": "Fundacja im. Stefana Batorego («Фонд им. Стефана Батория»), Республика Польша",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд им. Стефана Батория"
+    ],
+    "is_person": false,
+    "dateIn": "12.01.2026"
+  },
+  {
+    "name": "Trial International («Международная ассоциация по борьбе  с безнаказанностью ТРИАЛ»), Швейцария",
+    "type": "undesirable",
+    "aliases": [
+      "Международная ассоциация по борьбе  с безнаказанностью ТРИАЛ"
+    ],
+    "is_person": false,
+    "dateIn": "12.01.2026"
+  },
+  {
+    "name": "Institute for Global Reconstitution (IGRec, «Институт глобального восстановления»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Институт глобального восстановления"
+    ],
+    "is_person": false,
+    "dateIn": "12.01.2026"
+  },
+  {
+    "name": "Fundacją Samogłoska (Фонд «Самоглоска»), Республика Польша",
+    "type": "undesirable",
+    "aliases": [
+      "Самоглоска"
+    ],
+    "is_person": false,
+    "dateIn": "12.01.2026"
+  },
+  {
+    "name": "Fundacja Wolnosc i Demokracja (Фонд «Свобода  и Демократия»), Республика Польша",
+    "type": "undesirable",
+    "aliases": [
+      "Свобода  и Демократия"
+    ],
+    "is_person": false,
+    "dateIn": "12.01.2026"
+  },
+  {
+    "name": "The International Lesbian, Gay, Bisexual, Trans and Intersex Association (ILGA World, «Международная ассоциация лесбиянок, геев, бисексуалов, трансгендеров и интерсексуалов»), Швейцарская Конфедерация",
+    "type": "undesirable",
+    "aliases": [
+      "Международная ассоциация лесбиянок, геев, бисексуалов, трансгендеров и интерсексуалов"
+    ],
+    "is_person": false,
+    "dateIn": "19.01.2026"
+  },
+  {
+    "name": "Stichting B4Ukraine Foundation (B4Ukraine), Королевство Нидерландов",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "19.01.2026"
+  },
+  {
+    "name": "MTÜ «SAB UA» (MTÜ «Support Ukrainian Army»), Эстонская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "SAB UA",
+      "Support Ukrainian Army"
+    ],
+    "is_person": false,
+    "dateIn": "19.01.2026"
+  },
+  {
+    "name": "The George Washington university («Университет Джорджа Вашингтона»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Университет Джорджа Вашингтона"
+    ],
+    "is_person": false,
+    "dateIn": "19.01.2026"
+  },
+  {
+    "name": "The Lemkin Institute for Genocide Prevention, Inc («Институт Лемкина для предотвращения геноцида»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Институт Лемкина для предотвращения геноцида"
+    ],
+    "is_person": false,
+    "dateIn": "19.01.2026"
+  },
+  {
+    "name": "RUHelp («РУХелп», Великое Герцогство Люксембург)",
+    "type": "undesirable",
+    "aliases": [
+      "РУХелп"
+    ],
+    "is_person": false,
+    "dateIn": "19.01.2026"
+  },
+  {
+    "name": "Artec 3D (Artec Europe S.A.R.L., «Артек 3Д», ООО «Артек Европа», Великое Герцогство Люксембург)",
+    "type": "undesirable",
+    "aliases": [
+      "Артек 3Д",
+      "Артек Европа"
+    ],
+    "is_person": false,
+    "dateIn": "19.01.2026"
+  },
+  {
+    "name": "Centre for Peacebuilding and Community Development (Peacebuilding UK, «Миростроительство в Великобритании», «Центр миротворчества  и развития общин»), Соединенное Королевство Великобритании  и Северной Ирландии",
+    "type": "undesirable",
+    "aliases": [
+      "Миростроительство в Великобритании",
+      "Центр миротворчества  и развития общин"
+    ],
+    "is_person": false,
+    "dateIn": "19.01.2026"
+  },
+  {
+    "name": "Human Rights First («Права человека прежде всего»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Права человека прежде всего"
+    ],
+    "is_person": false,
+    "dateIn": "19.01.2026"
+  },
+  {
+    "name": "International Alliance of Libertarian Parties («Международный альянс либертарианских партий»), Швейцарская Конфедерация",
+    "type": "undesirable",
+    "aliases": [
+      "Международный альянс либертарианских партий"
+    ],
+    "is_person": false,
+    "dateIn": "26.01.2026"
+  },
+  {
+    "name": "Kafkas Vakfi (Kafkas Kültür-Eğitimve Sosyal Yardimvakfi, «Фонд Кавказа», «Кавказский фонд»), Турецкая Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Кавказа",
+      "Кавказский фонд"
+    ],
+    "is_person": false,
+    "dateIn": "26.01.2026"
+  },
+  {
+    "name": "«Парламентский центр» (Parliamentary Center), Канада",
+    "type": "undesirable",
+    "aliases": [
+      "Парламентский центр"
+    ],
+    "is_person": false,
+    "dateIn": "26.01.2026"
+  },
+  {
+    "name": "«Юридическая фирма Vigo», Франция",
+    "type": "undesirable",
+    "aliases": [
+      "Юридическая фирма Vigo"
+    ],
+    "is_person": false,
+    "dateIn": "26.01.2026"
+  },
+  {
+    "name": "Canadian Fund for Local Initiatives («Канадский фонд местных инициатив» или «Канадский фонд локальных инициатив»), Канада",
+    "type": "undesirable",
+    "aliases": [
+      "Канадский фонд местных инициатив",
+      "Канадский фонд локальных инициатив"
+    ],
+    "is_person": false,
+    "dateIn": "26.01.2026"
+  },
+  {
+    "name": "Иностранная криптовалютная биржа WhiteBit (Литва)",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "30.01.2026"
+  },
+  {
+    "name": "Финтех-группа W Group",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "30.01.2026"
+  },
+  {
+    "name": "Регiональний центр прав людини («Региональный центр прав человека»), Украина",
+    "type": "undesirable",
+    "aliases": [
+      "Региональный центр прав человека"
+    ],
+    "is_person": false,
+    "dateIn": "30.01.2026"
+  },
+  {
+    "name": "International Women’s Media Foundation (IWMF, «Международный фонд женщин, работающих в СМИ», «Международный женский медиа-фонд»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Международный фонд женщин, работающих в СМИ",
+      "Международный женский медиа-фонд"
+    ],
+    "is_person": false,
+    "dateIn": "30.01.2026"
+  },
+  {
+    "name": "Asociazione Volontari per il Servizio Internazionale (AVSI, Association  des Volontaires pour le Service International, «Ассоциация волонтеров  для международной службы»), Итальянская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Ассоциация волонтеров  для международной службы"
+    ],
+    "is_person": false,
+    "dateIn": "04.02.2026"
+  },
+  {
+    "name": "Ukrainian Legal Advisory Group («Украинская правовая консультативная группа», «Украинская юридическая консультативная группа»), Украина",
+    "type": "undesirable",
+    "aliases": [
+      "Украинская правовая консультативная группа",
+      "Украинская юридическая консультативная группа"
+    ],
+    "is_person": false,
+    "dateIn": "04.02.2026"
+  },
+  {
+    "name": "Crude Accountability Incorporated («Ответственность за сырую нефть»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Ответственность за сырую нефть"
+    ],
+    "is_person": false,
+    "dateIn": "04.02.2026"
+  },
+  {
+    "name": "Deutscher Akademischer Austauschdienst e.V. (DAAD, «Германская служба академических обменов»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Германская служба академических обменов"
+    ],
+    "is_person": false,
+    "dateIn": "09.02.2026"
+  },
+  {
+    "name": "Bundesverband Russischsprachiger Eltern e.V. («Федеральный союз русскоязычных родителей»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Федеральный союз русскоязычных родителей"
+    ],
+    "is_person": false,
+    "dateIn": "09.02.2026"
+  },
+  {
+    "name": "«RISE Moldova» (Asociaţia Obştească «Associaţia Reporterilor de Investigaţie ši Securitate Editorială din Moldova; «Ассоциация  репортеров-расследователей и редакционной безопасности»), Республика Молдова",
+    "type": "undesirable",
+    "aliases": [
+      "RISE Moldova",
+      "Ассоциация  репортеров-расследователей и редакционной безопасности",
+      "Associaţia Reporterilor de Investigaţie ši Securitate Editorială din Moldova; «Ассоциация  репортеров-расследователей и редакционной безопасности"
+    ],
+    "is_person": false,
+    "dateIn": "09.02.2026"
+  },
+  {
+    "name": "«Хроники.медиа», Литовская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Хроники.медиа"
+    ],
+    "is_person": false,
+    "dateIn": "09.02.2026"
+  },
+  {
+    "name": "The Henry Jackson Society (HJS, «Общество Генри Джексона»), Соединенное Королевство Великобритании и Северной Ирландии",
+    "type": "undesirable",
+    "aliases": [
+      "Общество Генри Джексона"
+    ],
+    "is_person": false,
+    "dateIn": "16.02.2026"
+  },
+  {
+    "name": "Japan International Cooperation Agency (ЛСА, Японское агентство  по международному сотрудничеству), Япония",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "16.02.2026"
+  },
+  {
+    "name": "Zukunft Memorial e.v. («Будущее. Мемориал»), Германия",
+    "type": "undesirable",
+    "aliases": [
+      "Будущее. Мемориал"
+    ],
+    "is_person": false,
+    "dateIn": "16.02.2026"
+  },
+  {
+    "name": "Arctida («Арктида»), Грузия",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "16.02.2026"
+  },
+  {
+    "name": "Civic Initiative for Democratic and Euro-Atlantic Choice («Гражданская инициатива за демократический и евроатлантический выбор», Civic Idea, «Гражданская идея»), Грузия",
+    "type": "undesirable",
+    "aliases": [
+      "Гражданская инициатива за демократический и евроатлантический выбор",
+      "Гражданская идея"
+    ],
+    "is_person": false,
+    "dateIn": "16.02.2026"
+  },
+  {
+    "name": "International Memorial Association (Международная Ассоциация «Мемориал»), Швейцарская Конфедерация",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "16.02.2026"
+  },
+  {
+    "name": "Center for Independent Social Research e.V. Berlin («Центр независимых социальных исследований»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Центр независимых социальных исследований"
+    ],
+    "is_person": false,
+    "dateIn": "26.02.2026"
+  },
+  {
+    "name": "European prison litigation network, Réseau européen  de recherche et ďaction en contentieux pénitentiaire («Европейская сеть  по судебной защите прав заключенных», «Европейская сеть исследований и судебных разбирательств в системе пенитенциарных учреждений», «Европейская сеть судебных разбирательств в тюрьмах»), Французская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Европейская сеть  по судебной защите прав заключенных",
+      "Европейская сеть исследований и судебных разбирательств в системе пенитенциарных учреждений",
+      "Европейская сеть судебных разбирательств в тюрьмах"
+    ],
+    "is_person": false,
+    "dateIn": "26.02.2026"
+  },
+  {
+    "name": "Russian-American Science Association (Russian-speaking Academic Science Association, RASA, RASA-USA,  RASA-America, «Российско-Американская ассоциация ученых», «Российско-Американская научная ассоциация»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Российско-Американская ассоциация ученых",
+      "Российско-Американская научная ассоциация"
+    ],
+    "is_person": false,
+    "dateIn": "02.03.2026"
+  },
+  {
+    "name": "University of California, Berkeley (UC Berkeley, «Калифорнийский университет в Беркли»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Калифорнийский университет в Беркли"
+    ],
+    "is_person": false,
+    "dateIn": "02.03.2026"
+  },
+  {
+    "name": "BARENTSSECRETARIATET IKS (The Norwegian Barents Secretariat, «Норвежский Баренцев Секретариат»), Норвегия",
+    "type": "undesirable",
+    "aliases": [
+      "Норвежский Баренцев Секретариат"
+    ],
+    "is_person": false,
+    "dateIn": "06.03.2026"
+  },
+  {
+    "name": "The Fletcher School of Law and Diplomacy (Школа права и дипломатии имени Флетчера), США",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "26.03.2026"
+  },
+  {
+    "name": "Tufts University (Университет Тафтса), США",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "26.03.2026"
+  },
+  {
+    "name": "International Commission of Jurists  (ICJ, «Международная комиссия юристов»), Швейцарская Конфедерация",
+    "type": "undesirable",
+    "aliases": [
+      "Международная комиссия юристов"
+    ],
+    "is_person": false,
+    "dateIn": "01.04.2026"
+  },
+  {
+    "name": "The Center for Russian, East European and Eurasian Studies (CREEES, «Центр  по российским, восточноевропейским и евразийским исследованиям»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Центр  по российским, восточноевропейским и евразийским исследованиям"
+    ],
+    "is_person": false,
+    "dateIn": "07.04.2026"
+  },
+  {
+    "name": "Leland Stanford Junior University (Stanford University, «Университет им. Леланда Стэнфорда-младшего», «Стэнфордский университет»), США",
+    "type": "undesirable",
+    "aliases": [
+      "Университет им. Леланда Стэнфорда-младшего",
+      "Стэнфордский университет"
+    ],
+    "is_person": false,
+    "dateIn": "07.04.2026"
+  },
+  {
+    "name": "Crisis Simulation for Peace e.V. («Кризисное моделирование для мира»), ФРГ",
+    "type": "undesirable",
+    "aliases": [
+      "Кризисное моделирование для мира"
+    ],
+    "is_person": false,
+    "dateIn": "07.04.2026"
+  },
+  {
+    "name": "Eurasianet, США",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "14.04.2026"
+  },
+  {
+    "name": "Verein Russland der Zukunft — Schweiz  (VRZS, «Сообщество «Россия Будущего — Швейцария»), Швейцарская Конфедерация",
+    "type": "undesirable",
+    "aliases": [
+      "Россия Будущего — Швейцария"
+    ],
+    "is_person": false,
+    "dateIn": "14.04.2026"
+  },
+  {
+    "name": "Stichting Next Level Initiatives (Next Level Initiatives Foundation, «Фонд «Инициативы следующего уровня»), Королевство Нидерландов",
+    "type": "undesirable",
+    "aliases": [
+      "Инициативы следующего уровня"
+    ],
+    "is_person": false,
+    "dateIn": "14.04.2026"
+  },
+  {
+    "name": "«Meдiйна iнiцiатива за права людини» (MIПЛ, Media initiative for human rights, «Медийная инициатива за права человека»), Украина",
+    "type": "undesirable",
+    "aliases": [
+      "Meдiйна iнiцiатива за права людини",
+      "Медийная инициатива за права человека"
+    ],
+    "is_person": false,
+    "dateIn": "27.04.2026"
+  },
+  {
+    "name": "European Youth Forum (EYF, «Европейский молодежный форум»), Королевство Бельгия",
+    "type": "undesirable",
+    "aliases": [
+      "Европейский молодежный форум"
+    ],
+    "is_person": false,
+    "dateIn": "27.04.2026"
+  },
+  {
+    "name": "World Organisation Against Torture (Organisation Mondiale Contre la Torture, ОМСТ, «Всемирная организация против пыток»), Швейцарская Конфедерация",
+    "type": "undesirable",
+    "aliases": [
+      "Всемирная организация против пыток"
+    ],
+    "is_person": false,
+    "dateIn": "05.05.2026"
+  },
+  {
+    "name": "Association Internationale d’Avocats Russes (International Association of Russian Advocates, «Международная ассоциация российских адвокатов»), Французская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Международная ассоциация российских адвокатов"
+    ],
+    "is_person": false,
+    "dateIn": "12.05.2026"
+  },
+  {
+    "name": "Committee to Protect Journalists  (CPJ, «Комитет защиты журналистов»), Соединенные Штаты Америки",
+    "type": "undesirable",
+    "aliases": [
+      "Комитет защиты журналистов"
+    ],
+    "is_person": false,
+    "dateIn": "12.05.2026"
+  },
+  {
+    "name": "Mission Eurasia Inc. (Mission Eurasia, «Миссия Евразия»), Соединенные Штаты Америки",
+    "type": "undesirable",
+    "aliases": [
+      "Миссия Евразия"
+    ],
+    "is_person": false,
+    "dateIn": "13.05.2026"
+  },
+  {
+    "name": "Landsmannschaft Ostpreuben e.V. (Landsmannschaft Ostpreussen e.V., «Землячество Восточной Пруссии»), Федеративная Республика Германия",
+    "type": "undesirable",
+    "aliases": [
+      "Землячество Восточной Пруссии"
+    ],
+    "is_person": false,
+    "dateIn": "21.05.2026"
+  },
+  {
+    "name": "The Romulus T. Weatherman Foundation (The R.T. Weatherman Foundation, Weatherman Foundation,  «Фонд Р.Т. Уэзермана»), Соединенные Штаты Америки",
+    "type": "undesirable",
+    "aliases": [
+      "Фонд Р.Т. Уэзермана"
+    ],
+    "is_person": false,
+    "dateIn": "28.05.2026"
+  },
+  {
+    "name": "Ukrainian Research Institute  at Harvard University (HURI, «Украинский научно-исследовательский институт при Гарвардском университете», «Институт украинских исследований при Гарвардском университете»)",
+    "type": "undesirable",
+    "aliases": [
+      "Украинский научно-исследовательский институт при Гарвардском университете",
+      "Институт украинских исследований при Гарвардском университете"
+    ],
+    "is_person": false,
+    "dateIn": "19.06.2026"
+  },
+  {
+    "name": "Davis Center for Russian  and Eurasian Studies (Davis Center, «Центр Дэвисов по изучению России  и Евразии», «Центр российских и евразийских исследований имени Дэвисов», «Центр Дэвисов»)",
+    "type": "undesirable",
+    "aliases": [
+      "Центр Дэвисов по изучению России  и Евразии",
+      "Центр российских и евразийских исследований имени Дэвисов",
+      "Центр Дэвисов"
+    ],
+    "is_person": false,
+    "dateIn": "19.06.2026"
+  },
+  {
+    "name": "Harvard Kennedy School (HKS, John F. Kennedy School of Government, «Гарвардская школа Кеннеди», «Школа управления имени Джона Ф. Кеннеди»)",
+    "type": "undesirable",
+    "aliases": [
+      "Гарвардская школа Кеннеди",
+      "Школа управления имени Джона Ф. Кеннеди"
+    ],
+    "is_person": false,
+    "dateIn": "19.06.2026"
+  },
+  {
+    "name": "Center for Independent Social Research, Inc. (CISR, «Центр независимых социальных исследований»), Соединенные Штаты Америки",
+    "type": "undesirable",
+    "aliases": [
+      "Центр независимых социальных исследований"
+    ],
+    "is_person": false,
+    "dateIn": "19.06.2026"
+  },
+  {
+    "name": "Newsader Foundation, Литовская Республика",
+    "type": "undesirable",
+    "aliases": [],
+    "is_person": false,
+    "dateIn": "30.06.2026"
+  },
+  {
+    "name": "Baltic Centre for Media Excellence (BCME, «Балтийский центр развития средств массовой информации», «Балтийский центр развития СМИ»), Латвийская Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Балтийский центр развития средств массовой информации",
+      "Балтийский центр развития СМИ"
+    ],
+    "is_person": false,
+    "dateIn": "03.07.2026"
+  },
+  {
+    "name": "Stitching Global Rights Compliance Foundation (Global Rights Compliance, GRC, «Всемирный фонд соблюдения прав»), Королевство Нидерландов",
+    "type": "undesirable",
+    "aliases": [
+      "Всемирный фонд соблюдения прав"
+    ],
+    "is_person": false,
+    "dateIn": "03.07.2026"
+  },
+  {
+    "name": "Ҫeҫen Kafkas Muhacirlerı Ardımlaşma ve Dayanışma Derneği (Kafkas derneği, Kafkasder, «Ассоциация взаимопомощи и солидарности чеченских кавказских мухаджиров», «Кавказдер», «Кавказская ассоциация «Кавказдер»), Турецкая Республика",
+    "type": "undesirable",
+    "aliases": [
+      "Ассоциация взаимопомощи и солидарности чеченских кавказских мухаджиров"
+    ],
+    "is_person": false,
+    "dateIn": "03.07.2026"
+  },
+  {
+    "name": "Helpdesk Media gUG (haftungsbeschränkt) («Некоммерческое предпринимательское общество с ограниченной ответственностью «Медиа-служба поддержки», «Медиа-служба поддержки», МСП), Федеративная Республика Германия",
+    "type": "undesirable",
+    "aliases": [
+      "Медиа-служба поддержки"
+    ],
+    "is_person": false,
+    "dateIn": "03.07.2026"
+  },
+  {
+    "name": "American Coalition for Ukraine (ACU, «Американская коалиция за Украину», «Американская коалиция в поддержку Украины»), Соединенные Штаты Америки",
+    "type": "undesirable",
+    "aliases": [
+      "Американская коалиция за Украину",
+      "Американская коалиция в поддержку Украины"
+    ],
+    "is_person": false,
+    "dateIn": "03.07.2026"
+  }
+]

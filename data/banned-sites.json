@@ -1,0 +1,397 @@
+[
+    {
+        "domain": "facebook.com",
+        "label": "Meta Platforms (экстремистская организация)",
+        "type": "extremist"
+    },
+    {
+        "domain": "instagram.com",
+        "label": "Meta Platforms (экстремистская организация)",
+        "type": "extremist"
+    },
+    {
+        "domain": "fb.com",
+        "label": "Meta Platforms (экстремистская организация)",
+        "type": "extremist"
+    },
+    {
+        "domain": "fbcdn.net",
+        "label": "Meta Platforms (экстремистская организация)",
+        "type": "extremist"
+    },
+    {
+        "domain": "fbsbx.com",
+        "label": "Meta Platforms (экстремистская организация)",
+        "type": "extremist"
+    },
+    {
+        "domain": "threads.net",
+        "label": "Meta Platforms (экстремистская организация)",
+        "type": "extremist"
+    },
+    {
+        "domain": "cdninstagram.com",
+        "label": "Meta Platforms (экстремистская организация)",
+        "type": "extremist"
+    },
+    {
+        "domain": "jw.org",
+        "label": "Свидетели Иеговы (экстремистская организация)",
+        "type": "extremist"
+    },
+    {
+        "domain": "jw-russia.org",
+        "label": "Свидетели Иеговы (экстремистская организация)",
+        "type": "extremist"
+    },
+    {
+        "domain": "ned.org",
+        "label": "Национальный фонд в поддержку демократии, NED (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "opensocietyfoundations.org",
+        "label": "Фонд Открытое общество / Open Society Foundations (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "ndi.org",
+        "label": "Национальный демократический институт международных отношений (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "iri.org",
+        "label": "Международный Республиканский Институт, IRI (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "gmfus.org",
+        "label": "Германский фонд Маршалла, GMF (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "atlanticcouncil.org",
+        "label": "Атлантический совет (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "freedomhouse.org",
+        "label": "Freedom House (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "transparency.org",
+        "label": "Transparency International (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "chathamhouse.org",
+        "label": "Королевский Институт Международных Отношений, Chatham House (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "bellingcat.com",
+        "label": "Bellingcat (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "theins.ru",
+        "label": "The Insider (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "theins.info",
+        "label": "The Insider (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "boell.de",
+        "label": "Фонд имени Генриха Бёлля (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "meduza.io",
+        "label": "SIA Medusa Project / Медуза (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "istories.media",
+        "label": "IStories fonds / Важные истории (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "occrp.org",
+        "label": "OCCRP, Organized Crime and Corruption Reporting Project (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "tvrain.tv",
+        "label": "SIA TV Rain / ТВ Дождь (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "tvrain.ru",
+        "label": "SIA TV Rain / ТВ Дождь (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "novayagazeta.eu",
+        "label": "BDR Novaja Gazeta-Europe / Новая газета Европа (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "themoscowtimes.com",
+        "label": "The Moscow Times (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "greenpeace.org",
+        "label": "Greenpeace International (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "wwf.org",
+        "label": "World Wide Fund for Nature / WWF (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "worldwildlife.org",
+        "label": "World Wide Fund for Nature / WWF (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "wilsoncenter.org",
+        "label": "Международный научный центр им. Вудро Вильсона (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "carnegieendowment.org",
+        "label": "Фонд Карнеги за Международный Мир (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "ceip.org",
+        "label": "Фонд Карнеги за Международный Мир (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "rferl.org",
+        "label": "Радио Свободная Европа / Радио Свобода, RFE/RL (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "svoboda.org",
+        "label": "Радио Свободная Европа / Радио Свобода, RFE/RL (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "hrw.org",
+        "label": "Human Rights Watch (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "hudson.org",
+        "label": "Гудзоновский институт, Hudson Institute (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "rand.org",
+        "label": "RAND Corporation (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "csis.org",
+        "label": "Центр стратегических и международных исследований, CSIS (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "cepa.org",
+        "label": "Центр анализа европейской политики, CEPA (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "dw.com",
+        "label": "Deutsche Welle (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "gijn.org",
+        "label": "Глобальная сеть журналистов-расследователей, GIJN (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "article19.org",
+        "label": "Article 19 (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "kas.de",
+        "label": "Фонд имени Конрада Аденауэра (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "fes.de",
+        "label": "Фонд имени Фридриха Эберта (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "freiheit.org",
+        "label": "Фонд имени Фридриха Науманна за свободу (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "rosalux.de",
+        "label": "Rosa-Luxemburg-Stiftung (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "correctiv.org",
+        "label": "CORRECTIV (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "clovekvtisni.cz",
+        "label": "Человек в беде / People in Need (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "peopleinneed.net",
+        "label": "Человек в беде / People in Need (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "citeam.org",
+        "label": "Conflict Intelligence Team, CIT (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "fbk.info",
+        "label": "Фонд борьбы с коррупцией (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "acf.international",
+        "label": "Anti-Corruption Foundation International / ФБК (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "ef.com",
+        "label": "EF Education First (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "ef.edu",
+        "label": "EF Education First (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "bard.edu",
+        "label": "Бард колледж / Bard College (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "recordedfuture.com",
+        "label": "Recorded Future (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "dekoder.org",
+        "label": "Dekoder (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "epde.org",
+        "label": "Европейская Платформа за Демократические Выборы, EPDE (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "bellona.org",
+        "label": "Экологический фонд Беллона (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "mdif.org",
+        "label": "Media Development Investment Fund (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "freerussia.org",
+        "label": "Фонд Свободная Россия / Free Russia Foundation (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "4freerussia.org",
+        "label": "Фонд Свободная Россия / Free Russia Foundation (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "openrussia.org",
+        "label": "Открытая Россия / Open Russia (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "imrussia.org",
+        "label": "Институт современной России / Institute of Modern Russia (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "jamestown.org",
+        "label": "Джеймстаунский фонд / The Jamestown Foundation (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "ridl.io",
+        "label": "Центр Риддл / Riddle (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "globalgiving.org",
+        "label": "GlobalGiving Foundation (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "democracyendowment.eu",
+        "label": "Европейский фонд за демократию / European Endowment for Democracy (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "sakharov.org",
+        "label": "Фонд Андрея Сахарова / The Andrei Sakharov Foundation (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "ceu.edu",
+        "label": "Центрально-Европейский университет / Central European University (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "americancouncils.org",
+        "label": "American Councils for International Education (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "culturalvistas.org",
+        "label": "Cultural Vistas (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "iie.org",
+        "label": "Institute of International Education (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "khodorkovskyfoundation.org",
+        "label": "Фонд Ходорковского / Khodorkovsky Foundation (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "nemtsovfund.org",
+        "label": "Фонд Бориса Немцова за Свободу (нежелательная организация)",
+        "type": "undesirable"
+    },
+    {
+        "domain": "thesatanictemple.com",
+        "label": "Сатанинский храм / The Satanic Temple (нежелательная организация)",
+        "type": "undesirable"
+    }
+]

@@ -1,0 +1,154 @@
+.lem-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.lem-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.lem-card h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.lem-status-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.lem-status-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.lem-status-list li:last-child {
+    border-bottom: none;
+}
+
+.lem-label {
+    color: #646970;
+    min-width: 120px;
+    display: inline-block;
+}
+
+.lem-error {
+    color: #d63638;
+}
+
+.lem-inline-status {
+    margin-left: 10px;
+    color: #646970;
+    font-style: italic;
+}
+
+.lem-filter-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 15px 0;
+}
+
+.lem-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.lem-badge-inoagent {
+    background: #fef3cd;
+    color: #856404;
+}
+
+.lem-badge-extremist {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.lem-badge-terrorist {
+    background: #f5c6cb;
+    color: #491217;
+}
+
+.lem-badge-undesirable {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+/* Modal */
+.lem-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lem-modal-content {
+    background: #fff;
+    border-radius: 6px;
+    padding: 24px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.lem-modal-content h2 {
+    margin-top: 0;
+}
+
+/* Progress bar */
+.lem-progress-bar {
+    width: 100%;
+    height: 24px;
+    background: #f0f0f1;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.lem-progress-fill {
+    height: 100%;
+    background: #2271b1;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+/* Danger button */
+.button-danger {
+    background: #d63638 !important;
+    border-color: #d63638 !important;
+    color: #fff !important;
+}
+
+.button-danger:hover,
+.button-danger:focus {
+    background: #b32d2e !important;
+    border-color: #b32d2e !important;
+    color: #fff !important;
+}
+
+/* Banned links */
+.lem-banned-link-url {
+    word-break: break-all;
+    max-width: 350px;
+    display: inline-block;
+    font-size: 12px;
+    color: #646970;
+}
