@@ -16,6 +16,9 @@ class LEM_Scanner {
      * Core matching
      * ------------------------------------------------------------------ */
 
+    /** Готовые регулярные выражения сущностей в пределах запроса. */
+    private static $pattern_cache = [];
+
     public static function word_match($text, $term) {
         $quoted  = preg_quote($term, '/');
         $pattern = '/(?<!\pL)' . $quoted . '(?!\pL)/ui';
@@ -23,6 +26,136 @@ class LEM_Scanner {
             return mb_strlen(substr($text, 0, $m[0][1]));
         }
         return false;
+    }
+
+    /** Альтернатива из словоформ, длинные варианты первыми. */
+    private static function alternation(array $forms) {
+        $forms = array_values(array_unique(array_filter($forms)));
+        usort($forms, function ($a, $b) {
+            return mb_strlen($b) - mb_strlen($a);
+        });
+        return '(?:' . implode('|', array_map(function ($f) {
+            return preg_quote($f, '/');
+        }, $forms)) . ')';
+    }
+
+    /**
+     * Одно регулярное выражение на сущность: точные названия и алиасы, а для
+     * людей ещё и словоформы фамилии и имени в обоих порядках слов.
+     *
+     * Возвращает null, если искать нечего.
+     */
+    public static function build_pattern($entity, $settings = null, $variant = 'strict') {
+        $body = self::build_pattern_body($entity, $settings, $variant);
+        return $body === null ? null : '/(?<!\pL)(?:' . $body . ')(?!\pL)/ui';
+    }
+
+    /**
+     * Тело выражения без делимитеров и граничных проверок.
+     *
+     * $variant = 'strict' - точные названия, алиасы и пары «Имя Фамилия»;
+     * $variant = 'bare'   - только одиночная фамилия во всех падежах.
+     */
+    public static function build_pattern_body($entity, $settings = null, $variant = 'strict') {
+        if ($settings === null) {
+            $settings = lem()->get_settings();
+        }
+        $key = ($entity['id'] ?? $entity['name'])
+            . '|' . $variant . '|' . (int) !empty($settings['match_word_forms']);
+        if (array_key_exists($key, self::$pattern_cache)) {
+            return self::$pattern_cache[$key];
+        }
+
+        $frags   = [];
+        $is_person = !empty($entity['is_person']) && !empty($settings['match_word_forms']);
+        $parts     = $is_person ? LEM_Morphology::split_name($entity['name']) : null;
+
+        if ($parts && $parts['surname'] !== '') {
+            $gender  = LEM_Morphology::detect_gender($entity['name']);
+            $sur_alt = self::alternation(
+                LEM_Morphology::surname_forms($parts['surname'], $gender)
+            );
+            $first_alt = $parts['first'] !== ''
+                ? self::alternation(LEM_Morphology::first_name_forms($parts['first'], $gender))
+                : null;
+
+            if ($variant === 'bare') {
+                $bare_ok = LEM_Morphology::surname_is_searchable($parts['surname'])
+                    && !in_array(mb_strtolower($parts['surname']), self::TERM_BLACKLIST, true);
+                $body = $bare_ok ? $sur_alt : null;
+                self::$pattern_cache[$key] = $body;
+                return $body;
+            }
+
+            // Оба порядка слов: «Лев Пономарев» и «Пономарев Лев»
+            if ($first_alt !== null) {
+                $frags[] = $first_alt . '\s+' . $sur_alt;
+                $frags[] = $sur_alt . '\s+' . $first_alt;
+            }
+        }
+
+        if ($variant === 'bare') {
+            self::$pattern_cache[$key] = null;
+            return null;
+        }
+
+        // Точные названия из реестра и алиасы
+        foreach (self::search_terms($entity) as $term) {
+            $frags[] = str_replace('\ ', '\s+', preg_quote($term, '/'));
+        }
+
+        $body = empty($frags) ? null : implode('|', $frags);
+
+        self::$pattern_cache[$key] = $body;
+        return $body;
+    }
+
+    public static function flush_pattern_cache() {
+        self::$pattern_cache = [];
+    }
+
+    /**
+     * Ищет сущность в тексте. Возвращает найденную словоформу и позицию.
+     *
+     * Одиночная фамилия ищется по правилу из настройки surname_mode:
+     *   off       - не искать, нужно полное «Имя Фамилия»;
+     *   confirmed - искать, только если полное имя встречается в тексте
+     *               (обычная журналистская подача: первое упоминание полное,
+     *               дальше одна фамилия). Отсекает однофамильцев;
+     *   always    - искать всегда.
+     *
+     * @return array{matched_as:string, position:int}|null
+     */
+    public static function match_entity($text, $entity, $settings = null, $allow_bare = null) {
+        if ($settings === null) {
+            $settings = lem()->get_settings();
+        }
+
+        $best = self::first_hit($text, self::build_pattern($entity, $settings, 'strict'));
+
+        if ($allow_bare === null) {
+            $mode       = $settings['surname_mode'] ?? 'confirmed';
+            $allow_bare = ($mode === 'always') || ($mode === 'confirmed' && $best !== null);
+        }
+
+        if ($allow_bare) {
+            $bare = self::first_hit($text, self::build_pattern($entity, $settings, 'bare'));
+            if ($bare !== null && ($best === null || $bare['position'] < $best['position'])) {
+                $best = $bare;
+            }
+        }
+
+        return $best;
+    }
+
+    private static function first_hit($text, $pattern) {
+        if ($pattern === null || !preg_match($pattern, $text, $m, PREG_OFFSET_CAPTURE)) {
+            return null;
+        }
+        return [
+            'matched_as' => $m[0][0],
+            'position'   => mb_strlen(substr($text, 0, $m[0][1])),
+        ];
     }
 
     /**
@@ -75,35 +208,165 @@ class LEM_Scanner {
         return array_unique($cleaned);
     }
 
+    /* ------------------------------------------------------------------
+     * Контекст: цитаты, ссылки, прямая речь, встроенные посты
+     * ------------------------------------------------------------------ */
+
+    /**
+     * Блочные элементы, внутри которых упоминание считается «в контексте»
+     * целиком, вместе с подводкой и подписью в соседних блоках.
+     */
+    private static function context_element_patterns($triggers) {
+        $patterns = [];
+        if (!empty($triggers['blockquote'])) {
+            $patterns[] = '<blockquote\b[^>]*>.*?<\/blockquote>';
+            $patterns[] = '<q\b[^>]*>.*?<\/q>';
+        }
+        if (!empty($triggers['embed'])) {
+            $patterns[] = '<figure\b[^>]*class=["\'][^"\']*wp-block-embed[^"\']*["\'][^>]*>.*?<\/figure>';
+            $patterns[] = '<!--\s*wp:(?:core-)?embed\b.*?<!--\s*\/wp:(?:core-)?embed\s*-->';
+            $patterns[] = '<iframe\b[^>]*>.*?<\/iframe>';
+        }
+        return $patterns;
+    }
+
+    /**
+     * Делит HTML на блоки по границам абзацев, пунктов списка и заголовков.
+     */
+    private static function split_blocks($html) {
+        $parts = preg_split(
+            '/<\/(?:p|li|div|h[1-6]|td|th|section|article|figcaption|cite|dd|dt)>|<br\s*\/?>/i',
+            $html
+        );
+        $out = [];
+        foreach ($parts as $p) {
+            $p = trim($p);
+            if ($p !== '') {
+                $out[] = $p;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Собирает текст «контекстных» участков статьи: содержимое цитат и
+     * встроенных постов вместе с соседними блоками (там обычно стоит подводка
+     * «как заявил Иванов» и подпись), абзацы с гиперссылками, абзацы с прямой
+     * речью в кавычках, а также адреса самих ссылок.
+     *
+     * Упоминание считается сделанным в контексте, если имя нашлось в этом тексте.
+     */
+    public static function extract_context_text($html, $triggers) {
+        $blocks    = [];
+        $elem_pats = self::context_element_patterns($triggers);
+
+        if (!empty($elem_pats)) {
+            $split = preg_split(
+                '/(' . implode('|', $elem_pats) . ')/is',
+                $html, -1, PREG_SPLIT_DELIM_CAPTURE
+            );
+            foreach ($split as $i => $part) {
+                if ($i % 2 === 1) {
+                    $blocks[] = ['html' => $part, 'anchor' => true];
+                    continue;
+                }
+                foreach (self::split_blocks($part) as $b) {
+                    $blocks[] = ['html' => $b, 'anchor' => false];
+                }
+            }
+        } else {
+            foreach (self::split_blocks($html) as $b) {
+                $blocks[] = ['html' => $b, 'anchor' => false];
+            }
+        }
+
+        $qualify = [];
+        foreach ($blocks as $i => $b) {
+            $ok = $b['anchor'];
+            if (!$ok && !empty($triggers['link']) && preg_match('/<a\s[^>]*href=/i', $b['html'])) {
+                $ok = true;
+            }
+            // Прямая речь: фрагмент в кавычках достаточной длины
+            if (!$ok && !empty($triggers['quotes'])
+                && preg_match('/[«"]\s*[^«»"]{15,}\s*[»"]/u', strip_tags($b['html']))) {
+                $ok = true;
+            }
+            $qualify[$i] = $ok;
+        }
+
+        // Соседи цитат и врезок: подводка перед и подпись после
+        foreach ($blocks as $i => $b) {
+            if (!empty($b['anchor'])) {
+                if (isset($blocks[$i - 1])) {
+                    $qualify[$i - 1] = true;
+                }
+                if (isset($blocks[$i + 1])) {
+                    $qualify[$i + 1] = true;
+                }
+            }
+        }
+
+        $chunks = [];
+        foreach ($blocks as $i => $b) {
+            if (!empty($qualify[$i])) {
+                $chunks[] = $b['html'];
+            }
+        }
+        $text = strip_tags(implode("\n\n", $chunks));
+
+        // Адреса ссылок: название может стоять в самом URL (bellingcat.com)
+        if (!empty($triggers['link'])
+            && preg_match_all('/<a\s[^>]*href=["\']([^"\']+)["\']/i', $html, $m)) {
+            $text .= "\n" . implode("\n", $m[1]);
+        }
+
+        return $text;
+    }
+
     public function scan_text($text, $entities = null) {
         if ($entities === null) {
             $entities = lem()->entities->get_all_active();
         }
-        $plain = strip_tags($text);
-        $found = [];
+        $plain    = strip_tags($text);
+        $settings = lem()->get_settings();
+        $context  = null;
+        $found    = [];
+
+        $mode = $settings['surname_mode'] ?? 'confirmed';
 
         foreach ($entities as $entity) {
-            $terms      = self::search_terms($entity);
-            $matched_as = null;
-            $first_pos  = PHP_INT_MAX;
+            // Полное имя ищем по всей статье: этим подтверждается, что
+            // дальнейшие упоминания одной фамилии относятся к тому же человеку
+            $strict     = self::first_hit($plain, self::build_pattern($entity, $settings, 'strict'));
+            $allow_bare = ($mode === 'always') || ($mode === 'confirmed' && $strict !== null);
 
-            foreach ($terms as $term) {
-                $pos = self::word_match($plain, $term);
-                if ($pos !== false && $pos < $first_pos) {
-                    $first_pos  = $pos;
-                    $matched_as = $term;
+            $hit = self::match_entity($plain, $entity, $settings, $allow_bare);
+            if ($hit === null) {
+                continue;
+            }
+
+            $match = [
+                'id'         => (int) $entity['id'],
+                'name'       => $entity['name'],
+                'type'       => $entity['type'],
+                'matched_as' => $hit['matched_as'],
+                'position'   => $hit['position'],
+            ];
+
+            // Признак «упомянут в цитате или ссылке» считаем всегда, независимо
+            // от настройки: тогда её переключение работает без пересканирования.
+            // Право искать одну фамилию берём от всей статьи, а не от вырезки:
+            // подводка «По словам Пономарева:» стоит рядом с цитатой, а полное
+            // имя может быть абзацем выше.
+            if ($entity['type'] === 'inoagent') {
+                if ($context === null) {
+                    $context = self::extract_context_text($text, $settings['context_triggers']);
                 }
+                $match['in_context'] =
+                    self::match_entity($context, $entity, $settings, $allow_bare) !== null;
             }
 
-            if ($matched_as !== null) {
-                $found[] = [
-                    'id'         => (int) $entity['id'],
-                    'name'       => $entity['name'],
-                    'type'       => $entity['type'],
-                    'matched_as' => $matched_as,
-                    'position'   => $first_pos,
-                ];
-            }
+            $found[] = $match;
         }
 
         usort($found, fn($a, $b) => $a['position'] - $b['position']);

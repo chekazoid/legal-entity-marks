@@ -63,13 +63,18 @@ class LEM_Frontend {
             $entities_map[(int) $e['id']] = $e;
         }
 
+        $overrides      = self::get_overrides($post_id);
         $active_matches = [];
         foreach ($meta['entities'] as $match) {
             $eid = (int) $match['id'];
-            if (isset($entities_map[$eid])) {
-                $match['entity'] = $entities_map[$eid];
-                $active_matches[] = $match;
+            if (!isset($entities_map[$eid])) {
+                continue;
             }
+            if (!self::should_mark($match, $settings, $overrides)) {
+                continue;
+            }
+            $match['entity']  = $entities_map[$eid];
+            $active_matches[] = $match;
         }
 
         if (empty($active_matches)) {
@@ -84,22 +89,20 @@ class LEM_Frontend {
             $sym         = $symbols[$idx] ?? str_repeat('*', $idx + 1);
             $entity      = $match['entity'];
 
-            // Try matched_as first, then all aliases/name to find a term in content
-            $try_terms = [$match['matched_as']];
-            $all_terms = LEM_Scanner::search_terms([
-                'name'    => $entity['name'],
-                'aliases' => !empty($entity['aliases']) ? $entity['aliases'] : [],
-            ]);
-            foreach ($all_terms as $t) {
-                if ($t !== $match['matched_as']) {
-                    $try_terms[] = $t;
-                }
+            // Сначала найденная сканером словоформа, затем остальные варианты
+            $try = [];
+            if (!empty($match['matched_as'])) {
+                $try[] = preg_quote($match['matched_as'], '/');
+            }
+            $body = LEM_Scanner::build_pattern_body($entity, $settings);
+            if ($body !== null) {
+                $try[] = '(?:' . $body . ')';
             }
 
             $replaced = false;
-            foreach ($try_terms as $search_term) {
+            foreach ($try as $needle) {
                 if ($replaced) break;
-                $pattern = '/(?<=>)([^<]*?)(?<!\pL)(' . preg_quote($search_term, '/') . ')(?!\pL)/iu';
+                $pattern = '/(?<=>)([^<]*?)(?<!\pL)(' . $needle . ')(?!\pL)/iu';
                 $marked_content = preg_replace_callback($pattern, function ($m) use ($sym, &$replaced) {
                     if ($replaced) {
                         return $m[0];
@@ -125,6 +128,54 @@ class LEM_Frontend {
         return $marked_content . "\n" . $block;
     }
 
+    /* ------------------------------------------------------------------
+     * Правила отбора: категории, контекст, ручные исключения
+     * ------------------------------------------------------------------ */
+
+    /**
+     * Ручные решения редактора по конкретной статье.
+     *
+     * @return array ['excluded' => int[], 'forced' => int[]]
+     */
+    public static function get_overrides($post_id) {
+        $raw = get_post_meta($post_id, LEM_OVERRIDES_META_KEY, true);
+        $ov  = $raw ? json_decode($raw, true) : [];
+        return [
+            'excluded' => array_map('intval', (array) ($ov['excluded'] ?? [])),
+            'forced'   => array_map('intval', (array) ($ov['forced'] ?? [])),
+        ];
+    }
+
+    /**
+     * Решает, маркировать ли найденное упоминание.
+     *
+     * Порядок: отключённая категория → снятое вручную → правило контекста
+     * (для иноагентов), которое редактор может перебить вручную.
+     */
+    public static function should_mark($match, $settings, $overrides) {
+        $type = $match['type'] ?? '';
+        if (!in_array($type, $settings['registries'], true)) {
+            return false;
+        }
+
+        $id = (int) ($match['id'] ?? 0);
+        if (in_array($id, $overrides['excluded'], true)) {
+            return false;
+        }
+
+        if ($type === 'inoagent' && !empty($settings['inoagent_context_only'])) {
+            // У записей, отсканированных до версии 1.5.0, признака нет.
+            // Считаем их маркируемыми, пока статью не пересканируют.
+            if (array_key_exists('in_context', $match)
+                && empty($match['in_context'])
+                && !in_array($id, $overrides['forced'], true)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function print_css() {
         $settings = lem()->get_settings();
         if (!is_singular($settings['post_types'])) {
@@ -145,10 +196,14 @@ class LEM_Frontend {
                     return $name . ', признанный(-ая) в РФ иностранным агентом';
                 }
                 return $name . ', признанная в РФ иностранным агентом';
+            // Без тире: wptexturize превращает « - » в среднее тире,
+            // а такая типографика читается как признак автогенерации.
+            // Название идёт первым: в реестре оно обычно уже содержит
+            // слово «организация», и подстановка перед ним ломает падеж.
             case 'extremist':
-                return $name . ' — организация, деятельность которой признана экстремистской и запрещена на территории РФ';
+                return $name . ', деятельность которой признана экстремистской и запрещена на территории РФ';
             case 'terrorist':
-                return $name . ' — организация, признанная террористической и запрещенная на территории РФ';
+                return $name . ', признанная террористической и запрещённая на территории РФ организация';
             case 'undesirable':
                 return $name . ', признанная нежелательной на территории РФ организация';
             default:

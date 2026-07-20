@@ -211,7 +211,7 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
                 <th><label for="lem-site-domain">Домен</label></th>
                 <td>
                     <input type="text" id="lem-site-domain" class="regular-text" placeholder="example.org" required>
-                    <p class="description">Можно указать URL — домен извлечётся автоматически.</p>
+                    <p class="description">Можно указать URL - домен извлечётся автоматически.</p>
                 </td>
             </tr>
             <tr>

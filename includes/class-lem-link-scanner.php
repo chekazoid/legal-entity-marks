@@ -496,7 +496,7 @@ class LEM_Link_Scanner {
         }
 
         if ($dry_run) {
-            $log('Пробный запуск — изменения не применяются.');
+            $log('Пробный запуск - изменения не применяются.');
             return ['cleaned' => 0, 'would_clean' => $total];
         }
 

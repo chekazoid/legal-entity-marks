@@ -179,7 +179,7 @@ class LEM_Importer {
     /**
      * Импорт запрещённых доменов из встроенного JSON-файла.
      *
-     * @param string|null $file Путь к JSON-файлу. По умолчанию — data/banned-sites.json.
+     * @param string|null $file Путь к JSON-файлу. По умолчанию - data/banned-sites.json.
      * @return array ['added' => int, 'skipped' => int]
      */
     public function import_banned_sites($file = null) {
@@ -593,7 +593,7 @@ class LEM_Importer {
             $name = preg_split('/\s*[-–—]\s*(?:решени|на основании|Верх|Реш)/ui', $text)[0];
             $name = preg_replace('/\s*\(.*$/', '', $name);
             $name = trim($name);
-            // Канцелярские абзацы страницы (тексты решений) — не названия организаций
+            // Канцелярские абзацы страницы (тексты решений) - не названия организаций
             if (preg_match('/^(Решение|Приговор|Определение|Постановление)\b/u', $name)) {
                 continue;
             }

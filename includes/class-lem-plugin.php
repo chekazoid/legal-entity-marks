@@ -13,6 +13,7 @@ class LEM_Plugin {
     public $cache;
     public $cron;
     public $admin;
+    public $metabox;
     public $cli;
     public $banned_sites;
     public $link_scanner;
@@ -34,6 +35,7 @@ class LEM_Plugin {
         $dir = LEM_DIR . 'includes/';
         require_once $dir . 'class-lem-database.php';
         require_once $dir . 'class-lem-entities.php';
+        require_once $dir . 'class-lem-morphology.php';
         require_once $dir . 'class-lem-scanner.php';
         require_once $dir . 'class-lem-frontend.php';
         require_once $dir . 'class-lem-importer.php';
@@ -44,6 +46,7 @@ class LEM_Plugin {
 
         if (is_admin()) {
             require_once LEM_DIR . 'admin/class-lem-admin.php';
+            require_once $dir . 'class-lem-metabox.php';
         }
         if (defined('WP_CLI') && WP_CLI) {
             require_once $dir . 'class-lem-cli.php';
@@ -62,7 +65,8 @@ class LEM_Plugin {
         $this->link_scanner = new LEM_Link_Scanner();
 
         if (is_admin()) {
-            $this->admin = new LEM_Admin();
+            $this->admin   = new LEM_Admin();
+            $this->metabox = new LEM_Metabox();
         }
         if (defined('WP_CLI') && WP_CLI) {
             $this->cli = new LEM_CLI();
@@ -100,19 +104,51 @@ class LEM_Plugin {
         $this->cron->clear_events();
     }
 
+    const REGISTRY_TYPES = ['inoagent', 'extremist', 'terrorist', 'undesirable'];
+
+    const CONTEXT_TRIGGERS = ['blockquote', 'link', 'quotes', 'embed'];
+
+    const SURNAME_MODES = ['off', 'confirmed', 'always'];
+
     public function get_settings() {
         $defaults = [
-            'post_types'           => ['post'],
-            'filter_priority'      => 9999,
-            'accent_color'         => '#f88c00',
-            'disclaimer_bg'        => '#fff9f0',
-            'disclaimer_border'    => '#f88c00',
-            'cron_interval'        => 'weekly',
-            'auto_scan_on_publish' => true,
-            'registries'           => ['inoagent', 'extremist', 'terrorist', 'undesirable'],
+            'post_types'            => ['post'],
+            'filter_priority'       => 9999,
+            'accent_color'          => '#f88c00',
+            'disclaimer_bg'         => '#fff9f0',
+            'disclaimer_border'     => '#f88c00',
+            'cron_interval'         => 'weekly',
+            'auto_scan_on_publish'  => true,
+            'registries'            => self::REGISTRY_TYPES,
+            'inoagent_context_only' => false,
+            'match_word_forms'      => true,
+            'surname_mode'          => 'confirmed',
+            'context_triggers'      => [
+                'blockquote' => true,
+                'link'       => true,
+                'quotes'     => true,
+                'embed'      => true,
+            ],
         ];
-        $saved = get_option('lem_settings', []);
-        return wp_parse_args($saved, $defaults);
+        $saved    = get_option('lem_settings', []);
+        $settings = wp_parse_args($saved, $defaults);
+
+        // Нормализация: настройки могли прийти из старой версии или из БД в чужом виде
+        $settings['registries'] = array_values(array_intersect(
+            self::REGISTRY_TYPES,
+            (array) ($settings['registries'] ?: [])
+        ));
+        $triggers = (array) ($settings['context_triggers'] ?: []);
+        foreach (self::CONTEXT_TRIGGERS as $t) {
+            $triggers[$t] = !empty($triggers[$t]);
+        }
+        $settings['context_triggers'] = $triggers;
+
+        if (!in_array($settings['surname_mode'], self::SURNAME_MODES, true)) {
+            $settings['surname_mode'] = 'confirmed';
+        }
+
+        return $settings;
     }
 
     public function update_settings($settings) {

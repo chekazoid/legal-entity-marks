@@ -36,7 +36,7 @@ class LEM_Cache {
             wp_cache_flush_group('posts');
         }
 
-        // Custom cache solutions (nginx FastCGI и другие — подпишитесь на хук)
+        // Custom cache solutions (nginx FastCGI и другие - подпишитесь на хук)
         do_action('lem_purge_post_cache', $post_id, $url);
     }
 

@@ -133,12 +133,63 @@ class LEM_Admin {
         }
         $settings['auto_scan_on_publish'] = !empty($_POST['lem_auto_scan']);
 
+        // Категории реестров: отсутствие ключа означает «все сняты»
+        $posted_registries = array_map('sanitize_text_field', (array) ($_POST['lem_registries'] ?? []));
+        $settings['registries'] = array_values(array_intersect(
+            LEM_Plugin::REGISTRY_TYPES,
+            $posted_registries
+        ));
+
+        // Морфология: словоформы и правило для одиночной фамилии
+        $old_forms   = $settings['match_word_forms'];
+        $old_surname = $settings['surname_mode'];
+        $settings['match_word_forms'] = !empty($_POST['lem_match_word_forms']);
+        $mode = sanitize_text_field($_POST['lem_surname_mode'] ?? 'confirmed');
+        $settings['surname_mode'] = in_array($mode, LEM_Plugin::SURNAME_MODES, true)
+            ? $mode
+            : 'confirmed';
+        $morphology_changed = ($old_forms !== $settings['match_word_forms'])
+            || ($old_surname !== $settings['surname_mode']);
+
+        // Контекстный режим для иноагентов
+        $settings['inoagent_context_only'] = !empty($_POST['lem_inoagent_context_only']);
+        $posted_triggers = array_map('sanitize_text_field', (array) ($_POST['lem_context_triggers'] ?? []));
+        $old_triggers    = $settings['context_triggers'];
+        $new_triggers    = [];
+        foreach (LEM_Plugin::CONTEXT_TRIGGERS as $trigger) {
+            $new_triggers[$trigger] = in_array($trigger, $posted_triggers, true);
+        }
+        $settings['context_triggers'] = $new_triggers;
+
         lem()->update_settings($settings);
 
         lem()->cron->clear_events();
         lem()->cron->schedule_events();
 
+        // Кеш страниц держит старую разметку дисклеймеров
+        lem()->cache->purge_all_marked();
+
         add_settings_error('lem_settings', 'saved', 'Настройки сохранены.', 'success');
+
+        if ($morphology_changed
+            || ($new_triggers !== $old_triggers && $settings['inoagent_context_only'])) {
+            add_settings_error(
+                'lem_settings',
+                'rescan',
+                'Правила поиска изменились. Запустите пересканирование в разделе «Сканер», '
+                . 'иначе для ранее отсканированных статей останется прежний результат.',
+                'warning'
+            );
+        }
+
+        if (empty($settings['registries'])) {
+            add_settings_error(
+                'lem_settings',
+                'no_registries',
+                'Не выбрана ни одна категория: маркировка не будет выводиться нигде.',
+                'warning'
+            );
+        }
     }
 
     public function ajax_save_entity() {

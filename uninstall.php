@@ -17,6 +17,10 @@ $wpdb->query($wpdb->prepare(
     "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s",
     '_lem_banned_links'
 ));
+$wpdb->query($wpdb->prepare(
+    "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s",
+    '_lem_overrides'
+));
 
 delete_option('lem_db_version');
 delete_option('lem_banned_sites_db_version');
