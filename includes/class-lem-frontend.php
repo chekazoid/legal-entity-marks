@@ -57,7 +57,7 @@ class LEM_Frontend {
             return $content;
         }
 
-        $entities_db  = lem()->entities->get_all_active();
+        $entities_db  = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
         $entities_map = [];
         foreach ($entities_db as $e) {
             $entities_map[(int) $e['id']] = $e;
@@ -189,7 +189,13 @@ class LEM_Frontend {
         if (!empty($entity['status_text'])) {
             return $entity['status_text'];
         }
-        $name = $entity['name'];
+        $name     = $entity['name'];
+        $excluded = isset($entity['is_active']) && !$entity['is_active'];
+
+        if ($excluded) {
+            return self::disclaimer_text_excluded($entity);
+        }
+
         switch ($entity['type']) {
             case 'inoagent':
                 if ($entity['is_person']) {
@@ -209,5 +215,51 @@ class LEM_Frontend {
             default:
                 return $name;
         }
+    }
+
+    /**
+     * Дисклеймер для сущности, исключённой из реестра (опция «маркировать бывших»).
+     * Формулировка в прошедшем времени, с датой исключения.
+     */
+    private static function disclaimer_text_excluded($entity) {
+        $name      = $entity['name'];
+        $date      = self::format_date($entity['date_excluded'] ?? '');
+        $is_person = !empty($entity['is_person']);
+
+        if ($date === '') {
+            $tail = '';
+        } elseif ($is_person) {
+            $tail = ' (исключён(-а) из реестра ' . $date . ')';
+        } else {
+            $tail = ' (исключена из реестра ' . $date . ')';
+        }
+
+        switch ($entity['type']) {
+            case 'inoagent':
+                if ($is_person) {
+                    return $name . ', ранее признанный(-ая) в РФ иностранным агентом' . $tail;
+                }
+                return $name . ', ранее признанная в РФ иностранным агентом' . $tail;
+            case 'extremist':
+                return $name . ', деятельность которой ранее была признана экстремистской' . $tail;
+            case 'terrorist':
+                return $name . ', ранее признанная террористической организация' . $tail;
+            case 'undesirable':
+                return $name . ', ранее признанная нежелательной на территории РФ организация' . $tail;
+            default:
+                return $name;
+        }
+    }
+
+    /** DATE из БД (Y-m-d) в человекочитаемое d.m.Y. */
+    private static function format_date($raw) {
+        $raw = trim((string) $raw);
+        if ($raw === '' || $raw === '0000-00-00') {
+            return '';
+        }
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $raw, $m)) {
+            return "$m[3].$m[2].$m[1]";
+        }
+        return $raw;
     }
 }

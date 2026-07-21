@@ -151,6 +151,13 @@ class LEM_Admin {
         $morphology_changed = ($old_forms !== $settings['match_word_forms'])
             || ($old_surname !== $settings['surname_mode']);
 
+        // Маркировка исключённых из реестра
+        $old_excluded = $settings['mark_excluded'];
+        $settings['mark_excluded'] = !empty($_POST['lem_mark_excluded']);
+        if ($old_excluded !== $settings['mark_excluded']) {
+            $morphology_changed = true; // требует пересканирования
+        }
+
         // Контекстный режим для иноагентов
         $settings['inoagent_context_only'] = !empty($_POST['lem_inoagent_context_only']);
         $posted_triggers = array_map('sanitize_text_field', (array) ($_POST['lem_context_triggers'] ?? []));

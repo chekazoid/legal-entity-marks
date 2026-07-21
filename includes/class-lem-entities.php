@@ -7,15 +7,28 @@ class LEM_Entities {
     const TRANSIENT_TTL = HOUR_IN_SECONDS;
 
     public function get_all_active() {
-        $entities = get_transient(self::TRANSIENT_KEY);
+        return $this->get_for_marking(false);
+    }
+
+    /**
+     * Сущности для сканирования и маркировки.
+     *
+     * @param bool $include_excluded Включать исключённые из реестра (is_active=0).
+     *                               Нужно для опции «маркировать бывших».
+     */
+    public function get_for_marking($include_excluded = false) {
+        $key = self::TRANSIENT_KEY . ($include_excluded ? '_all' : '');
+        $entities = get_transient($key);
         if ($entities !== false) {
             return $entities;
         }
 
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
+        $where = $include_excluded ? '1=1' : 'is_active = 1';
         $rows  = $wpdb->get_results(
-            "SELECT id, type, name, aliases, is_person, status_text FROM $table WHERE is_active = 1",
+            "SELECT id, type, name, aliases, is_person, status_text, is_active, date_excluded
+             FROM $table WHERE $where",
             ARRAY_A
         );
 
@@ -23,15 +36,17 @@ class LEM_Entities {
         foreach ($rows as $row) {
             $row['aliases']   = json_decode($row['aliases'], true) ?: [];
             $row['is_person'] = (int) $row['is_person'];
+            $row['is_active'] = (int) $row['is_active'];
             $entities[] = $row;
         }
 
-        set_transient(self::TRANSIENT_KEY, $entities, self::TRANSIENT_TTL);
+        set_transient($key, $entities, self::TRANSIENT_TTL);
         return $entities;
     }
 
     public function flush_cache() {
         delete_transient(self::TRANSIENT_KEY);
+        delete_transient(self::TRANSIENT_KEY . '_all');
     }
 
     public function get_by_id($id) {

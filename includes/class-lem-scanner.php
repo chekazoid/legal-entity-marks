@@ -99,9 +99,33 @@ class LEM_Scanner {
             return null;
         }
 
-        // Точные названия из реестра и алиасы
-        foreach (self::search_terms($entity) as $term) {
+        // Алиасы, обёрнутые в кавычки («Дождь»), матчатся ТОЛЬКО в кавычках:
+        // издание «Дождь» помечаем, а «шёл дождь» нет. Такие алиасы кладёт
+        // brand-aliases.json для брендов-общеупотребительных слов.
+        $quoted_terms  = [];
+        $plain_entity  = $entity;
+        if (!empty($entity['aliases'])) {
+            $plain_aliases = [];
+            foreach ($entity['aliases'] as $a) {
+                $inner = self::quoted_brand_inner($a);
+                if ($inner !== null) {
+                    $quoted_terms[] = $inner;
+                } else {
+                    $plain_aliases[] = $a;
+                }
+            }
+            $plain_entity['aliases'] = $plain_aliases;
+        }
+
+        // Точные названия из реестра и обычные алиасы (со словесными границами)
+        foreach (self::search_terms($plain_entity) as $term) {
             $frags[] = str_replace('\ ', '\s+', preg_quote($term, '/'));
+        }
+
+        // Брендовые алиасы в кавычках: кавычки и есть граница совпадения
+        foreach ($quoted_terms as $q) {
+            $inner   = str_replace('\ ', '\s+', preg_quote($q, '/'));
+            $frags[] = '[«"„“]\s*' . $inner . '\s*[»"”“]';
         }
 
         $body = empty($frags) ? null : implode('|', $frags);
@@ -112,6 +136,20 @@ class LEM_Scanner {
 
     public static function flush_pattern_cache() {
         self::$pattern_cache = [];
+    }
+
+    /**
+     * Если алиас целиком обёрнут в кавычки («Дождь», "Проект") и короткий,
+     * возвращает внутренний текст (это брендовый алиас «только в кавычках»),
+     * иначе null. Автогенерируемые алиасы всегда без внешних кавычек, поэтому
+     * обёртка однозначно помечает брендовый маркер.
+     */
+    private static function quoted_brand_inner($alias) {
+        $a = trim((string) $alias);
+        if (preg_match('/^[«"„“](.{2,40})[»"”“]$/u', $a, $m)) {
+            return trim($m[1]);
+        }
+        return null;
     }
 
     /**
@@ -324,11 +362,11 @@ class LEM_Scanner {
     }
 
     public function scan_text($text, $entities = null) {
+        $settings = lem()->get_settings();
         if ($entities === null) {
-            $entities = lem()->entities->get_all_active();
+            $entities = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
         }
         $plain    = strip_tags($text);
-        $settings = lem()->get_settings();
         $context  = null;
         $found    = [];
 
@@ -370,7 +408,21 @@ class LEM_Scanner {
         }
 
         usort($found, fn($a, $b) => $a['position'] - $b['position']);
-        return $found;
+
+        // Дедуп: один и тот же фрагмент текста может совпасть с несколькими
+        // записями реестра (дубли-регистрации одного издания, брендовые алиасы
+        // на нескольких юрлицах). Оставляем одну пометку на упоминание.
+        $seen   = [];
+        $unique = [];
+        foreach ($found as $f) {
+            $key = $f['position'] . '|' . mb_strtolower($f['matched_as']);
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $unique[]   = $f;
+        }
+        return $unique;
     }
 
     public function scan_post($post_id) {
@@ -519,7 +571,7 @@ class LEM_Scanner {
             ...$params
         ));
 
-        $entities = lem()->entities->get_all_active();
+        $entities = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
         $list_ver = get_option('lem_list_version', '');
         $now      = current_time('mysql');
 
@@ -563,7 +615,7 @@ class LEM_Scanner {
 
                 $processed++;
                 // Отдаём управление, не дожидаясь лимита выполнения PHP.
-                // Хотя бы одну статью за запрос обрабатываем всегда — прогресс идёт.
+                // Хотя бы одну статью за запрос обрабатываем всегда, прогресс идёт.
                 if (microtime(true) - $start > $budget) {
                     break;
                 }
@@ -647,7 +699,7 @@ class LEM_Scanner {
             return ['posts_with_matches' => 0, 'total_mentions' => 0];
         }
 
-        $entities = lem()->entities->get_all_active();
+        $entities = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
         $list_ver = get_option('lem_list_version', '');
         $now      = current_time('mysql');
         $offset   = 0;

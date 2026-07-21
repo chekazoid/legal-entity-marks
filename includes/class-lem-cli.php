@@ -10,6 +10,7 @@ class LEM_CLI {
         WP_CLI::add_command('lem status', [$this, 'cmd_status']);
         WP_CLI::add_command('lem list', [$this, 'cmd_list']);
         WP_CLI::add_command('lem purge-cache', [$this, 'cmd_purge_cache']);
+        WP_CLI::add_command('lem brand-aliases', [$this, 'cmd_brand_aliases']);
 
         WP_CLI::add_command('lem banned-sites', [$this, 'cmd_banned_sites']);
         WP_CLI::add_command('lem banned-sites-add', [$this, 'cmd_banned_sites_add']);
@@ -257,6 +258,18 @@ class LEM_CLI {
         WP_CLI::log("Страничный кеш очищен для $purged статей.");
 
         WP_CLI::success('Кеш очищен.');
+    }
+
+    /**
+     * Применить курируемые брендовые алиасы (data/brand-aliases.json)
+     * поверх текущих записей реестра.
+     */
+    public function cmd_brand_aliases($args, $assoc_args) {
+        $result = lem()->importer->apply_brand_aliases();
+        if (isset($result['error'])) {
+            WP_CLI::error($result['error']);
+        }
+        WP_CLI::success("Брендовых алиасов применено: {$result['applied']}");
     }
 
     /**

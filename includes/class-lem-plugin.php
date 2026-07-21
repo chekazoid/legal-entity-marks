@@ -123,6 +123,7 @@ class LEM_Plugin {
             'inoagent_context_only' => false,
             'match_word_forms'      => true,
             'surname_mode'          => 'confirmed',
+            'mark_excluded'         => false,
             'context_triggers'      => [
                 'blockquote' => true,
                 'link'       => true,

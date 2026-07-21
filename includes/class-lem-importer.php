@@ -24,7 +24,77 @@ class LEM_Importer {
         // Импорт встроенных запрещённых доменов (экстремистские, террористические, нежелательные)
         $results['banned_sites'] = $this->import_banned_sites();
 
+        // Курируемые брендовые алиасы поверх официальных названий из реестра
+        $results['brand_aliases'] = $this->apply_brand_aliases();
+
         return $results;
+    }
+
+    /**
+     * Добавляет курируемые брендовые алиасы к записям реестра.
+     *
+     * В реестре Минюста организации записаны официальными юридическими
+     * названиями (SIA «Medusa Project»), а в статьях их называют брендом
+     * («Медуза»). Файл data/brand-aliases.json сопоставляет бренд с юрлицом,
+     * и эти алиасы доклеиваются к записям после каждого импорта или обновления,
+     * поэтому не теряются при обновлении реестров из онлайн-источников.
+     *
+     * @return array ['applied' => int]
+     */
+    public function apply_brand_aliases($file = null) {
+        if ($file === null) {
+            $file = LEM_DATA_DIR . '/brand-aliases.json';
+        }
+        if (!file_exists($file)) {
+            return ['applied' => 0];
+        }
+        $map = json_decode(file_get_contents($file), true);
+        if (!is_array($map)) {
+            return ['applied' => 0, 'error' => 'Invalid JSON'];
+        }
+
+        global $wpdb;
+        $table   = $wpdb->prefix . LEM_TABLE;
+        $applied = 0;
+
+        foreach ($map as $rule) {
+            $match   = trim($rule['match'] ?? '');
+            $aliases = (array) ($rule['aliases'] ?? []);
+
+            // Бренды-общеупотребительные слова матчатся только в кавычках:
+            // храним их обёрнутыми в ёлочки, матчер это распознаёт
+            foreach ((array) ($rule['quoted'] ?? []) as $q) {
+                $q = trim($q);
+                if ($q !== '') {
+                    $aliases[] = '«' . $q . '»';
+                }
+            }
+
+            if ($match === '' || empty($aliases)) {
+                continue;
+            }
+
+            $rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT id, aliases FROM $table WHERE name LIKE %s",
+                '%' . $wpdb->esc_like($match) . '%'
+            ));
+
+            foreach ($rows as $row) {
+                $old    = json_decode($row->aliases, true) ?: [];
+                $merged = array_values(array_unique(array_merge($old, $aliases)));
+                if ($merged !== $old) {
+                    $wpdb->update(
+                        $table,
+                        ['aliases' => wp_json_encode($merged, JSON_UNESCAPED_UNICODE)],
+                        ['id' => $row->id]
+                    );
+                    $applied++;
+                }
+            }
+        }
+
+        lem()->entities->flush_cache();
+        return ['applied' => $applied];
     }
 
     public function import_json($file, $type_override = null) {
@@ -265,6 +335,10 @@ class LEM_Importer {
         $log('Обновление реестра запрещённых доменов...');
         $bs = $this->import_banned_sites();
         $log("  Добавлено={$bs['added']}, пропущено={$bs['skipped']}");
+
+        // Брендовые алиасы поверх свежих официальных названий
+        $ba = $this->apply_brand_aliases();
+        $log("  Брендовых алиасов применено: {$ba['applied']}");
 
         update_option('lem_list_version', gmdate('Y-m-d H:i:s'));
         update_option('lem_last_fetch_time', current_time('mysql'));
