@@ -3,8 +3,8 @@ defined('ABSPATH') || exit;
 
 class LEM_Frontend {
 
-    /** Дисклеймеры уже добавлены в этом запросе (защита от повторного вывода). */
-    private $applied = false;
+    /** ID постов, для которых дисклеймеры уже добавлены в этом запросе. */
+    private $applied = [];
 
     public function __construct() {
         add_action('wp', [$this, 'register_filter']);
@@ -18,7 +18,16 @@ class LEM_Frontend {
     }
 
     public function filter_content($content) {
-        if (is_admin() || is_feed() || $this->applied) {
+        if (is_admin() || is_feed()) {
+            return $content;
+        }
+
+        // Не трогаем the_content, вызванный НЕ для вывода тела статьи:
+        //  - генерация выдержки/мета-описания: wp_trim_excerpt прогоняет
+        //    the_content по обрезанному тексту (Yoast og:description и т.п.);
+        //  - любые вызовы внутри wp_head (schema, соцкарточки), тело идёт позже.
+        // Иначе такой ранний вызов «съедал» право пометить настоящее тело.
+        if (doing_filter('get_the_excerpt') || doing_action('wp_head')) {
             return $content;
         }
 
@@ -29,7 +38,7 @@ class LEM_Frontend {
         }
 
         // Классические темы: работаем только в основном цикле.
-        // Блочные темы (core/post-content) не выставляют in_the_loop(),
+        // Блочные темы (core/post-content) не всегда выставляют in_the_loop(),
         // поэтому сверяем текущую запись с запрошенной.
         if (in_the_loop()) {
             if (!is_main_query()) {
@@ -44,6 +53,11 @@ class LEM_Frontend {
         }
 
         if (!$post_id) {
+            return $content;
+        }
+
+        // Дисклеймеры для этого поста уже добавлены в этом запросе
+        if (!empty($this->applied[$post_id])) {
             return $content;
         }
 
@@ -127,7 +141,7 @@ class LEM_Frontend {
             . implode("\n", $disclaimers)
             . '</div>';
 
-        $this->applied = true;
+        $this->applied[$post_id] = true;
         return $marked_content . "\n" . $block;
     }
 

@@ -76,6 +76,7 @@ class LEM_Plugin {
     private function register_hooks() {
         register_activation_hook(LEM_FILE, [$this, 'activate']);
         register_deactivation_hook(LEM_FILE, [$this, 'deactivate']);
+        add_action('admin_init', [$this, 'maybe_apply_brand_aliases']);
     }
 
     public function activate() {
@@ -97,7 +98,33 @@ class LEM_Plugin {
             $this->importer->import_banned_sites();
         }
 
+        update_option('lem_brand_version', LEM_VERSION);
         $this->cron->schedule_events();
+    }
+
+    /**
+     * Применяет курируемые брендовые алиасы после обновления плагина.
+     *
+     * Обновление файлов на непустой базе не запускает import_all_bundled, из-за
+     * чего новые брендовые алиасы (Медуза, Дождь и т.п.) не попадали в реестр до
+     * ручной команды или обновления реестров. Здесь применяем их один раз при
+     * смене версии, без вмешательства пользователя.
+     */
+    public function maybe_apply_brand_aliases() {
+        if (get_option('lem_brand_version') === LEM_VERSION) {
+            return;
+        }
+
+        // На пустой базе алиасы применит активация/импорт, здесь только докатываем
+        if ($this->database->table_exists()) {
+            global $wpdb;
+            $table = $wpdb->prefix . LEM_TABLE;
+            if ((int) $wpdb->get_var("SELECT COUNT(*) FROM $table") > 0) {
+                $this->importer->apply_brand_aliases();
+            }
+        }
+
+        update_option('lem_brand_version', LEM_VERSION);
     }
 
     public function deactivate() {
