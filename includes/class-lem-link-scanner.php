@@ -174,7 +174,7 @@ class LEM_Link_Scanner {
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
         $banned       = lem()->banned_sites->get_all_domains();
 
-        $batch_size = 50;
+        $batch_size = 25;
         $offset     = (int) $state['offset'];
 
         $params   = $post_types;
@@ -190,43 +190,59 @@ class LEM_Link_Scanner {
 
         $now = current_time('mysql');
 
+        $budget    = LEM_Scanner::time_budget();
+        $start     = microtime(true);
+        $processed = 0;
+
         wp_suspend_cache_addition(true);
 
-        foreach ($posts as $post) {
-            $found = $this->scan_post_content($post->post_content, $banned);
-            if (!empty($found)) {
-                $meta_json = wp_json_encode([
-                    'links'      => $found,
-                    'scanned_at' => $now,
-                ], JSON_UNESCAPED_UNICODE);
+        try {
+            foreach ($posts as $post) {
+                $found = $this->scan_post_content($post->post_content, $banned);
+                if (!empty($found)) {
+                    $meta_json = wp_json_encode([
+                        'links'      => $found,
+                        'scanned_at' => $now,
+                    ], JSON_UNESCAPED_UNICODE);
 
-                $existing = $wpdb->get_var($wpdb->prepare(
-                    "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s LIMIT 1",
-                    $post->ID, LEM_BANNED_LINKS_META_KEY
-                ));
-                if ($existing) {
-                    $wpdb->update($wpdb->postmeta, ['meta_value' => $meta_json], ['meta_id' => $existing]);
+                    $existing = $wpdb->get_var($wpdb->prepare(
+                        "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s LIMIT 1",
+                        $post->ID, LEM_BANNED_LINKS_META_KEY
+                    ));
+                    if ($existing) {
+                        $wpdb->update($wpdb->postmeta, ['meta_value' => $meta_json], ['meta_id' => $existing]);
+                    } else {
+                        $wpdb->insert($wpdb->postmeta, [
+                            'post_id'    => $post->ID,
+                            'meta_key'   => LEM_BANNED_LINKS_META_KEY,
+                            'meta_value' => $meta_json,
+                        ]);
+                    }
+                    $state['posts_with_links']++;
+                    $state['total_links'] += count($found);
                 } else {
-                    $wpdb->insert($wpdb->postmeta, [
-                        'post_id'    => $post->ID,
-                        'meta_key'   => LEM_BANNED_LINKS_META_KEY,
-                        'meta_value' => $meta_json,
+                    $wpdb->delete($wpdb->postmeta, [
+                        'post_id'  => $post->ID,
+                        'meta_key' => LEM_BANNED_LINKS_META_KEY,
                     ]);
                 }
-                $state['posts_with_links']++;
-                $state['total_links'] += count($found);
-            } else {
-                $wpdb->delete($wpdb->postmeta, [
-                    'post_id'  => $post->ID,
-                    'meta_key' => LEM_BANNED_LINKS_META_KEY,
-                ]);
+
+                $processed++;
+                if (microtime(true) - $start > $budget) {
+                    break;
+                }
             }
+        } catch (\Throwable $e) {
+            wp_suspend_cache_addition(false);
+            $state['offset'] = $offset + $processed;
+            set_transient(self::SCAN_STATE_KEY, $state, HOUR_IN_SECONDS);
+            wp_send_json_error('Ошибка при сканировании ссылок: ' . $e->getMessage());
         }
 
         wp_suspend_cache_addition(false);
         wp_cache_flush_runtime();
 
-        $state['offset'] = $offset + count($posts);
+        $state['offset'] = $offset + $processed;
 
         if ($state['offset'] >= $state['total'] || empty($posts)) {
             $state['status']      = 'complete';

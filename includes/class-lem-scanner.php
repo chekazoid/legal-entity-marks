@@ -419,6 +419,31 @@ class LEM_Scanner {
      * AJAX batch scan
      * ------------------------------------------------------------------ */
 
+    /**
+     * Бюджет времени на один AJAX-запрос, безопасно ниже max_execution_time.
+     *
+     * Сканирование 1.5 тяжелее прежнего (словоформы), и фиксированные 50 статей
+     * на медленном хостинге упирались в лимит выполнения PHP: запрос падал с
+     * фатальной ошибкой, а браузер получал HTML вместо JSON. Поэтому за запрос
+     * обрабатываем не фиксированное число статей, а сколько успеем за этот бюджет.
+     */
+    public static function time_budget() {
+        $max = (int) ini_get('max_execution_time');
+        // Пытаемся приподнять лимит, если хостинг разрешает
+        if ($max > 0 && $max < 60) {
+            @set_time_limit(60);
+            $max = (int) ini_get('max_execution_time');
+        }
+        if ($max <= 0) {
+            $budget = 15.0; // лимита нет (CLI/некоторые хостинги)
+        } else {
+            // Половина лимита, но не больше 15 c и всегда с запасом ниже лимита
+            $budget = min(15.0, $max * 0.5);
+            $budget = max(2.0, min($budget, $max - 3.0));
+        }
+        return (float) apply_filters('lem_scan_time_budget', $budget, $max);
+    }
+
     public function ajax_scan_init() {
         check_ajax_referer('lem_scan_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
@@ -474,7 +499,9 @@ class LEM_Scanner {
         $post_types   = $settings['post_types'];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
-        $batch_size = 50;
+        // Выборка из БД ограничена сверху; сколько реально обработаем,
+        // решает бюджет времени ниже
+        $batch_size = 25;
         $offset     = (int) $state['offset'];
 
         $where  = "post_type IN ($placeholders) AND post_status = 'publish'";
@@ -496,45 +523,64 @@ class LEM_Scanner {
         $list_ver = get_option('lem_list_version', '');
         $now      = current_time('mysql');
 
+        $budget    = self::time_budget();
+        $start     = microtime(true);
+        $processed = 0;
+
         wp_suspend_cache_addition(true);
 
-        foreach ($posts as $post) {
-            $found = $this->scan_text($post->post_title . "\n\n" . $post->post_content, $entities);
-            if (!empty($found)) {
-                $meta_json = wp_json_encode([
-                    'entities'     => $found,
-                    'scanned_at'   => $now,
-                    'list_version' => $list_ver,
-                ], JSON_UNESCAPED_UNICODE);
+        try {
+            foreach ($posts as $post) {
+                $found = $this->scan_text($post->post_title . "\n\n" . $post->post_content, $entities);
+                if (!empty($found)) {
+                    $meta_json = wp_json_encode([
+                        'entities'     => $found,
+                        'scanned_at'   => $now,
+                        'list_version' => $list_ver,
+                    ], JSON_UNESCAPED_UNICODE);
 
-                $existing = $wpdb->get_var($wpdb->prepare(
-                    "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s LIMIT 1",
-                    $post->ID, LEM_META_KEY
-                ));
-                if ($existing) {
-                    $wpdb->update($wpdb->postmeta, ['meta_value' => $meta_json], ['meta_id' => $existing]);
+                    $existing = $wpdb->get_var($wpdb->prepare(
+                        "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s LIMIT 1",
+                        $post->ID, LEM_META_KEY
+                    ));
+                    if ($existing) {
+                        $wpdb->update($wpdb->postmeta, ['meta_value' => $meta_json], ['meta_id' => $existing]);
+                    } else {
+                        $wpdb->insert($wpdb->postmeta, [
+                            'post_id'    => $post->ID,
+                            'meta_key'   => LEM_META_KEY,
+                            'meta_value' => $meta_json,
+                        ]);
+                    }
+                    $state['posts_with_matches']++;
+                    $state['total_mentions'] += count($found);
                 } else {
-                    $wpdb->insert($wpdb->postmeta, [
-                        'post_id'    => $post->ID,
-                        'meta_key'   => LEM_META_KEY,
-                        'meta_value' => $meta_json,
+                    $wpdb->delete($wpdb->postmeta, [
+                        'post_id'  => $post->ID,
+                        'meta_key' => LEM_META_KEY,
                     ]);
                 }
-                $state['posts_with_matches']++;
-                $state['total_mentions'] += count($found);
-            } else {
-                $wpdb->delete($wpdb->postmeta, [
-                    'post_id'  => $post->ID,
-                    'meta_key' => LEM_META_KEY,
-                ]);
+
+                $processed++;
+                // Отдаём управление, не дожидаясь лимита выполнения PHP.
+                // Хотя бы одну статью за запрос обрабатываем всегда — прогресс идёт.
+                if (microtime(true) - $start > $budget) {
+                    break;
+                }
             }
+        } catch (\Throwable $e) {
+            wp_suspend_cache_addition(false);
+            $state['offset'] = $offset + $processed;
+            set_transient(self::SCAN_STATE_KEY, $state, HOUR_IN_SECONDS);
+            wp_send_json_error('Ошибка при сканировании: ' . $e->getMessage());
         }
 
         wp_suspend_cache_addition(false);
         wp_cache_flush_runtime();
 
-        $state['offset'] = $offset + count($posts);
+        $state['offset'] = $offset + $processed;
 
+        // complete только когда дошли до конца, а не когда прервались по бюджету
         if ($state['offset'] >= $state['total'] || empty($posts)) {
             $state['status']      = 'complete';
             $state['finished_at'] = current_time('mysql');
