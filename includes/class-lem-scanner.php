@@ -66,42 +66,41 @@ class LEM_Scanner {
             return self::$pattern_cache[$key];
         }
 
-        $frags   = [];
+        $frags     = [];
         $is_person = !empty($entity['is_person']) && !empty($settings['match_word_forms']);
         $parts     = $is_person ? LEM_Morphology::split_name($entity['name']) : null;
 
+        $sur_alt = $first_alt = null;
+        $bare_ok = false;
         if ($parts && $parts['surname'] !== '') {
-            $gender  = LEM_Morphology::detect_gender($entity['name']);
-            $sur_alt = self::alternation(
-                LEM_Morphology::surname_forms($parts['surname'], $gender)
-            );
+            $gender    = LEM_Morphology::detect_gender($entity['name']);
+            $sur_alt   = self::alternation(LEM_Morphology::surname_forms($parts['surname'], $gender));
             $first_alt = $parts['first'] !== ''
                 ? self::alternation(LEM_Morphology::first_name_forms($parts['first'], $gender))
                 : null;
-
-            if ($variant === 'bare') {
-                $bare_ok = LEM_Morphology::surname_is_searchable($parts['surname'])
-                    && !in_array(mb_strtolower($parts['surname']), self::TERM_BLACKLIST, true);
-                $body = $bare_ok ? $sur_alt : null;
-                self::$pattern_cache[$key] = $body;
-                return $body;
-            }
-
-            // Оба порядка слов: «Лев Пономарев» и «Пономарев Лев»
-            if ($first_alt !== null) {
-                $frags[] = $first_alt . '\s+' . $sur_alt;
-                $frags[] = $sur_alt . '\s+' . $first_alt;
-            }
+            $bare_ok = LEM_Morphology::surname_is_searchable($parts['surname'])
+                && !in_array(mb_strtolower($parts['surname']), self::TERM_BLACKLIST, true);
         }
 
         if ($variant === 'bare') {
-            self::$pattern_cache[$key] = null;
-            return null;
+            $body = ($sur_alt !== null && $bare_ok) ? $sur_alt : null;
+            self::$pattern_cache[$key] = $body;
+            return $body;
         }
 
-        // Алиасы, обёрнутые в кавычки («Дождь»), матчатся ТОЛЬКО в кавычках:
-        // издание «Дождь» помечаем, а «шёл дождь» нет. Такие алиасы кладёт
-        // brand-aliases.json для брендов-общеупотребительных слов.
+        // Оба порядка слов: «Лев Пономарев» и «Пономарев Лев»
+        if ($sur_alt !== null && $first_alt !== null) {
+            $frags[] = $first_alt . '\s+' . $sur_alt;
+            $frags[] = $sur_alt . '\s+' . $first_alt;
+        }
+
+        // 'all': одинокая фамилия (для звёздочного подтверждения, см. asterisk_hit)
+        if ($variant === 'all' && $sur_alt !== null && $bare_ok) {
+            $frags[] = $sur_alt;
+        }
+
+        // Алиасы, обёрнутые в кавычки («Дождь»), в обычном режиме матчатся
+        // ТОЛЬКО в кавычках: издание «Дождь» помечаем, «шёл дождь» нет.
         $quoted_terms  = [];
         $plain_entity  = $entity;
         if (!empty($entity['aliases'])) {
@@ -122,16 +121,43 @@ class LEM_Scanner {
             $frags[] = str_replace('\ ', '\s+', preg_quote($term, '/'));
         }
 
-        // Брендовые алиасы в кавычках: кавычки и есть граница совпадения
+        // Брендовые алиасы: в 'strict' требуют кавычек, в 'all' матчатся и без
+        // (звёздочка редактора заменяет кавычки как подтверждение)
         foreach ($quoted_terms as $q) {
-            $inner   = str_replace('\ ', '\s+', preg_quote($q, '/'));
-            $frags[] = '[«"„“]\s*' . $inner . '\s*[»"”“]';
+            $inner = str_replace('\ ', '\s+', preg_quote($q, '/'));
+            $frags[] = ($variant === 'all')
+                ? $inner
+                : '[«"„“]\s*' . $inner . '\s*[»"”“]';
         }
 
         $body = empty($frags) ? null : implode('|', $frags);
 
         self::$pattern_cache[$key] = $body;
         return $body;
+    }
+
+    /**
+     * Совпадение, подтверждённое ручной звёздочкой редактора: «Монгайт**».
+     *
+     * Редакции по традиции ставят * / ** / *** сразу после имени или названия
+     * как пометку иноагента. Это сильный человеческий сигнал, поэтому такой
+     * термин матчим в обход анти-однофамилец и требования кавычек.
+     *
+     * @return array{matched_as:string, position:int}|null
+     */
+    public static function asterisk_hit($text, $entity, $settings = null) {
+        $body = self::build_pattern_body($entity, $settings, 'all');
+        if ($body === null) {
+            return null;
+        }
+        $re = '/(?<!\pL)(' . $body . ')(?!\pL)\s*\*{1,3}/ui';
+        if (!preg_match($re, $text, $m, PREG_OFFSET_CAPTURE)) {
+            return null;
+        }
+        return [
+            'matched_as' => $m[1][0],
+            'position'   => mb_strlen(substr($text, 0, $m[1][1])),
+        ];
     }
 
     public static function flush_pattern_cache() {
@@ -370,7 +396,8 @@ class LEM_Scanner {
         $context  = null;
         $found    = [];
 
-        $mode = $settings['surname_mode'] ?? 'confirmed';
+        $mode     = $settings['surname_mode'] ?? 'confirmed';
+        $has_star = mb_strpos($plain, '*') !== false;
 
         foreach ($entities as $entity) {
             // Полное имя ищем по всей статье: этим подтверждается, что
@@ -379,6 +406,11 @@ class LEM_Scanner {
             $allow_bare = ($mode === 'always') || ($mode === 'confirmed' && $strict !== null);
 
             $hit = self::match_entity($plain, $entity, $settings, $allow_bare);
+            // Ручная звёздочка редактора («Монгайт**») подтверждает сущность
+            // даже там, где обычные правила её пропустили бы
+            if ($hit === null && $has_star) {
+                $hit = self::asterisk_hit($plain, $entity, $settings);
+            }
             if ($hit === null) {
                 continue;
             }

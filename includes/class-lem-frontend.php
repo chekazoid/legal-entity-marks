@@ -102,12 +102,15 @@ class LEM_Frontend {
             $replaced = false;
             foreach ($try as $needle) {
                 if ($replaced) break;
-                $pattern = '/(?<=>)([^<]*?)(?<!\pL)(' . $needle . ')(?!\pL)/iu';
+                // Хвостовая группа ловит ручные звёздочки редактора («Монгайт**»)
+                // сразу после имени, чтобы заменить их своей сноской, а не задваивать
+                $pattern = '/(?<=>)([^<]*?)(?<!\pL)(' . $needle . ')(?!\pL)(\s*\*{1,3})?/iu';
                 $marked_content = preg_replace_callback($pattern, function ($m) use ($sym, &$replaced) {
                     if ($replaced) {
                         return $m[0];
                     }
                     $replaced = true;
+                    // $m[3] (ручные звёздочки) намеренно отбрасываем
                     return $m[1] . $m[2] . '<sup class="lem-ref">' . esc_html($sym) . '</sup>';
                 }, $marked_content);
             }
