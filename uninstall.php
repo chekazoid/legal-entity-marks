@@ -29,6 +29,8 @@ delete_option('lem_list_version');
 delete_option('lem_last_fetch_time');
 delete_option('lem_last_fetch_error');
 delete_option('lem_brand_version');
+delete_option('lem_upgrade_version');
+delete_option('lem_installed_at');
 delete_transient('lem_entities_active');
 delete_transient('lem_entities_active_all');
 delete_transient('lem_scan_state');

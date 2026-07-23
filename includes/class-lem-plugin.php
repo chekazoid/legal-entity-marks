@@ -76,7 +76,7 @@ class LEM_Plugin {
     private function register_hooks() {
         register_activation_hook(LEM_FILE, [$this, 'activate']);
         register_deactivation_hook(LEM_FILE, [$this, 'deactivate']);
-        add_action('admin_init', [$this, 'maybe_apply_brand_aliases']);
+        add_action('admin_init', [$this, 'maybe_run_upgrade_tasks']);
     }
 
     public function activate() {
@@ -98,22 +98,28 @@ class LEM_Plugin {
             $this->importer->import_banned_sites();
         }
 
-        update_option('lem_brand_version', LEM_VERSION);
+        add_option('lem_installed_at', current_time('mysql'));
+        update_option('lem_upgrade_version', LEM_VERSION);
         $this->cron->schedule_events();
     }
 
     /**
-     * Применяет курируемые брендовые алиасы после обновления плагина.
+     * Разовые задачи после обновления плагина (срабатывают один раз на версию).
      *
-     * Обновление файлов на непустой базе не запускает import_all_bundled, из-за
-     * чего новые брендовые алиасы (Медуза, Дождь и т.п.) не попадали в реестр до
-     * ручной команды или обновления реестров. Здесь применяем их один раз при
-     * смене версии, без вмешательства пользователя.
+     * Обновление файлов на непустой базе не запускает import_all_bundled,
+     * поэтому здесь:
+     *  1) докатываем курируемые брендовые алиасы (иначе новые бренды вроде
+     *     «Медуза» не попадут в реестр до ручной команды);
+     *  2) ставим разовую задачу обновить реестры из источников, чтобы после
+     *     обновления плагина сайт сразу получил свежие данные, а не ждал
+     *     недельного крона. Сам фетч уходит в фон и админку не тормозит.
      */
-    public function maybe_apply_brand_aliases() {
-        if (get_option('lem_brand_version') === LEM_VERSION) {
+    public function maybe_run_upgrade_tasks() {
+        if (get_option('lem_upgrade_version') === LEM_VERSION) {
             return;
         }
+
+        add_option('lem_installed_at', current_time('mysql'));
 
         // На пустой базе алиасы применит активация/импорт, здесь только докатываем
         if ($this->database->table_exists()) {
@@ -124,7 +130,10 @@ class LEM_Plugin {
             }
         }
 
-        update_option('lem_brand_version', LEM_VERSION);
+        wp_schedule_single_event(time() + MINUTE_IN_SECONDS, 'lem_fetch_registries');
+
+        update_option('lem_upgrade_version', LEM_VERSION);
+        delete_option('lem_brand_version'); // имя из 1.6.2, больше не используется
     }
 
     public function deactivate() {

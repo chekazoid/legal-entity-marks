@@ -98,6 +98,52 @@ class LEM_Admin {
                     . '</p></div>';
             }
         }
+
+        $this->show_stale_notice();
+    }
+
+    /**
+     * Реестры давно (или ни разу) не обновлялись из источников.
+     *
+     * Обычная причина - не работает WP-Cron, и тогда данные тихо устаревают:
+     * встроенный снимок остаётся с даты сборки плагина, а новых иноагентов
+     * в нём нет. Молчаливую деградацию и делаем заметной.
+     */
+    private function show_stale_notice() {
+        $stale_days = (int) apply_filters('lem_stale_days', 30);
+        $last       = get_option('lem_last_fetch_time', '');
+        $now        = current_time('timestamp');
+        $dashboard  = admin_url('admin.php?page=lem-dashboard');
+        $message    = '';
+
+        if (empty($last)) {
+            // На свежей установке фетч ставится в очередь и проходит за минуты,
+            // поэтому не паникуем сразу после установки
+            $installed = get_option('lem_installed_at', '');
+            $since     = $installed ? strtotime($installed) : 0;
+            if ($since && ($now - $since) > 2 * DAY_IN_SECONDS) {
+                $message = 'Реестры ни разу не обновлялись из источников, а плагин установлен '
+                    . human_time_diff($since, $now)
+                    . ' назад. Скорее всего не работает WP-Cron, и списки останутся на дате сборки плагина.';
+            }
+        } else {
+            $ts = strtotime($last);
+            if ($ts && ($now - $ts) > $stale_days * DAY_IN_SECONDS) {
+                $message = 'Реестры не обновлялись ' . human_time_diff($ts, $now)
+                    . '. Обычно это значит, что не работает WP-Cron.';
+            }
+        }
+
+        if ($message === '') {
+            return;
+        }
+
+        printf(
+            '<div class="notice notice-warning"><p><strong>Маркировка:</strong> %s '
+            . '<a href="%s">Обновить сейчас</a> или запустите <code>wp lem fetch --source=all</code>.</p></div>',
+            esc_html($message),
+            esc_url($dashboard)
+        );
     }
 
     public function handle_actions() {
