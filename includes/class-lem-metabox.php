@@ -74,8 +74,17 @@ class LEM_Metabox {
             $active_ids[(int) $e['id']] = true;
         }
 
-        $marked = [];
-        $hidden = [];
+        $labels = [
+            'inoagent'    => 'иноагент',
+            'extremist'   => 'экстремистская',
+            'terrorist'   => 'террористическая',
+            'undesirable' => 'нежелательная',
+        ];
+
+        // Пустые переопределения: чтобы узнать, что дало бы чистое «Автоматически»
+        $no_overrides = ['excluded' => [], 'forced' => []];
+        $shown        = 0;
+
         foreach ($entities as $match) {
             $id = (int) $match['id'];
             if (!isset($active_ids[$id])) {
@@ -84,68 +93,66 @@ class LEM_Metabox {
             if (!in_array($match['type'], $settings['registries'], true)) {
                 continue; // категория выключена в настройках
             }
-            if (LEM_Frontend::should_mark($match, $settings, $overrides)) {
-                $marked[] = $match;
-            } else {
-                $hidden[] = $match;
+
+            $state = 'auto';
+            if (in_array($id, $overrides['excluded'], true)) {
+                $state = 'exclude';
+            } elseif (in_array($id, $overrides['forced'], true)) {
+                $state = 'force';
             }
-        }
 
-        $labels = [
-            'inoagent'    => 'иноагент',
-            'extremist'   => 'экстремистская',
-            'terrorist'   => 'террористическая',
-            'undesirable' => 'нежелательная',
-        ];
+            $auto_marks = LEM_Frontend::should_mark($match, $settings, $no_overrides);
+            $auto_hint  = $auto_marks
+                ? 'Автоматически (сейчас помечается)'
+                : 'Автоматически (сейчас не помечается: ' . self::skip_reason($match, $settings) . ')';
 
-        if (!empty($marked)) {
-            echo '<p><strong>Маркируется</strong></p><ul style="margin:0 0 12px">';
-            foreach ($marked as $match) {
-                $id = (int) $match['id'];
+            $shown++;
+            printf(
+                '<p style="margin:0 0 4px"><strong>%s</strong> <span style="color:#777">(%s)</span></p>',
+                esc_html($match['name']),
+                esc_html($labels[$match['type']] ?? $match['type'])
+            );
+            printf('<select name="lem_override[%d]" style="width:100%%;margin-bottom:12px">', $id);
+            foreach ([
+                'auto'    => $auto_hint,
+                'force'   => 'Всегда помечать',
+                'exclude' => 'Не помечать',
+            ] as $value => $label) {
                 printf(
-                    '<li style="margin-bottom:6px"><label><input type="checkbox" name="lem_excluded[]" value="%d"> '
-                    . '<span>%s</span> <span style="color:#777">(%s)</span></label>'
-                    . '<br><span class="description" style="margin-left:22px">снять маркировку в этой статье</span></li>',
-                    $id,
-                    esc_html($match['name']),
-                    esc_html($labels[$match['type']] ?? $match['type'])
+                    '<option value="%s"%s>%s</option>',
+                    esc_attr($value),
+                    selected($state, $value, false),
+                    esc_html($label)
                 );
             }
-            echo '</ul>';
+            echo '</select>';
         }
 
-        if (!empty($hidden)) {
-            echo '<p><strong>Не маркируется</strong></p><ul style="margin:0 0 12px">';
-            foreach ($hidden as $match) {
-                $id        = (int) $match['id'];
-                $excluded  = in_array($id, $overrides['excluded'], true);
-                $reason    = $excluded
-                    ? 'снято вручную'
-                    : 'нет цитаты или ссылки';
-                $field     = $excluded ? 'lem_excluded[]' : 'lem_forced[]';
-                $checked   = $excluded ? ' checked' : '';
-                $hint      = $excluded
-                    ? 'снято вручную, снимите галочку чтобы вернуть'
-                    : 'промаркировать всё равно';
-                printf(
-                    '<li style="margin-bottom:6px"><label><input type="checkbox" name="%s" value="%d"%s> '
-                    . '<span>%s</span> <span style="color:#777">(%s)</span></label>'
-                    . '<br><span class="description" style="margin-left:22px">%s</span></li>',
-                    esc_attr($field),
-                    $id,
-                    $checked,
-                    esc_html($match['name']),
-                    esc_html($reason),
-                    esc_html($hint)
-                );
-            }
-            echo '</ul>';
+        if ($shown === 0) {
+            echo '<p>Упоминаний из реестров не найдено.</p>';
+            return;
         }
+
+        echo '<p class="description">«Автоматически» подчиняется общим правилам плагина. '
+            . 'Два других положения действуют только для этой статьи.</p>';
 
         if (!empty($settings['inoagent_context_only'])) {
             echo '<p class="description">Иноагенты маркируются только в цитатах, ссылках и встроенных постах '
                 . '(режим включён в настройках плагина).</p>';
         }
+    }
+
+    /**
+     * Почему автоматические правила не помечают это упоминание.
+     */
+    private static function skip_reason($match, $settings) {
+        if (($match['type'] ?? '') === 'inoagent'
+            && !empty($settings['inoagent_context_only'])
+            && array_key_exists('in_context', $match)
+            && empty($match['in_context'])) {
+            return 'нет цитаты или ссылки';
+        }
+        return 'по правилам плагина';
     }
 
     public function save($post_id, $post) {
@@ -166,12 +173,25 @@ class LEM_Metabox {
             return;
         }
 
-        $excluded = array_values(array_unique(array_map('intval', (array) ($_POST['lem_excluded'] ?? []))));
-        $forced   = array_values(array_unique(array_map('intval', (array) ($_POST['lem_forced'] ?? []))));
-        $excluded = array_filter($excluded);
-        $forced   = array_filter($forced);
-        // Снятое вручную имеет приоритет: в обоих списках сущность не держим
-        $forced   = array_values(array_diff($forced, $excluded));
+        // Переключатель из трёх положений на каждую сущность:
+        // auto (без переопределения) | force (всегда помечать) | exclude (не помечать)
+        $excluded = [];
+        $forced   = [];
+        foreach ((array) ($_POST['lem_override'] ?? []) as $id => $value) {
+            $id = (int) $id;
+            if ($id <= 0) {
+                continue;
+            }
+            $value = sanitize_text_field($value);
+            if ($value === 'exclude') {
+                $excluded[] = $id;
+            } elseif ($value === 'force') {
+                $forced[] = $id;
+            }
+            // 'auto' не записываем: пустое переопределение и есть автомат
+        }
+        $excluded = array_values(array_unique($excluded));
+        $forced   = array_values(array_diff(array_unique($forced), $excluded));
 
         if (empty($excluded) && empty($forced)) {
             delete_post_meta($post_id, LEM_OVERRIDES_META_KEY);
