@@ -144,6 +144,9 @@ class LEM_CLI {
                     WP_CLI::log("  - [{$f['type']}] {$f['name']} (совпадение: \"{$f['matched_as']}\", позиция: {$f['position']})");
                 }
             }
+            // Иначе страница продолжает отдаваться из кеша со старой маркировкой
+            lem()->cache->purge_post((int) $post_id);
+            WP_CLI::log('Кеш статьи очищен.');
             return;
         }
 

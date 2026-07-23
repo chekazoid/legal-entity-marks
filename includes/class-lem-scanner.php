@@ -298,16 +298,22 @@ class LEM_Scanner {
      * Делит HTML на блоки по границам абзацев, пунктов списка и заголовков.
      */
     private static function split_blocks($html) {
+        // Пустая строка тоже граница абзаца: классический редактор хранит текст
+        // без тегов <p>, их расставляет wpautop уже при выводе. Без этого вся
+        // статья была одним блоком, и ссылка в конце делала «контекстом» весь текст.
         $parts = preg_split(
-            '/<\/(?:p|li|div|h[1-6]|td|th|section|article|figcaption|cite|dd|dt)>|<br\s*\/?>/i',
+            '/<\/(?:p|li|div|h[1-6]|td|th|section|article|figcaption|cite|dd|dt)>|<br\s*\/?>|\R\s*\R/i',
             $html
         );
         $out = [];
         foreach ($parts as $p) {
             $p = trim($p);
-            if ($p !== '') {
-                $out[] = $p;
+            // Служебные куски без видимого текста (комментарии блоков и т.п.) пропускаем,
+            // иначе они сбивают счёт соседей у цитат
+            if ($p === '' || trim(strip_tags($p)) === '') {
+                continue;
             }
+            $out[] = $p;
         }
         return $out;
     }
