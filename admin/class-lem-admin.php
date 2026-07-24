@@ -34,6 +34,7 @@ class LEM_Admin {
         add_submenu_page('lem-dashboard', 'Реестр', 'Реестр', 'manage_options', 'lem-entities', [$this, 'page_entities']);
         add_submenu_page('lem-dashboard', 'Сканер', 'Сканер', 'manage_options', 'lem-scanner', [$this, 'page_scanner']);
         add_submenu_page('lem-dashboard', 'Ссылки', 'Ссылки', 'manage_options', 'lem-banned-links', [$this, 'page_banned_links']);
+        add_submenu_page('lem-dashboard', 'Бренды СМИ', 'Бренды СМИ', 'manage_options', 'lem-brands', [$this, 'page_brands']);
         add_submenu_page('lem-dashboard', 'Настройки', 'Настройки', 'manage_options', 'lem-settings', [$this, 'page_settings']);
     }
 
@@ -72,6 +73,54 @@ class LEM_Admin {
 
     public function page_settings() {
         include LEM_DIR . 'admin/views/settings.php';
+    }
+
+    public function page_brands() {
+        include LEM_DIR . 'admin/views/brands.php';
+    }
+
+    /**
+     * Сохранение брендовых правил со страницы «Бренды СМИ».
+     */
+    private function handle_brand_actions() {
+        if (!isset($_POST['lem_brands_nonce'])
+            || !wp_verify_nonce($_POST['lem_brands_nonce'], 'lem_save_brands')
+            || !current_user_can('manage_options')) {
+            return;
+        }
+
+        $rules = [];
+        foreach ((array) ($_POST['lem_brand'] ?? []) as $row) {
+            $match = sanitize_text_field(wp_unslash($row['match'] ?? ''));
+            if ($match === '' || !empty($row['delete'])) {
+                continue;
+            }
+            $split = static function ($raw) {
+                return array_filter(array_map('trim', explode(',', sanitize_text_field(wp_unslash($raw)))));
+            };
+            $rules[] = [
+                'match'   => $match,
+                'aliases' => $split($row['aliases'] ?? ''),
+                'quoted'  => $split($row['quoted'] ?? ''),
+                'note'    => sanitize_text_field(wp_unslash($row['note'] ?? '')),
+                'enabled' => !empty($row['enabled']),
+            ];
+        }
+
+        lem()->brands->save_rules($rules);
+
+        // Правила меняют алиасы сущностей, поэтому сразу применяем
+        $result = lem()->importer->apply_brand_aliases();
+
+        add_settings_error('lem_brands', 'saved',
+            'Правила сохранены. Алиасов применено: ' . (int) $result['applied']
+            . '. Не забудьте пересканировать статьи.', 'success');
+
+        if (!empty($result['unmatched'])) {
+            add_settings_error('lem_brands', 'unmatched',
+                'Не нашли ни одной записи в реестре (проверьте текст в «Искать в названии»): '
+                . implode('; ', array_map('esc_html', $result['unmatched'])), 'warning');
+        }
     }
 
     public function show_notices() {
@@ -147,6 +196,8 @@ class LEM_Admin {
     }
 
     public function handle_actions() {
+        $this->handle_brand_actions();
+
         if (!isset($_POST['lem_settings_nonce'])) {
             return;
         }
@@ -175,7 +226,7 @@ class LEM_Admin {
             $settings['disclaimer_border'] = sanitize_hex_color($_POST['lem_disclaimer_border']) ?: '#f88c00';
         }
         if (isset($_POST['lem_cron_interval'])) {
-            $settings['cron_interval'] = sanitize_text_field($_POST['lem_cron_interval']);
+            $settings['cron_interval'] = sanitize_text_field(wp_unslash($_POST['lem_cron_interval']));
         }
         $settings['auto_scan_on_publish'] = !empty($_POST['lem_auto_scan']);
 
@@ -190,7 +241,7 @@ class LEM_Admin {
         $old_forms   = $settings['match_word_forms'];
         $old_surname = $settings['surname_mode'];
         $settings['match_word_forms'] = !empty($_POST['lem_match_word_forms']);
-        $mode = sanitize_text_field($_POST['lem_surname_mode'] ?? 'confirmed');
+        $mode = sanitize_text_field(wp_unslash($_POST['lem_surname_mode'] ?? 'confirmed'));
         $settings['surname_mode'] = in_array($mode, LEM_Plugin::SURNAME_MODES, true)
             ? $mode
             : 'confirmed';
@@ -253,11 +304,11 @@ class LEM_Admin {
 
         $id   = (int) ($_POST['id'] ?? 0);
         $data = [
-            'type'        => sanitize_text_field($_POST['type'] ?? 'inoagent'),
-            'name'        => sanitize_text_field($_POST['name'] ?? ''),
-            'aliases'     => array_filter(array_map('trim', explode("\n", sanitize_textarea_field($_POST['aliases'] ?? '')))),
+            'type'        => sanitize_text_field(wp_unslash($_POST['type'] ?? 'inoagent')),
+            'name'        => sanitize_text_field(wp_unslash($_POST['name'] ?? '')),
+            'aliases'     => array_filter(array_map('trim', explode("\n", sanitize_textarea_field(wp_unslash($_POST['aliases'] ?? ''))))),
             'is_person'   => (int) ($_POST['is_person'] ?? 0),
-            'status_text' => sanitize_text_field($_POST['status_text'] ?? ''),
+            'status_text' => sanitize_text_field(wp_unslash($_POST['status_text'] ?? '')),
             'is_active'   => (int) ($_POST['is_active'] ?? 1),
         ];
 
@@ -326,8 +377,8 @@ class LEM_Admin {
 
         $id   = (int) ($_POST['id'] ?? 0);
         $data = [
-            'domain'    => sanitize_text_field($_POST['domain'] ?? ''),
-            'label'     => sanitize_text_field($_POST['label'] ?? ''),
+            'domain'    => sanitize_text_field(wp_unslash($_POST['domain'] ?? '')),
+            'label'     => sanitize_text_field(wp_unslash($_POST['label'] ?? '')),
             'entity_id' => (int) ($_POST['entity_id'] ?? 0) ?: null,
         ];
 
@@ -369,7 +420,7 @@ class LEM_Admin {
             wp_send_json_error('Нет доступа');
         }
 
-        $raw   = sanitize_textarea_field($_POST['domains'] ?? '');
+        $raw   = sanitize_textarea_field(wp_unslash($_POST['domains'] ?? ''));
         $lines = array_filter(array_map('trim', explode("\n", $raw)));
         $added   = 0;
         $skipped = 0;

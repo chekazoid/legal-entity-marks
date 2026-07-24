@@ -42,15 +42,24 @@ class LEM_Importer {
      * @return array ['applied' => int]
      */
     public function apply_brand_aliases($file = null) {
+        // Источник правил - редактируемый пользователем список (при первом
+        // обращении он наполняется из комплектного data/brand-aliases.json).
+        // Явно переданный файл нужен только для разовых импортов из CLI.
         if ($file === null) {
-            $file = LEM_DATA_DIR . '/brand-aliases.json';
-        }
-        if (!file_exists($file)) {
-            return ['applied' => 0];
-        }
-        $map = json_decode(file_get_contents($file), true);
-        if (!is_array($map)) {
-            return ['applied' => 0, 'error' => 'Invalid JSON'];
+            $map = array_values(array_filter(
+                lem()->brands->get_rules(),
+                static function ($r) {
+                    return !empty($r['enabled']);
+                }
+            ));
+        } else {
+            if (!file_exists($file)) {
+                return ['applied' => 0];
+            }
+            $map = json_decode(file_get_contents($file), true);
+            if (!is_array($map)) {
+                return ['applied' => 0, 'error' => 'Invalid JSON'];
+            }
         }
 
         global $wpdb;

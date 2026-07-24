@@ -16,6 +16,12 @@ class LEM_Scanner {
      * Core matching
      * ------------------------------------------------------------------ */
 
+    /**
+     * Разделитель между словами названия: пробелы и кавычки.
+     * В реестре «Радио Свобода», в статье «Радио „Свобода“» - это одно и то же.
+     */
+    const WORD_SEP = '[\s«»„“”"]+';
+
     /** Готовые регулярные выражения сущностей в пределах запроса. */
     private static $pattern_cache = [];
 
@@ -116,9 +122,12 @@ class LEM_Scanner {
             $plain_entity['aliases'] = $plain_aliases;
         }
 
-        // Точные названия из реестра и обычные алиасы (со словесными границами)
+        // Точные названия из реестра и обычные алиасы (со словесными границами).
+        // Между словами допускаем кавычки: в реестре «Радио Свобода», а в статье
+        // пишут «Радио „Свобода“» - без этого многословные названия не совпадали.
         foreach (self::search_terms($plain_entity) as $term) {
-            $frags[] = str_replace('\ ', '\s+', preg_quote($term, '/'));
+            // preg_quote пробел не экранирует, поэтому заменяем именно пробел
+            $frags[] = str_replace(' ', self::WORD_SEP, preg_quote($term, '/'));
         }
 
         // Брендовые алиасы: в 'strict' требуют кавычек, в 'all' матчатся и без
@@ -555,7 +564,7 @@ class LEM_Scanner {
         $post_types = $settings['post_types'];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
-        $mode = sanitize_text_field($_POST['mode'] ?? 'all');
+        $mode = sanitize_text_field(wp_unslash($_POST['mode'] ?? 'all'));
 
         $where = "post_type IN ($placeholders) AND post_status = 'publish'";
         $params = $post_types;
