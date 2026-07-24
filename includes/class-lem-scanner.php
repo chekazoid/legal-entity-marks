@@ -122,12 +122,14 @@ class LEM_Scanner {
         }
 
         // Брендовые алиасы: в 'strict' требуют кавычек, в 'all' матчатся и без
-        // (звёздочка редактора заменяет кавычки как подтверждение)
+        // (звёздочка редактора заменяет кавычки как подтверждение).
+        // Внутри кавычек допускаем падежи: в статьях пишут «материал «Вёрстки»».
         foreach ($quoted_terms as $q) {
-            $inner = str_replace('\ ', '\s+', preg_quote($q, '/'));
+            $forms = LEM_Morphology::brand_forms($q);
+            $alt   = self::alternation($forms);
             $frags[] = ($variant === 'all')
-                ? $inner
-                : '[«"„“]\s*' . $inner . '\s*[»"”“]';
+                ? $alt
+                : '[«"„“]\s*' . $alt . '\s*[»"”“]';
         }
 
         $body = empty($frags) ? null : implode('|', $frags);

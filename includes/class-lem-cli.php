@@ -272,6 +272,10 @@ class LEM_CLI {
         if (isset($result['error'])) {
             WP_CLI::error($result['error']);
         }
+        if (!empty($result['unmatched'])) {
+            WP_CLI::warning('Правила, не нашедшие ни одной записи в реестре: '
+                . implode('; ', $result['unmatched']));
+        }
         WP_CLI::success("Брендовых алиасов применено: {$result['applied']}");
     }
 

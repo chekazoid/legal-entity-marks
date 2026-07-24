@@ -54,8 +54,9 @@ class LEM_Importer {
         }
 
         global $wpdb;
-        $table   = $wpdb->prefix . LEM_TABLE;
-        $applied = 0;
+        $table    = $wpdb->prefix . LEM_TABLE;
+        $applied  = 0;
+        $unmatched = [];
 
         foreach ($map as $rule) {
             $match   = trim($rule['match'] ?? '');
@@ -79,6 +80,13 @@ class LEM_Importer {
                 '%' . $wpdb->esc_like($match) . '%'
             ));
 
+            // Правило, не нашедшее ни одной записи, раньше молча ничего не делало:
+            // так брендовые алиасы «Вёрстки» не работали из-за кавычек в match
+            if (empty($rows)) {
+                $unmatched[] = $match;
+                continue;
+            }
+
             foreach ($rows as $row) {
                 $old    = json_decode($row->aliases, true) ?: [];
                 $merged = array_values(array_unique(array_merge($old, $aliases)));
@@ -94,7 +102,7 @@ class LEM_Importer {
         }
 
         lem()->entities->flush_cache();
-        return ['applied' => $applied];
+        return ['applied' => $applied, 'unmatched' => $unmatched];
     }
 
     public function import_json($file, $type_override = null) {
