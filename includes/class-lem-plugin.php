@@ -124,6 +124,11 @@ class LEM_Plugin {
 
         add_option('lem_installed_at', current_time('mysql'));
 
+        // Сначала довозим новые комплектные правила, потом применяем: иначе
+        // свежие правила (DOXA, «Вёрстка») добавились бы уже ПОСЛЕ применения
+        // и не попали бы в алиасы до следующего обновления реестров
+        $this->brands->sync_bundled();
+
         // На пустой базе алиасы применит активация/импорт, здесь только докатываем
         if ($this->database->table_exists()) {
             global $wpdb;
@@ -132,9 +137,6 @@ class LEM_Plugin {
                 $this->importer->apply_brand_aliases();
             }
         }
-
-        // Новые комплектные брендовые правила, не трогая правки пользователя
-        $this->brands->sync_bundled();
 
         wp_schedule_single_event(time() + MINUTE_IN_SECONDS, 'lem_fetch_registries');
 

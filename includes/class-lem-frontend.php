@@ -206,7 +206,10 @@ class LEM_Frontend {
         if (!empty($entity['status_text'])) {
             return $entity['status_text'];
         }
-        $name     = $entity['name'];
+        // В реестре часть названий в прямых кавычках («Вёрстка Медиа»).
+        // Приводим к ёлочкам: иначе wptexturize превращает их в мнемоники,
+        // и в дисклеймере видно &#8220; вместо кавычек
+        $name     = self::normalize_quotes($entity['name']);
         $excluded = isset($entity['is_active']) && !$entity['is_active'];
 
         if ($excluded) {
@@ -239,7 +242,7 @@ class LEM_Frontend {
      * Формулировка в прошедшем времени, с датой исключения.
      */
     private static function disclaimer_text_excluded($entity) {
-        $name      = $entity['name'];
+        $name      = self::normalize_quotes($entity['name']);
         $date      = self::format_date($entity['date_excluded'] ?? '');
         $is_person = !empty($entity['is_person']);
 
@@ -266,6 +269,17 @@ class LEM_Frontend {
             default:
                 return $name;
         }
+    }
+
+    /** Прямые кавычки в названии заменяем на ёлочки (см. disclaimer_text). */
+    private static function normalize_quotes($name) {
+        $name = (string) $name;
+        if (strpos($name, '"') === false) {
+            return $name;
+        }
+        // Пары "..." -> «...»; одиночная лишняя кавычка просто убирается
+        $name = preg_replace('/"([^"]*)"/u', '«$1»', $name);
+        return str_replace('"', '', $name);
     }
 
     /** DATE из БД (Y-m-d) в человекочитаемое d.m.Y. */
