@@ -90,8 +90,8 @@ class LEM_Metabox {
             if (!isset($active_ids[$id])) {
                 continue; // сущность исключена из реестра, маркировка не ставится
             }
-            if (!in_array($match['type'], $settings['registries'], true)) {
-                continue; // категория выключена в настройках
+            if (!in_array($match['type'], $settings['track_registries'], true)) {
+                continue; // реестр не маркируется и не отслеживается
             }
 
             $state = 'auto';

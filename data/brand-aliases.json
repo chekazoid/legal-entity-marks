@@ -435,5 +435,53 @@
     "quoted": [
       "Арктида"
     ]
+  },
+  {
+    "match": "Mnenie media",
+    "aliases": [
+      "DOXA",
+      "Докса"
+    ],
+    "note": "Издание DOXA. В реестре нежелательных числится чешское юрлицо Mnenie media z.s., слова DOXA в записи нет.",
+    "quoted": []
+  },
+  {
+    "match": "Bellingcat",
+    "aliases": [
+      "Bellingcat",
+      "Беллингкэт"
+    ],
+    "note": "Расследовательский проект Bellingcat.",
+    "quoted": []
+  },
+  {
+    "match": "Free Russia Foundation",
+    "aliases": [
+      "Free Russia Foundation"
+    ],
+    "quoted": [
+      "Свободная Россия"
+    ],
+    "note": "Фонд «Свободная Россия». Русское название только в кавычках: «свободная Россия» бывает оборотом речи."
+  },
+  {
+    "match": "Open Russia",
+    "aliases": [
+      "Open Russia"
+    ],
+    "quoted": [
+      "Открытая Россия"
+    ],
+    "note": "«Открытая Россия». Только в кавычках."
+  },
+  {
+    "match": "Atlantic council",
+    "aliases": [
+      "Atlantic Council"
+    ],
+    "quoted": [
+      "Атлантический совет"
+    ],
+    "note": "«Атлантический совет»."
   }
 ]

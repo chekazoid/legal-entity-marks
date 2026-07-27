@@ -120,7 +120,7 @@ foreach ($cases as [$desc, $html, $who, $expect]) {
 
 echo "\n--- правило отбора should_mark ---\n";
 $settings = [
-    'registries'            => ['inoagent', 'extremist', 'terrorist', 'undesirable'],
+    'mark_registries'       => ['inoagent', 'extremist', 'terrorist', 'undesirable'],
     'inoagent_context_only' => true,
 ];
 $none = ['excluded' => [], 'forced' => []];
@@ -143,7 +143,7 @@ foreach ($rules as [$desc, $match, $st, $ov, $expect]) {
         $expect ? 'да' : 'нет', $got ? 'да' : 'нет');
 }
 
-$st_off = ['registries' => ['extremist'], 'inoagent_context_only' => false];
+$st_off = ['mark_registries' => ['extremist'], 'inoagent_context_only' => false];
 $got = LEM_Frontend::should_mark(['id'=>1,'type'=>'inoagent'], $st_off, $none);
 $ok = ($got === false);
 if (!$ok) { $fail++; }

@@ -3,6 +3,9 @@ defined('ABSPATH') || exit;
 
 class LEM_Frontend {
 
+    /** Сколько статусов показывать под одной сноской, остальные считаем. */
+    const MAX_DISCLAIMER_LINES = 3;
+
     /** ID постов, для которых дисклеймеры уже добавлены в этом запросе. */
     private $applied = [];
 
@@ -95,20 +98,30 @@ class LEM_Frontend {
             return $content;
         }
 
+        // Одно упоминание = одна сноска, даже если под ним несколько записей
+        // реестра: DOXA это и иноагент, и (через юрлицо) нежелательная
+        $groups = [];
+        foreach ($active_matches as $match) {
+            $key = $match['position'] . '|' . mb_strtolower($match['matched_as']);
+            $groups[$key][] = $match;
+        }
+
         $symbols        = ['*', '**', '***', '****', '*****'];
         $disclaimers    = [];
         $marked_content = $content;
+        $idx            = 0;
 
-        foreach ($active_matches as $idx => $match) {
-            $sym         = $symbols[$idx] ?? str_repeat('*', $idx + 1);
-            $entity      = $match['entity'];
+        foreach ($groups as $group) {
+            $sym   = $symbols[$idx] ?? str_repeat('*', $idx + 1);
+            $first = $group[0];
+            $idx++;
 
             // Сначала найденная сканером словоформа, затем остальные варианты
             $try = [];
-            if (!empty($match['matched_as'])) {
-                $try[] = preg_quote($match['matched_as'], '/');
+            if (!empty($first['matched_as'])) {
+                $try[] = preg_quote($first['matched_as'], '/');
             }
-            $body = LEM_Scanner::build_pattern_body($entity, $settings);
+            $body = LEM_Scanner::build_pattern_body($first['entity'], $settings);
             if ($body !== null) {
                 $try[] = '(?:' . $body . ')';
             }
@@ -129,8 +142,45 @@ class LEM_Frontend {
                 }, $marked_content);
             }
 
-            $disclaimers[] = '<p style="margin:4px 0"><sup>' . esc_html($sym) . '</sup> '
-                . esc_html(self::disclaimer_text($entity)) . '</p>';
+            // Метку в текст поставить не удалось (упоминание внутри ссылки или
+            // разорвано тегами) - дисклеймер без сноски только путает
+            if (!$replaced) {
+                $idx--;
+                continue;
+            }
+
+            // Под одним названием в реестре бывает десяток разных организаций
+            // («Мемориал»): показываем три, остальные считаем
+            $lines = [];
+            $seen  = [];
+            foreach ($group as $m) {
+                $text = self::disclaimer_text($m['entity']);
+                if (isset($seen[$text])) {
+                    continue;
+                }
+                $seen[$text] = true;
+                $lines[]     = $text;
+            }
+            $rest  = count($lines) - self::MAX_DISCLAIMER_LINES;
+            $lines = array_slice($lines, 0, self::MAX_DISCLAIMER_LINES);
+
+            $html = '';
+            foreach ($lines as $n => $text) {
+                $html .= '<p style="margin:4px 0">'
+                    . ($n === 0 ? '<sup>' . esc_html($sym) . '</sup> ' : '<span style="margin-left:14px"></span>')
+                    . esc_html($text) . '</p>';
+            }
+            if ($rest > 0) {
+                $html .= '<p style="margin:4px 0 4px 14px">'
+                    . esc_html(sprintf('и ещё %d %s реестра с этим названием',
+                        $rest, self::plural_records($rest)))
+                    . '</p>';
+            }
+            $disclaimers[] = $html;
+        }
+
+        if (empty($disclaimers)) {
+            return $content;
         }
 
         $s = $settings;
@@ -171,7 +221,9 @@ class LEM_Frontend {
      */
     public static function should_mark($match, $settings, $overrides) {
         $type = $match['type'] ?? '';
-        if (!in_array($type, $settings['registries'], true)) {
+        // registries - имя до 1.9.0, могло прийти из стороннего кода
+        $mark = $settings['mark_registries'] ?? $settings['registries'] ?? [];
+        if (!in_array($type, (array) $mark, true)) {
             return false;
         }
 
@@ -269,6 +321,19 @@ class LEM_Frontend {
             default:
                 return $name;
         }
+    }
+
+    /** «запись» / «записи» / «записей» по числу. */
+    private static function plural_records($n) {
+        $n10  = $n % 10;
+        $n100 = $n % 100;
+        if ($n10 === 1 && $n100 !== 11) {
+            return 'запись';
+        }
+        if ($n10 >= 2 && $n10 <= 4 && ($n100 < 12 || $n100 > 14)) {
+            return 'записи';
+        }
+        return 'записей';
     }
 
     /** Прямые кавычки в названии заменяем на ёлочки (см. disclaimer_text). */

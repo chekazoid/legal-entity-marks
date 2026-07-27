@@ -14,10 +14,12 @@ class LEM_Plugin {
     public $cron;
     public $admin;
     public $metabox;
+    public $postlist;
     public $cli;
     public $banned_sites;
     public $link_scanner;
     public $brands;
+    public $report;
 
     public static function instance() {
         if (self::$instance === null) {
@@ -45,10 +47,12 @@ class LEM_Plugin {
         require_once $dir . 'class-lem-banned-sites.php';
         require_once $dir . 'class-lem-link-scanner.php';
         require_once $dir . 'class-lem-brands.php';
+        require_once $dir . 'class-lem-report.php';
 
         if (is_admin()) {
             require_once LEM_DIR . 'admin/class-lem-admin.php';
             require_once $dir . 'class-lem-metabox.php';
+            require_once $dir . 'class-lem-postlist.php';
         }
         if (defined('WP_CLI') && WP_CLI) {
             require_once $dir . 'class-lem-cli.php';
@@ -66,10 +70,12 @@ class LEM_Plugin {
         $this->banned_sites = new LEM_Banned_Sites();
         $this->link_scanner = new LEM_Link_Scanner();
         $this->brands       = new LEM_Brands();
+        $this->report       = new LEM_Report();
 
         if (is_admin()) {
-            $this->admin   = new LEM_Admin();
-            $this->metabox = new LEM_Metabox();
+            $this->admin    = new LEM_Admin();
+            $this->metabox  = new LEM_Metabox();
+            $this->postlist = new LEM_Postlist();
         }
         if (defined('WP_CLI') && WP_CLI) {
             $this->cli = new LEM_CLI();
@@ -154,6 +160,31 @@ class LEM_Plugin {
 
     const SURNAME_MODES = ['off', 'confirmed', 'always'];
 
+    /**
+     * Готовые профили. Маркировка и отслеживание разделены: отслеживаемые
+     * реестры попадают в отчёт «Упоминания», но меток на сайте не оставляют.
+     */
+    const PRESETS = [
+        'media' => [
+            'label' => 'СМИ',
+            'hint'  => 'Маркируются все четыре реестра, как требует закон о СМИ.',
+            'mark'  => ['inoagent', 'extremist', 'terrorist', 'undesirable'],
+            'track' => [],
+        ],
+        'nonmedia' => [
+            'label' => 'Не СМИ',
+            'hint'  => 'Маркируются экстремистские и террористические. Нежелательные только отслеживаются: упоминания и ссылки видны в отчёте, но меток на сайте нет. Иноагенты не затрагиваются.',
+            'mark'  => ['extremist', 'terrorist'],
+            'track' => ['undesirable'],
+        ],
+        'manual' => [
+            'label' => 'Вручную',
+            'hint'  => 'Отмечайте галочками сами.',
+            'mark'  => null,
+            'track' => null,
+        ],
+    ];
+
     public function get_settings() {
         $defaults = [
             'post_types'            => ['post'],
@@ -163,11 +194,15 @@ class LEM_Plugin {
             'disclaimer_border'     => '#f88c00',
             'cron_interval'         => 'weekly',
             'auto_scan_on_publish'  => true,
-            'registries'            => self::REGISTRY_TYPES,
+            'preset'                => 'media',
+            'mark_registries'       => self::REGISTRY_TYPES,
+            'track_registries'      => [],
             'inoagent_context_only' => false,
             'match_word_forms'      => true,
             'surname_mode'          => 'confirmed',
             'mark_excluded'         => false,
+            'extra_fields_mode'     => 'off',   // off | selected | all
+            'extra_fields'          => [],
             'context_triggers'      => [
                 'blockquote' => true,
                 'link'       => true,
@@ -178,11 +213,39 @@ class LEM_Plugin {
         $saved    = get_option('lem_settings', []);
         $settings = wp_parse_args($saved, $defaults);
 
-        // Нормализация: настройки могли прийти из старой версии или из БД в чужом виде
-        $settings['registries'] = array_values(array_intersect(
+        // Совместимость: до 1.9.0 был один список registries, он управлял и
+        // поиском, и маркировкой. Переносим его в «маркировать»
+        if (isset($saved['registries']) && !isset($saved['mark_registries'])) {
+            $settings['mark_registries'] = (array) $saved['registries'];
+        }
+
+        $settings['mark_registries'] = array_values(array_intersect(
             self::REGISTRY_TYPES,
-            (array) ($settings['registries'] ?: [])
+            (array) ($settings['mark_registries'] ?: [])
         ));
+        $settings['track_registries'] = array_values(array_intersect(
+            self::REGISTRY_TYPES,
+            (array) ($settings['track_registries'] ?: [])
+        ));
+
+        // Пресет расставляет галочки сам, «Вручную» оставляет как есть
+        if (!isset(self::PRESETS[$settings['preset']])) {
+            $settings['preset'] = 'manual';
+        }
+        $preset = self::PRESETS[$settings['preset']];
+        if ($preset['mark'] !== null) {
+            $settings['mark_registries']  = $preset['mark'];
+            $settings['track_registries'] = $preset['track'];
+        }
+
+        // Реестр, который маркируется, отслеживается по определению
+        $settings['track_registries'] = array_values(array_unique(array_merge(
+            $settings['track_registries'],
+            $settings['mark_registries']
+        )));
+
+        // Старое имя оставляем для обратной совместимости стороннего кода
+        $settings['registries'] = $settings['mark_registries'];
         $triggers = (array) ($settings['context_triggers'] ?: []);
         foreach (self::CONTEXT_TRIGGERS as $t) {
             $triggers[$t] = !empty($triggers[$t]);
@@ -192,6 +255,13 @@ class LEM_Plugin {
         if (!in_array($settings['surname_mode'], self::SURNAME_MODES, true)) {
             $settings['surname_mode'] = 'confirmed';
         }
+
+        if (!in_array($settings['extra_fields_mode'], ['off', 'selected', 'all'], true)) {
+            $settings['extra_fields_mode'] = 'off';
+        }
+        $settings['extra_fields'] = array_values(array_filter(
+            array_map('strval', (array) ($settings['extra_fields'] ?: []))
+        ));
 
         return $settings;
     }

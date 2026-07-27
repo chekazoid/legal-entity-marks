@@ -34,6 +34,7 @@ class LEM_Admin {
         add_submenu_page('lem-dashboard', 'Реестр', 'Реестр', 'manage_options', 'lem-entities', [$this, 'page_entities']);
         add_submenu_page('lem-dashboard', 'Сканер', 'Сканер', 'manage_options', 'lem-scanner', [$this, 'page_scanner']);
         add_submenu_page('lem-dashboard', 'Ссылки', 'Ссылки', 'manage_options', 'lem-banned-links', [$this, 'page_banned_links']);
+        add_submenu_page('lem-dashboard', 'Упоминания', 'Упоминания', 'manage_options', 'lem-report', [$this, 'page_report']);
         add_submenu_page('lem-dashboard', 'Бренды СМИ', 'Бренды СМИ', 'manage_options', 'lem-brands', [$this, 'page_brands']);
         add_submenu_page('lem-dashboard', 'Настройки', 'Настройки', 'manage_options', 'lem-settings', [$this, 'page_settings']);
     }
@@ -75,8 +76,34 @@ class LEM_Admin {
         include LEM_DIR . 'admin/views/settings.php';
     }
 
+    public function page_report() {
+        include LEM_DIR . 'admin/views/report.php';
+    }
+
     public function page_brands() {
         include LEM_DIR . 'admin/views/brands.php';
+    }
+
+    /**
+     * Выгрузка отчёта «Упоминания» в CSV.
+     */
+    private function handle_report_export() {
+        if (($_GET['lem_export'] ?? '') !== 'csv' || !current_user_can('manage_options')) {
+            return;
+        }
+        check_admin_referer('lem_export_csv');
+
+        nocache_headers();
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=lem-mentions-'
+            . gmdate('Y-m-d') . '.csv');
+
+        lem()->report->export_csv([
+            'registry' => sanitize_text_field(wp_unslash($_GET['registry'] ?? '')),
+            'mode'     => sanitize_text_field(wp_unslash($_GET['mode'] ?? 'all')),
+            'search'   => sanitize_text_field(wp_unslash($_GET['s'] ?? '')),
+        ]);
+        exit;
     }
 
     /**
@@ -197,6 +224,7 @@ class LEM_Admin {
 
     public function handle_actions() {
         $this->handle_brand_actions();
+        $this->handle_report_export();
 
         if (!isset($_POST['lem_settings_nonce'])) {
             return;
@@ -230,12 +258,19 @@ class LEM_Admin {
         }
         $settings['auto_scan_on_publish'] = !empty($_POST['lem_auto_scan']);
 
-        // Категории реестров: отсутствие ключа означает «все сняты»
-        $posted_registries = array_map('sanitize_text_field', (array) ($_POST['lem_registries'] ?? []));
-        $settings['registries'] = array_values(array_intersect(
+        // Профиль сайта и реестры. Отсутствие ключа означает «все галочки сняты»
+        $preset = sanitize_text_field(wp_unslash($_POST['lem_preset'] ?? 'manual'));
+        $settings['preset'] = isset(LEM_Plugin::PRESETS[$preset]) ? $preset : 'manual';
+
+        $settings['mark_registries'] = array_values(array_intersect(
             LEM_Plugin::REGISTRY_TYPES,
-            $posted_registries
+            array_map('sanitize_text_field', (array) ($_POST['lem_mark_registries'] ?? []))
         ));
+        $settings['track_registries'] = array_values(array_intersect(
+            LEM_Plugin::REGISTRY_TYPES,
+            array_map('sanitize_text_field', (array) ($_POST['lem_track_registries'] ?? []))
+        ));
+        unset($settings['registries']); // пересоберётся из mark_registries
 
         // Морфология: словоформы и правило для одиночной фамилии
         $old_forms   = $settings['match_word_forms'];
@@ -247,6 +282,17 @@ class LEM_Admin {
             : 'confirmed';
         $morphology_changed = ($old_forms !== $settings['match_word_forms'])
             || ($old_surname !== $settings['surname_mode']);
+
+        // Дополнительные поля записи
+        $old_extra = [$settings['extra_fields_mode'], $settings['extra_fields']];
+        $mode_extra = sanitize_text_field(wp_unslash($_POST['lem_extra_fields_mode'] ?? 'off'));
+        $settings['extra_fields_mode'] = in_array($mode_extra, ['off', 'selected', 'all'], true)
+            ? $mode_extra : 'off';
+        $settings['extra_fields'] = array_map('sanitize_text_field',
+            (array) wp_unslash($_POST['lem_extra_fields'] ?? []));
+        if ($old_extra !== [$settings['extra_fields_mode'], $settings['extra_fields']]) {
+            $morphology_changed = true; // нужен перескан: изменился объём текста
+        }
 
         // Маркировка исключённых из реестра
         $old_excluded = $settings['mark_excluded'];
@@ -286,12 +332,20 @@ class LEM_Admin {
             );
         }
 
-        if (empty($settings['registries'])) {
+        $fresh = lem()->get_settings();
+        if (empty($fresh['mark_registries']) && empty($fresh['track_registries'])) {
             add_settings_error(
                 'lem_settings',
                 'no_registries',
-                'Не выбрана ни одна категория: маркировка не будет выводиться нигде.',
+                'Не выбран ни один реестр: плагин ничего не будет ни маркировать, ни отслеживать.',
                 'warning'
+            );
+        } elseif (empty($fresh['mark_registries'])) {
+            add_settings_error(
+                'lem_settings',
+                'track_only',
+                'Маркировка отключена полностью. Упоминания будут видны только в разделе «Упоминания».',
+                'info'
             );
         }
     }

@@ -114,6 +114,134 @@ class LEM_Importer {
         return ['applied' => $applied, 'unmatched' => $unmatched];
     }
 
+    /**
+     * Алиасы из официального названия реестра.
+     *
+     * Минюст пишет альтернативные наименования внутри самой записи:
+     *   Nodibinājums «Helpdesk Media Foundation» («Медиа-фонд «Служба поддержки»)
+     *   Проект «Центр «Досье»
+     * Вытаскиваем содержимое кавычек и имя без внешних кавычек. Для физлиц
+     * даём короткую форму «Фамилия Имя».
+     *
+     * Опасные фрагменты (общие слова, одиночные короткие) оборачиваем в ёлочки:
+     * такой алиас ищется только в кавычках, см. LEM_Scanner.
+     *
+     * @return string[]
+     */
+    public static function generate_aliases($name, $is_person = false) {
+        $name = trim((string) $name);
+        if ($name === '') {
+            return [];
+        }
+
+        $out = [];
+
+        if ($is_person) {
+            // Псевдоним в кавычках отбрасываем: ФИО «Псевдоним» -> ФИО
+            $clean = preg_replace('/\s*[«"„].*?[»"“]\s*/u', ' ', $name);
+            $parts = preg_split('/\s+/u', trim($clean), -1, PREG_SPLIT_NO_EMPTY);
+            $short = count($parts) >= 2 ? $parts[0] . ' ' . $parts[1] : '';
+
+            // Псевдоним тоже пригодится: Оксимирон, Монеточка
+            $nicks = [];
+            if (preg_match_all('/[«"„]([^«»"“”]{3,40})[»"“”]/u', $name, $m)) {
+                foreach ($m[1] as $frag) {
+                    $nicks[] = trim($frag);
+                }
+            }
+            $aliases = self::clean_aliases($nicks, $name);
+            // «Фамилия Имя» кавычек не требует: это имя человека, а не бренд
+            if ($short !== '' && mb_strlen($short) >= 5) {
+                array_unshift($aliases, $short);
+            }
+            return array_values(array_unique($aliases));
+        }
+
+        // Организации: содержимое кавычек
+        if (preg_match_all('/[«"„]([^«»"“”]{3,60})[»"“”]/u', $name, $m)) {
+            foreach ($m[1] as $frag) {
+                $out[] = trim($frag);
+            }
+        }
+        // Название целиком в кавычках: «Конгресс народов Ичкерии» -> без кавычек.
+        // Только когда кавычки с обеих сторон, иначе получается обрывок
+        // вроде «Новостной портал «DOXA» без закрывающей кавычки
+        if (preg_match('/^[«"„](.+)[»"“”]$/u', $name, $m)) {
+            $inner = trim($m[1]);
+            if (mb_strpos($inner, '«') === false && mb_strpos($inner, '"') === false) {
+                $out[] = $inner;
+            }
+        }
+
+        return self::clean_aliases($out, $name);
+    }
+
+    /**
+     * Отсев и защита сгенерированных алиасов.
+     */
+    private static function clean_aliases(array $list, $name) {
+        $out  = [];
+        $seen = [mb_strtolower($name) => true];
+
+        foreach ($list as $alias) {
+            $alias = trim($alias, " \t\n\r\0\x0B.,;:");
+            if (mb_strlen($alias) < 3) {
+                continue;
+            }
+            $low = mb_strtolower($alias);
+            if (isset($seen[$low])) {
+                continue;
+            }
+            $seen[$low] = true;
+
+            // Страна регистрации это не название организации
+            if (self::is_country($alias)) {
+                continue;
+            }
+            $out[] = self::is_risky_alias($alias) ? '«' . $alias . '»' : $alias;
+        }
+
+        return $out;
+    }
+
+    /**
+     * Алиас, который без кавычек ловил бы обычную речь.
+     *
+     * Короткое кириллическое название из одного-трёх обиходных по длине слов
+     * («ВОТ ТАК», «Служба поддержки», «Досье») в тексте статьи неотличимо от
+     * оборота речи. Длинные слова («Национал-большевистская») и латиница
+     * (DOXA, SOTA) различимы сами по себе, их оставляем как есть.
+     */
+    private static function is_risky_alias($alias) {
+        if (preg_match('/[A-Za-z0-9]/', $alias)) {
+            return false; // латиница или цифры: ни с чем не спутать
+        }
+        $words = preg_split('/\s+/u', trim($alias), -1, PREG_SPLIT_NO_EMPTY);
+        if (count($words) > 3) {
+            return false; // длинное название само по себе конкретно
+        }
+        foreach ($words as $w) {
+            if (mb_strlen($w) > 10) {
+                return false; // редкое длинное слово различимо
+            }
+        }
+        return true;
+    }
+
+    /** Страны и их официальные формы, встречающиеся в записях реестра. */
+    private static function is_country($text) {
+        $t = mb_strtolower(trim($text));
+        $t = preg_replace('/^(федеративная|чешская|литовская|латвийская|эстонская|словацкая|французская)\s+/u', '', $t);
+        $countries = [
+            'республика', 'соединенные штаты америки', 'соединённые штаты америки',
+            'великобритания', 'соединенное королевство', 'германия', 'франция',
+            'нидерланды', 'канада', 'литва', 'латвия', 'эстония', 'польша',
+            'чехия', 'грузия', 'украина', 'израиль', 'швейцария', 'швеция',
+            'норвегия', 'финляндия', 'испания', 'италия', 'бельгия', 'австрия',
+        ];
+        return in_array($t, $countries, true);
+    }
+
     public function import_json($file, $type_override = null) {
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
@@ -144,6 +272,13 @@ class LEM_Importer {
             if (!is_array($aliases)) {
                 $aliases = [];
             }
+            // Онлайн-загрузчики Минюста алиасов не дают вообще, поэтому строим их
+            // сами: иначе организации, попавшие в реестр после сборки плагина,
+            // находились бы только по полному юридическому названию
+            $aliases = array_values(array_unique(array_merge(
+                $aliases,
+                self::generate_aliases($name, $is_person)
+            )));
 
             $date_in = $this->parse_date($entry['date_included'] ?? $entry['dateIn'] ?? null);
             $date_out = $this->parse_date($entry['date_excluded'] ?? $entry['dateOut'] ?? null);

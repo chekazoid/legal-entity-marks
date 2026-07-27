@@ -137,8 +137,19 @@ class LEM_Scanner {
                 $quoted_terms[] = $term;
                 continue;
             }
-            // preg_quote пробел не экранирует, поэтому заменяем именно пробел
-            $frags[] = str_replace(' ', self::WORD_SEP, preg_quote($term, '/'));
+            // Однословные названия склоняем: в статьях пишут «по данным Медузы»,
+            // «материал Вёрстки». Многословные оставляем как есть, чтобы не
+            // плодить формы у длинных официальных наименований
+            $forms = (mb_strpos(trim($term), ' ') === false)
+                ? LEM_Morphology::brand_forms($term)
+                : [$term];
+
+            if (count($forms) > 1) {
+                $frags[] = self::alternation($forms);
+            } else {
+                // preg_quote пробел не экранирует, поэтому заменяем именно пробел
+                $frags[] = str_replace(' ', self::WORD_SEP, preg_quote($term, '/'));
+            }
         }
 
         // Брендовые алиасы: в 'strict' требуют кавычек, в 'all' матчатся и без
@@ -557,13 +568,14 @@ class LEM_Scanner {
 
         usort($found, fn($a, $b) => $a['position'] - $b['position']);
 
-        // Дедуп: один и тот же фрагмент текста может совпасть с несколькими
-        // записями реестра (дубли-регистрации одного издания, брендовые алиасы
-        // на нескольких юрлицах). Оставляем одну пометку на упоминание.
+        // Дедуп внутри одного реестра: дубли-регистрации одного издания
+        // схлопываем. Разные реестры сохраняем: организация может быть
+        // одновременно иноагентом и нежелательной (DOXA), и это разные статусы
+        // с разными датами. Группировка в одну сноску - забота вывода.
         $seen   = [];
         $unique = [];
         foreach ($found as $f) {
-            $key = $f['position'] . '|' . mb_strtolower($f['matched_as']);
+            $key = $f['position'] . '|' . mb_strtolower($f['matched_as']) . '|' . $f['type'];
             if (isset($seen[$key])) {
                 continue;
             }
@@ -571,6 +583,107 @@ class LEM_Scanner {
             $unique[]   = $f;
         }
         return $unique;
+    }
+
+    /**
+     * Текст записи целиком: заголовок, тело и дополнительные поля.
+     *
+     * Темы часто выводят подзаголовок или лид отдельным блоком мимо
+     * the_content - такие упоминания сканер не видел вовсе. Поля выбираются
+     * в настройках; для текста, которого нет в базе, есть фильтр.
+     */
+    public function collect_text($post, $settings = null) {
+        if ($settings === null) {
+            $settings = lem()->get_settings();
+        }
+        $parts = [$post->post_title, $post->post_content];
+
+        $mode = $settings['extra_fields_mode'] ?? 'off';
+        if ($mode !== 'off') {
+            $keys = ($mode === 'all')
+                ? array_keys(get_post_meta($post->ID))
+                : (array) ($settings['extra_fields'] ?? []);
+
+            foreach ($keys as $key) {
+                if (strpos($key, '_') === 0) {
+                    continue; // служебные поля WordPress и плагинов
+                }
+                foreach ((array) get_post_meta($post->ID, $key, false) as $value) {
+                    if (is_string($value) && trim($value) !== '') {
+                        $parts[] = $value;
+                    }
+                }
+            }
+        }
+
+        $text = implode("\n\n", array_filter($parts));
+
+        /**
+         * Дополнительный текст записи, которого нет в базе: тема собирает
+         * заголовочный комплекс на лету.
+         *
+         * @param string  $extra
+         * @param WP_Post $post
+         */
+        $extra = apply_filters('lem_scan_extra_text', '', $post);
+        if (is_string($extra) && trim($extra) !== '') {
+            $text .= "\n\n" . $extra;
+        }
+
+        return $text;
+    }
+
+    /**
+     * Произвольные поля, в которых на этом сайте лежит текст.
+     *
+     * Нужно для настроек: администратор не обязан знать ключи полей своей
+     * темы, поэтому показываем их сами с примером содержимого.
+     *
+     * @return array ключ => пример значения
+     */
+    public static function discover_meta_keys($limit = 40) {
+        global $wpdb;
+        $types = lem()->get_settings()['post_types'];
+        if (empty($types)) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($types), '%s'));
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT pm.meta_key, pm.meta_value
+             FROM {$wpdb->postmeta} pm
+             INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+             WHERE p.post_type IN ($placeholders)
+               AND p.post_status = 'publish'
+               AND pm.meta_key NOT LIKE '\\_%'
+               AND pm.meta_value != ''
+             LIMIT 3000",
+            ...$types
+        ));
+
+        $out = [];
+        foreach ($rows as $r) {
+            if (isset($out[$r->meta_key]) || !is_string($r->meta_value)) {
+                continue;
+            }
+            $value = trim(wp_strip_all_tags($r->meta_value));
+            // Только осмысленный текст: числа, id и сериализованное пропускаем
+            if ($value === '' || is_numeric($value) || mb_strlen($value) < 12) {
+                continue;
+            }
+            if (preg_match('/^[a:{]|^\{"/', $value)) {
+                continue;
+            }
+            if (!preg_match('/\pL{3,}\s+\pL{3,}/u', $value)) {
+                continue;
+            }
+            $out[$r->meta_key] = mb_substr($value, 0, 90);
+            if (count($out) >= $limit) {
+                break;
+            }
+        }
+        ksort($out);
+        return $out;
     }
 
     public function scan_post($post_id) {
@@ -585,7 +698,7 @@ class LEM_Scanner {
             return [];
         }
 
-        $found = $this->scan_text($post->post_title . "\n\n" . $post->post_content);
+        $found = $this->scan_text($this->collect_text($post, $settings));
         $meta  = [
             'entities'     => $found,
             'scanned_at'   => current_time('mysql'),
@@ -731,7 +844,7 @@ class LEM_Scanner {
 
         try {
             foreach ($posts as $post) {
-                $found = $this->scan_text($post->post_title . "\n\n" . $post->post_content, $entities);
+                $found = $this->scan_text($this->collect_text($post, $settings), $entities);
                 if (!empty($found)) {
                     $meta_json = wp_json_encode([
                         'entities'     => $found,
@@ -867,7 +980,7 @@ class LEM_Scanner {
             }
 
             foreach ($posts as $post) {
-                $found = $this->scan_text($post->post_title . "\n\n" . $post->post_content, $entities);
+                $found = $this->scan_text($this->collect_text($post, $settings), $entities);
                 if (!empty($found)) {
                     if (!$dry_run) {
                         $meta_json = wp_json_encode([

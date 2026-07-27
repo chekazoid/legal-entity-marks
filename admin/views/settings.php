@@ -28,7 +28,21 @@ $all_post_types = get_post_types(['public' => true], 'objects');
             </tr>
 
             <tr>
-                <th scope="row">Какие реестры маркировать</th>
+                <th scope="row">Профиль сайта</th>
+                <td>
+                    <?php foreach (LEM_Plugin::PRESETS as $key => $preset) : ?>
+                        <label style="display:block;margin-bottom:6px">
+                            <input type="radio" name="lem_preset" value="<?php echo esc_attr($key); ?>"
+                                   <?php checked($settings['preset'], $key); ?>>
+                            <strong><?php echo esc_html($preset['label']); ?></strong>
+                            <span class="description"><?php echo esc_html($preset['hint']); ?></span>
+                        </label>
+                    <?php endforeach; ?>
+                </td>
+            </tr>
+
+            <tr>
+                <th scope="row">Реестры</th>
                 <td>
                     <?php
                     $registry_labels = [
@@ -37,17 +51,47 @@ $all_post_types = get_post_types(['public' => true], 'objects');
                         'terrorist'   => 'Террористические организации',
                         'undesirable' => 'Нежелательные организации',
                     ];
-                    foreach ($registry_labels as $key => $label) : ?>
-                        <label style="display:block;margin-bottom:4px">
-                            <input type="checkbox" name="lem_registries[]"
-                                   value="<?php echo esc_attr($key); ?>"
-                                   <?php checked(in_array($key, $settings['registries'], true)); ?>>
-                            <?php echo esc_html($label); ?>
-                        </label>
-                    <?php endforeach; ?>
+                    $manual = $settings['preset'] === 'manual';
+                    ?>
+                    <table class="widefat" style="max-width:560px">
+                        <thead>
+                            <tr>
+                                <th>Реестр</th>
+                                <th style="width:110px;text-align:center">Маркировать</th>
+                                <th style="width:130px;text-align:center">Отслеживать</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($registry_labels as $key => $label) : ?>
+                            <tr>
+                                <td><?php echo esc_html($label); ?></td>
+                                <td style="text-align:center">
+                                    <input type="checkbox" name="lem_mark_registries[]"
+                                           value="<?php echo esc_attr($key); ?>"
+                                           <?php checked(in_array($key, $settings['mark_registries'], true)); ?>
+                                           <?php disabled(!$manual); ?>>
+                                </td>
+                                <td style="text-align:center">
+                                    <input type="checkbox" name="lem_track_registries[]"
+                                           value="<?php echo esc_attr($key); ?>"
+                                           <?php checked(in_array($key, $settings['track_registries'], true)); ?>
+                                           <?php disabled(!$manual); ?>>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
                     <p class="description">
-                        Выключенная категория не маркируется и не попадает в блок дисклеймеров.
-                        Пересканирование не требуется, изменение действует сразу.
+                        <strong>Маркировать</strong> - сноска в тексте и строка в блоке дисклеймеров.<br>
+                        <strong>Отслеживать</strong> - без меток на сайте, но упоминания и ссылки видны
+                        в разделе «Упоминания». Нужно, когда маркировка не требуется, а знать о факте
+                        упоминания надо.<br>
+                        Маркируемый реестр отслеживается автоматически. Изменения действуют сразу,
+                        пересканирование не требуется.
+                        <?php if (!$manual) : ?>
+                            <br><em>Галочки расставляет выбранный профиль. Чтобы менять вручную,
+                            выберите профиль «Вручную».</em>
+                        <?php endif; ?>
                     </p>
                 </td>
             </tr>
@@ -125,6 +169,52 @@ $all_post_types = get_post_types(['public' => true], 'objects');
                             признак «упомянут в цитате» вычисляется во время сканирования.
                         </p>
                     </div>
+                </td>
+            </tr>
+
+            <tr>
+                <th scope="row">Дополнительные поля</th>
+                <td>
+                    <?php $efm = $settings['extra_fields_mode']; ?>
+                    <label style="display:block;margin-bottom:4px">
+                        <input type="radio" name="lem_extra_fields_mode" value="off" <?php checked($efm, 'off'); ?>>
+                        Не сканировать (только заголовок и текст записи)
+                    </label>
+                    <label style="display:block;margin-bottom:4px">
+                        <input type="radio" name="lem_extra_fields_mode" value="selected" <?php checked($efm, 'selected'); ?>>
+                        Сканировать выбранные поля
+                    </label>
+                    <label style="display:block;margin-bottom:8px">
+                        <input type="radio" name="lem_extra_fields_mode" value="all" <?php checked($efm, 'all'); ?>>
+                        Сканировать все произвольные поля
+                    </label>
+
+                    <?php $found = LEM_Scanner::discover_meta_keys(); ?>
+                    <?php if (empty($found)) : ?>
+                        <p class="description">Полей с текстом на сайте не найдено.</p>
+                    <?php else : ?>
+                        <div style="max-height:220px;overflow:auto;border:1px solid #dcdcde;padding:8px;max-width:640px">
+                            <?php foreach ($found as $key => $sample) : ?>
+                                <label style="display:block;margin-bottom:6px">
+                                    <input type="checkbox" name="lem_extra_fields[]"
+                                           value="<?php echo esc_attr($key); ?>"
+                                           <?php checked(in_array($key, $settings['extra_fields'], true)); ?>>
+                                    <code><?php echo esc_html($key); ?></code>
+                                    <span class="description">- <?php echo esc_html($sample); ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <p class="description">
+                        Темы часто выводят подзаголовок или лид отдельным блоком, мимо основного
+                        текста записи - такие упоминания сканер не видит. Здесь показаны
+                        произвольные поля этого сайта, в которых лежит текст: отметьте нужные.
+                        После изменения запустите пересканирование.
+                        <br>
+                        Если текст собирается темой на лету и в базе его нет, используйте фильтр
+                        <code>lem_scan_extra_text</code>.
+                    </p>
                 </td>
             </tr>
 
