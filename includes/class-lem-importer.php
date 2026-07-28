@@ -3,6 +3,9 @@ defined('ABSPATH') || exit;
 
 class LEM_Importer {
 
+    /** Итоги последнего обновления реестров: домены, собранные из данных Минюста. */
+    public $last_fetch_domains = 0;
+
     public function import_all_bundled() {
         $files = [
             'inoagent'    => LEM_DATA_DIR . '/foreign-agents-raw.json',
@@ -163,6 +166,14 @@ class LEM_Importer {
                 $out[] = trim($frag);
             }
         }
+        // Название без хвоста страны и организационно-правовой формы:
+        // «Eurasianet, США» -> «Eurasianet», «Hidemy.network Ltd.» -> «Hidemy.network».
+        // В статьях пишут именно так, а поиск шёл по строке целиком
+        $trimmed = self::strip_legal_suffix($name);
+        if ($trimmed !== $name && mb_strlen($trimmed) >= 4) {
+            $out[] = $trimmed;
+        }
+
         // Название целиком в кавычках: «Конгресс народов Ичкерии» -> без кавычек.
         // Только когда кавычки с обеих сторон, иначе получается обрывок
         // вроде «Новостной портал «DOXA» без закрывающей кавычки
@@ -228,6 +239,163 @@ class LEM_Importer {
         return true;
     }
 
+    /**
+     * Площадки, на которых организация только ведёт аккаунт.
+     * Их домены в реестр запрещённых не попадают: иначе любая ссылка
+     * на YouTube или телеграм считалась бы ссылкой на иноагента.
+     */
+    const SOCIAL_HOSTS = [
+        'youtube.com', 'youtu.be', 'vk.com', 'ok.ru', 'facebook.com', 'fb.com',
+        'instagram.com', 'threads.com', 'threads.net', 'twitter.com', 'x.com',
+        't.me', 'telegram.me', 'telegram.org', 'tiktok.com', 'soundcloud.com',
+        'podcasts.apple.com', 'music.apple.com', 'open.spotify.com', 'spotify.com',
+        'patreon.com', 'boosty.to', 'linkedin.com', 'medium.com', 'github.com',
+        'rutube.ru', 'dzen.ru', 'zen.yandex.ru', 'yandex.ru', 'google.com',
+        'castbox.fm', 'anchor.fm', 'flipboard.com', 'tumblr.com', 'pinterest.com',
+    ];
+
+    /**
+     * Собственные домены организации из поля со ссылками.
+     *
+     * @param string $raw «https://doxa.team/; https://twitter.com/doxa_journal; ...»
+     * @return string[] только свои сайты, без соцсетей
+     */
+    public static function extract_own_domains($raw) {
+        $out = [];
+        foreach (preg_split('/[;,\s]+/u', (string) $raw, -1, PREG_SPLIT_NO_EMPTY) as $url) {
+            $url = trim($url);
+            if ($url === '' || !preg_match('#^https?://#i', $url)) {
+                continue;
+            }
+            $host = LEM_Banned_Sites::normalize_domain($url);
+            if ($host === '' || strpos($host, '.') === false) {
+                continue;
+            }
+            foreach (self::SOCIAL_HOSTS as $social) {
+                if ($host === $social || substr($host, -strlen('.' . $social)) === '.' . $social) {
+                    continue 2;
+                }
+            }
+            $out[$host] = true;
+        }
+        return array_keys($out);
+    }
+
+    /**
+     * Аккаунты организации на чужих площадках.
+     *
+     * Домен телеграма или YouTube запрещать нельзя, а конкретный канал можно:
+     * «https://t.me/doxajournal» -> t.me + doxajournal.
+     *
+     * @return array<int, array{domain: string, account: string}>
+     */
+    public static function extract_social_accounts($raw) {
+        $out = [];
+        foreach (preg_split('/[;,\s]+/u', (string) $raw, -1, PREG_SPLIT_NO_EMPTY) as $url) {
+            $url = trim($url);
+            if ($url === '' || !preg_match('#^https?://#i', $url)) {
+                continue;
+            }
+            $target = LEM_Banned_Sites::split_target($url);
+            if ($target['domain'] === '' || $target['account'] === '') {
+                continue;
+            }
+            $out[$target['domain'] . '/' . $target['account']] = $target;
+        }
+        return array_values($out);
+    }
+
+    /**
+     * Ресурсы организации в реестр запрещённых, со связкой с записью реестра.
+     * Связь нужна отчёту: по ссылке видно, чей это ресурс и какого он реестра.
+     *
+     * @param array $targets ['domain' => ..., 'account' => ''] - пустой аккаунт
+     *                       означает, что запрещён весь домен
+     */
+    private function sync_entity_targets($entity_id, array $targets, $label) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'lem_banned_sites';
+        $added = 0;
+
+        foreach ($targets as $target) {
+            $domain  = $target['domain'] ?? '';
+            $account = $target['account'] ?? '';
+            if ($domain === '') {
+                continue;
+            }
+
+            $existing = $wpdb->get_row($wpdb->prepare(
+                "SELECT id, entity_id FROM $table WHERE domain = %s AND account = %s LIMIT 1",
+                $domain, $account
+            ));
+            if ($existing) {
+                // Ресурс мог быть добавлен вручную без связи с реестром
+                if (empty($existing->entity_id)) {
+                    $wpdb->update($table, ['entity_id' => $entity_id], ['id' => $existing->id]);
+                }
+                continue;
+            }
+            $wpdb->insert($table, [
+                'domain'    => $domain,
+                'account'   => $account,
+                'label'     => mb_substr($label, 0, 500),
+                'entity_id' => $entity_id,
+            ]);
+            $added++;
+        }
+
+        if ($added > 0) {
+            lem()->banned_sites->flush_cache();
+        }
+        return $added;
+    }
+
+    /** Страна регистрации в хвосте названия: «, США», «(ФРГ)», «, Чешская Республика». */
+    const COUNTRY_TAIL = '(?:США|ФРГ|Канада|Великобритания|Германия|Франция|Нидерланды|Латвия|Литва|Эстония|Польша|Чехия|Грузия|Украина|Израиль|Швейцария|Швеция|Норвегия|Финляндия|Испания|Италия|Бельгия|Австрия|Дания|Армения|Казахстан|Молдова|Азербайджан|(?:Федеративная|Чешская|Литовская|Латвийская|Эстонская|Словацкая|Французская)\s+Республика|Соединённые\s+Штаты\s+Америки|Соединенные\s+Штаты\s+Америки)';
+
+    /** Организационно-правовая форма в хвосте: Inc., Ltd., gGmbH, e.V., z.s. */
+    const LEGAL_TAIL = '(?:Inc\.?|LLC|Ltd\.?|Limited|gGmbH|GmbH|mbH|e\.\s?V\.|z\.\s?s\.|o\.\s?p\.\s?s\.|s\.\s?r\.\s?o\.|SIA|A\/S|N\.?V\.?|B\.?V\.?|PLC|Corp\.?)';
+
+    /**
+     * Убирает хвост страны и организационно-правовой формы.
+     * «Cultural Vistas (США)» -> «Cultural Vistas»
+     */
+    public static function strip_legal_suffix($name) {
+        $s = trim((string) $name);
+        $before = null;
+        // Хвостов может быть несколько: «Dekoder gGmbH, ФРГ»
+        while ($before !== $s) {
+            $before = $s;
+            $s = preg_replace('/[\s,]*\(\s*' . self::COUNTRY_TAIL . '\s*\)\s*$/u', '', $s);
+            $s = preg_replace('/\s*,\s*' . self::COUNTRY_TAIL . '\s*$/u', '', $s);
+            $s = preg_replace('/[\s,]*' . self::LEGAL_TAIL . '\s*$/u', '', $s);
+            $s = rtrim($s, " \t,;");
+        }
+        return trim($s);
+    }
+
+    /**
+     * Название - это не организация, а обрывок описания со страницы Минюста.
+     *
+     * Парсер берёт абзацы подряд, поэтому в реестр экстремистских попадают
+     * куски вроде «эмблема Партии представляет собой...» или сноска
+     * «Организация исключена в связи с ликвидацией...».
+     */
+    public static function is_junk_name($name) {
+        $n = trim((string) $name);
+        if ($n === '') {
+            return true;
+        }
+        $starts = '/^(Организация исключена|Организация ликвидирована|Решение[мс]?\s|Признан[оаы]?\s|Указанн|Согласно\s|В соответствии\s|в соответствии\s|Деятельность организации призна|[Ээ]мблема|[Фф]лаг\s|Символика|а также\s|при этом\s|кроме того)/u';
+        if (preg_match($starts, $n)) {
+            return true;
+        }
+        if (preg_match('/(представляет собой|имеет свои символы|по основаниям, предусмотренным)/u', $n)) {
+            return true;
+        }
+        return false;
+    }
+
     /** Страны и их официальные формы, встречающиеся в записях реестра. */
     private static function is_country($text) {
         $t = mb_strtolower(trim($text));
@@ -258,10 +426,11 @@ class LEM_Importer {
         $added = 0;
         $skipped = 0;
         $updated = 0;
+        $domains = 0;
 
         foreach ($data as $entry) {
             $name = trim($entry['name'] ?? $entry['fullName'] ?? '');
-            if (empty($name)) {
+            if (empty($name) || self::is_junk_name($name)) {
                 $skipped++;
                 continue;
             }
@@ -300,6 +469,7 @@ class LEM_Importer {
                     'date_excluded' => $date_out,
                     'is_active'     => $is_active,
                 ], ['id' => $existing->id]);
+                $entity_id = (int) $existing->id;
                 $updated++;
             } else {
                 $wpdb->insert($table, [
@@ -311,12 +481,31 @@ class LEM_Importer {
                     'date_excluded' => $date_out,
                     'is_active'     => $is_active,
                 ]);
+                $entity_id = (int) $wpdb->insert_id;
                 $added++;
+            }
+
+            // Официальные ресурсы организации из реестра: домены и аккаунты идут
+            // в сканер ссылок и связываются с этой записью
+            if ($entity_id > 0) {
+                $targets = [];
+                foreach ((array) ($entry['sites'] ?? []) as $site) {
+                    $targets[] = ['domain' => $site, 'account' => ''];
+                }
+                foreach ((array) ($entry['accounts'] ?? []) as $account) {
+                    if (!empty($account['domain']) && !empty($account['account'])) {
+                        $targets[] = $account;
+                    }
+                }
+                if (!empty($targets)) {
+                    $domains += $this->sync_entity_targets($entity_id, $targets, $name);
+                }
             }
         }
 
         lem()->entities->flush_cache();
-        return ['added' => $added, 'updated' => $updated, 'skipped' => $skipped, 'total' => count($data)];
+        return ['added' => $added, 'updated' => $updated, 'skipped' => $skipped,
+                'domains' => $domains, 'total' => count($data)];
     }
 
     public function import_fz255($file) {
@@ -422,14 +611,15 @@ class LEM_Importer {
         $skipped = 0;
 
         foreach ($data as $entry) {
-            $domain = LEM_Banned_Sites::normalize_domain($entry['domain'] ?? '');
-            if (empty($domain)) {
+            // insert() сам разберёт t.me/doxajournal на площадку и аккаунт
+            $raw = trim((string) ($entry['domain'] ?? ''));
+            if ($raw === '') {
                 $skipped++;
                 continue;
             }
 
             $result = lem()->banned_sites->insert([
-                'domain' => $domain,
+                'domain' => $raw,
                 'label'  => $entry['label'] ?? '',
             ]);
 
@@ -449,8 +639,9 @@ class LEM_Importer {
      * ------------------------------------------------------------------ */
 
     public function fetch_all($log_callback = null) {
-        $log    = $log_callback ?: function ($msg) {};
-        $errors = [];
+        $log     = $log_callback ?: function ($msg) {};
+        $errors  = [];
+        $domains = 0;
 
         $sources = [
             'inoagent'    => 'fetch_inoagents',
@@ -474,11 +665,13 @@ class LEM_Importer {
                 $fallback = LEM_DATA_DIR . '/' . $fallback_files[$type];
                 if (file_exists($fallback)) {
                     $fb_result = $this->import_json($fallback, $type);
+                    $domains  += (int) ($fb_result['domains'] ?? 0);
                     $log("  Fallback: added={$fb_result['added']}, updated={$fb_result['updated']}");
                 } else {
                     $log("  No fallback file found: $fallback");
                 }
             } else {
+                $domains += (int) ($result['domains'] ?? 0);
                 $log("  OK: added={$result['added']}, updated={$result['updated']}, total={$result['total']}");
             }
         }
@@ -487,6 +680,9 @@ class LEM_Importer {
         $log('Обновление реестра запрещённых доменов...');
         $bs = $this->import_banned_sites();
         $log("  Добавлено={$bs['added']}, пропущено={$bs['skipped']}");
+        if ($domains > 0) {
+            $log("  Из записей реестра взято новых доменов: $domains");
+        }
 
         // Брендовые алиасы поверх свежих официальных названий
         $ba = $this->apply_brand_aliases();
@@ -501,6 +697,7 @@ class LEM_Importer {
         }
 
         lem()->entities->flush_cache();
+        $this->last_fetch_domains = $domains;
         return $errors;
     }
 
@@ -575,6 +772,14 @@ class LEM_Importer {
                     'aliases'   => $aliases,
                     'is_person' => $is_person,
                 ];
+
+                // Минюст публикует официальные ресурсы организации (field_6_s).
+                // Это лучший источник доменов для сканера ссылок: он точный,
+                // обновляется вместе с реестром и не требует ручного списка
+                if (!empty($item['field_6_s'])) {
+                    $entry['sites']    = self::extract_own_domains($item['field_6_s']);
+                    $entry['accounts'] = self::extract_social_accounts($item['field_6_s']);
+                }
 
                 if (!empty($item['field_4_s'])) {
                     $entry['dateIn'] = $item['field_4_s'];

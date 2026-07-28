@@ -102,8 +102,90 @@ class LEM_Report {
             }
         }
 
+        $items = array_merge($items, $this->link_only_rows($items, $links_by_post, [
+            'registry' => $registry,
+            'mode'     => $mode,
+            'search'   => $search,
+            'track'    => $track,
+        ]));
+
         $total = count($items);
         return ['items' => array_slice($items, $offset, $limit), 'total' => $total];
+    }
+
+    /**
+     * Материалы, где организация по имени не названа, но есть ссылка на её ресурс.
+     *
+     * Такие записи не попадали в отчёт вовсе: он строился по находкам сканера
+     * текста. Между тем именно ссылка на ресурс нежелательной организации и есть
+     * то, что важно найти, поэтому показываем их отдельными строками.
+     */
+    private function link_only_rows(array $items, array $links_by_post, array $args) {
+        global $wpdb;
+
+        if (empty($links_by_post) || $args['mode'] === 'marked') {
+            return [];
+        }
+
+        $already = [];
+        foreach ($items as $i) {
+            $already[$i['post_id']] = true;
+        }
+        $ids = array_diff(array_keys($links_by_post), array_keys($already));
+        if (empty($ids)) {
+            return [];
+        }
+
+        $in    = implode(',', array_map('intval', $ids));
+        $posts = $wpdb->get_results(
+            "SELECT ID, post_title, post_type, post_status FROM {$wpdb->posts}
+             WHERE ID IN ($in)
+               AND post_status IN ('publish','draft','pending','private','future')
+             ORDER BY post_date DESC"
+        );
+
+        $out = [];
+        foreach ($posts as $p) {
+            // Одна строка на организацию, а не на каждую её ссылку
+            $by_owner = [];
+            foreach ($links_by_post[$p->ID] as $l) {
+                $key = $l['org'] !== '' ? $l['org'] : $l['domain'];
+                $by_owner[$key]['type']    = $l['type'];
+                $by_owner[$key]['links'][] = $l;
+            }
+
+            foreach ($by_owner as $org => $data) {
+                $type = $data['type'];
+                // Ресурс без связки с реестром показываем всегда: домен добавили руками
+                if ($type !== '' && !in_array($type, $args['track'], true)) {
+                    continue;
+                }
+                if ($args['registry'] !== '' && $type !== $args['registry']) {
+                    continue;
+                }
+                if ($args['search'] !== ''
+                    && mb_stripos($org, $args['search']) === false
+                    && mb_stripos($p->post_title, $args['search']) === false) {
+                    continue;
+                }
+
+                $out[] = [
+                    'post_id'    => (int) $p->ID,
+                    'post_title' => $p->post_title,
+                    'post_type'  => $p->post_type,
+                    'status'     => $p->post_status,
+                    'entity_id'  => 0,
+                    'name'       => $org,
+                    'type'       => $type,
+                    'matched_as' => 'только ссылка',
+                    'marked'     => false,
+                    'in_context' => null,
+                    'links'      => $data['links'],
+                    'active'     => 1,
+                ];
+            }
+        }
+        return $out;
     }
 
     /**
@@ -116,14 +198,34 @@ class LEM_Report {
              WHERE meta_key = %s AND meta_value != '' LIMIT 5000",
             LEM_BANNED_LINKS_META_KEY
         ));
+
+        // Чей это ресурс: домены Минюст публикует вместе с записью реестра,
+        // поэтому по ссылке видно организацию и её реестр
+        $owners = [];
+        $sites  = $wpdb->prefix . 'lem_banned_sites';
+        $ents   = $wpdb->prefix . LEM_TABLE;
+        foreach ($wpdb->get_results(
+            "SELECT s.domain, s.account, s.label, e.name, e.type
+             FROM $sites s LEFT JOIN $ents e ON e.id = s.entity_id"
+        ) as $s) {
+            $key = $s->account !== '' ? $s->domain . '/' . $s->account : $s->domain;
+            $owners[$key] = [
+                'org'  => $s->name ?: $s->label,
+                'type' => $s->type ?: '',
+            ];
+        }
+
         $out = [];
         foreach ($rows as $r) {
             $meta = json_decode($r->meta_value, true);
             foreach (($meta['links'] ?? []) as $l) {
+                $domain = $l['matched_domain'] ?? '';
                 $out[(int) $r->post_id][] = [
                     'url'    => $l['url'] ?? '',
                     'anchor' => $l['anchor'] ?? '',
-                    'domain' => $l['matched_domain'] ?? '',
+                    'domain' => $domain,
+                    'org'    => $owners[$domain]['org'] ?? '',
+                    'type'   => $owners[$domain]['type'] ?? '',
                 ];
             }
         }
@@ -135,6 +237,9 @@ class LEM_Report {
         $all = $this->get_rows(['limit' => 100000]);
         $out = [];
         foreach ($all['items'] as $i) {
+            if ($i['type'] === '') {
+                continue; // ссылка на домен, добавленный вручную, без записи реестра
+            }
             $out[$i['type']]['mentions'] = ($out[$i['type']]['mentions'] ?? 0) + 1;
             $out[$i['type']]['posts'][$i['post_id']] = true;
         }
@@ -162,7 +267,8 @@ class LEM_Report {
 
         foreach ($rows['items'] as $r) {
             $links = array_map(static function ($l) {
-                return $l['url'] . ' (' . $l['domain'] . ')';
+                $who = $l['org'] !== '' ? $l['org'] : $l['domain'];
+                return $l['url'] . ' -> ' . $who;
             }, $r['links']);
 
             fputcsv($fh, [

@@ -3,8 +3,48 @@ defined('ABSPATH') || exit;
 
 class LEM_Banned_Sites {
 
-    const TRANSIENT_KEY = 'lem_banned_sites_all';
-    const TRANSIENT_TTL = HOUR_IN_SECONDS;
+    const TRANSIENT_KEY  = 'lem_banned_sites_all';
+    const ACCOUNTS_KEY   = 'lem_banned_sites_accounts';
+    const TRANSIENT_TTL  = HOUR_IN_SECONDS;
+
+    /**
+     * Площадки, где первый сегмент пути это имя аккаунта.
+     * Значение - служебные сегменты перед именем: youtube.com/channel/UC..., t.me/s/name.
+     *
+     * Домен такой площадки в реестр не попадает: запретить t.me целиком значит
+     * пометить любую ссылку на телеграм. Запрещается конкретный аккаунт.
+     */
+    const HANDLE_HOSTS = [
+        't.me'          => ['s'],
+        'telegram.me'   => ['s'],
+        'vk.com'        => [],
+        'ok.ru'         => ['group', 'profile'],
+        'facebook.com'  => ['pages', 'groups', 'people'],
+        'fb.com'        => ['pages', 'groups'],
+        'instagram.com' => [],
+        'threads.net'   => [],
+        'threads.com'   => [],
+        'twitter.com'   => [],
+        'x.com'         => [],
+        'youtube.com'   => ['c', 'channel', 'user'],
+        'tiktok.com'    => [],
+        'rutube.ru'     => ['channel'],
+        'dzen.ru'       => [],
+        'boosty.to'     => [],
+        'patreon.com'   => [],
+        'soundcloud.com'=> [],
+        'medium.com'    => [],
+        'github.com'    => [],
+        'linkedin.com'  => ['company', 'in', 'school'],
+    ];
+
+    /** Сегменты пути, которые именем аккаунта не бывают. */
+    const NOT_HANDLES = [
+        'watch', 'playlist', 'shorts', 'embed', 'results', 'search', 'reel', 'reels',
+        'video', 'videos', 'story', 'stories', 'hashtag', 'explore', 'tag', 'topic',
+        'home', 'about', 'login', 'help', 'terms', 'privacy', 'share', 'post', 'posts',
+        'media', 'feed', 'wall', 'photo', 'album', 'event', 'live', 'joinchat',
+    ];
 
     private function table() {
         global $wpdb;
@@ -12,7 +52,8 @@ class LEM_Banned_Sites {
     }
 
     /**
-     * Все запрещённые домены (плоский массив строк). Кеш через transient.
+     * Домены, запрещённые целиком (плоский массив строк). Кеш через transient.
+     * Записи с аккаунтом сюда не попадают, для них есть get_accounts().
      */
     public function get_all_domains() {
         $domains = get_transient(self::TRANSIENT_KEY);
@@ -21,9 +62,31 @@ class LEM_Banned_Sites {
         }
 
         global $wpdb;
-        $domains = $wpdb->get_col("SELECT domain FROM {$this->table()} ORDER BY domain");
+        $domains = $wpdb->get_col(
+            "SELECT domain FROM {$this->table()} WHERE account = '' ORDER BY domain"
+        );
         set_transient(self::TRANSIENT_KEY, $domains, self::TRANSIENT_TTL);
         return $domains;
+    }
+
+    /**
+     * Запрещённые аккаунты на чужих площадках.
+     *
+     * @return array<int, array{domain: string, account: string}>
+     */
+    public function get_accounts() {
+        $rows = get_transient(self::ACCOUNTS_KEY);
+        if ($rows !== false) {
+            return $rows;
+        }
+
+        global $wpdb;
+        $rows = $wpdb->get_results(
+            "SELECT domain, account FROM {$this->table()} WHERE account != '' ORDER BY domain",
+            ARRAY_A
+        );
+        set_transient(self::ACCOUNTS_KEY, $rows, self::TRANSIENT_TTL);
+        return $rows;
     }
 
     /**
@@ -43,14 +106,18 @@ class LEM_Banned_Sites {
 
     public function insert($data) {
         global $wpdb;
-        $domain = self::normalize_domain($data['domain'] ?? '');
+        // Ссылку вида t.me/doxajournal разбираем на площадку и аккаунт: иначе
+        // в реестр попал бы весь телеграм
+        $target  = self::split_target($data['domain'] ?? '');
+        $domain  = $target['domain'];
+        $account = isset($data['account']) ? mb_strtolower(trim($data['account'])) : $target['account'];
         if (empty($domain)) {
             return false;
         }
 
-        // Проверяем дубликат перед вставкой (UNIQUE KEY на domain)
         $existing = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM {$this->table()} WHERE domain = %s LIMIT 1", $domain
+            "SELECT id FROM {$this->table()} WHERE domain = %s AND account = %s LIMIT 1",
+            $domain, $account
         ));
         if ($existing) {
             return false;
@@ -58,6 +125,7 @@ class LEM_Banned_Sites {
 
         $result = $wpdb->insert($this->table(), [
             'domain'    => $domain,
+            'account'   => $account,
             'label'     => $data['label'] ?? '',
             'entity_id' => !empty($data['entity_id']) ? (int) $data['entity_id'] : null,
         ]);
@@ -74,7 +142,12 @@ class LEM_Banned_Sites {
         $update = [];
 
         if (isset($data['domain'])) {
-            $update['domain'] = self::normalize_domain($data['domain']);
+            $target             = self::split_target($data['domain']);
+            $update['domain']   = $target['domain'];
+            $update['account']  = $target['account'];
+        }
+        if (isset($data['account'])) {
+            $update['account'] = mb_strtolower(trim($data['account']));
         }
         if (array_key_exists('label', $data)) {
             $update['label'] = $data['label'];
@@ -116,7 +189,8 @@ class LEM_Banned_Sites {
 
         if (!empty($args['search'])) {
             $like     = '%' . $wpdb->esc_like($args['search']) . '%';
-            $where[]  = '(domain LIKE %s OR label LIKE %s)';
+            $where[]  = '(domain LIKE %s OR account LIKE %s OR label LIKE %s)';
+            $params[] = $like;
             $params[] = $like;
             $params[] = $like;
         }
@@ -144,6 +218,7 @@ class LEM_Banned_Sites {
 
     public function flush_cache() {
         delete_transient(self::TRANSIENT_KEY);
+        delete_transient(self::ACCOUNTS_KEY);
     }
 
     /**
@@ -175,6 +250,100 @@ class LEM_Banned_Sites {
         foreach ($banned_domains as $banned) {
             if ($host === $banned || str_ends_with($host, '.' . $banned)) {
                 return $banned;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Разбирает то, что ввёл пользователь или отдал Минюст, на площадку и аккаунт.
+     *
+     * «https://t.me/doxajournal» -> t.me + doxajournal
+     * «https://doxa.team/articles/1» -> doxa.team, запрещён весь домен
+     *
+     * @return array{domain: string, account: string}
+     */
+    public static function split_target($input) {
+        $input = trim((string) $input);
+        if ($input === '') {
+            return ['domain' => '', 'account' => ''];
+        }
+        if (!preg_match('#^https?://#i', $input)) {
+            $input = 'https://' . ltrim($input, '/');
+        }
+
+        $parsed = parse_url($input);
+        $domain = self::normalize_domain($parsed['host'] ?? '');
+        if ($domain === '' || strpos($domain, '.') === false) {
+            return ['domain' => '', 'account' => ''];
+        }
+
+        return [
+            'domain'  => $domain,
+            'account' => self::extract_handle($domain, $parsed['path'] ?? ''),
+        ];
+    }
+
+    /**
+     * Имя аккаунта из пути ссылки. Для обычных сайтов возвращает пустую строку:
+     * там путь это раздел, а не организация.
+     */
+    public static function extract_handle($host, $path) {
+        $host = mb_strtolower(preg_replace('/^www\./i', '', (string) $host));
+
+        $skip = null;
+        foreach (self::HANDLE_HOSTS as $known => $service_segments) {
+            if ($host === $known || str_ends_with($host, '.' . $known)) {
+                $skip = $service_segments;
+                break;
+            }
+        }
+        if ($skip === null) {
+            return '';
+        }
+
+        $segments = array_values(array_filter(explode('/', (string) $path), 'strlen'));
+        while (!empty($segments) && in_array(mb_strtolower($segments[0]), $skip, true)) {
+            array_shift($segments);
+        }
+        if (empty($segments)) {
+            return '';
+        }
+
+        $handle = mb_strtolower(trim(ltrim(rawurldecode($segments[0]), '@')));
+        if (mb_strlen($handle) < 3 || in_array($handle, self::NOT_HANDLES, true)) {
+            return '';
+        }
+        // Латиница с цифрами и разделителями: так выглядят имена аккаунтов
+        // на всех перечисленных площадках, остальное это раздел сайта
+        if (!preg_match('/^[a-z0-9._-]+$/', $handle)) {
+            return '';
+        }
+        return $handle;
+    }
+
+    /**
+     * Ссылка ведёт на запрещённый аккаунт?
+     *
+     * @return string|null «t.me/doxajournal» или null
+     */
+    public static function match_account($url_host, $url, $accounts) {
+        if (empty($accounts)) {
+            return null;
+        }
+        $host   = mb_strtolower(preg_replace('/^www\./i', '', $url_host));
+        $handle = self::extract_handle($host, (string) parse_url($url, PHP_URL_PATH));
+        if ($handle === '') {
+            return null;
+        }
+
+        foreach ($accounts as $a) {
+            $domain = $a['domain'] ?? '';
+            if ($handle !== ($a['account'] ?? '')) {
+                continue;
+            }
+            if ($host === $domain || str_ends_with($host, '.' . $domain)) {
+                return $domain . '/' . $handle;
             }
         }
         return null;

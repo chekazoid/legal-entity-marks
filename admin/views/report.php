@@ -116,7 +116,9 @@ $total_pages = (int) ceil($result['total'] / $per_page);
                         <span style="color:#777">(исключена из реестра)</span>
                     <?php endif; ?>
                 </td>
-                <td><?php echo esc_html($labels[$r['type']] ?? $r['type']); ?></td>
+                <td><?php echo $r['type'] !== ''
+                    ? esc_html($labels[$r['type']] ?? $r['type'])
+                    : '<span style="color:#777">-</span>'; ?></td>
                 <td><code><?php echo esc_html($r['matched_as']); ?></code></td>
                 <td>
                     <?php if ($r['marked']) : ?>
@@ -130,8 +132,19 @@ $total_pages = (int) ceil($result['total'] / $per_page);
                         <span style="color:#777">-</span>
                     <?php else : ?>
                         <?php foreach ($r['links'] as $l) : ?>
-                            <div><code><?php echo esc_html($l['url']); ?></code>
-                                <span style="color:#777">(<?php echo esc_html($l['domain']); ?>)</span></div>
+                            <div>
+                                <code><?php echo esc_html($l['url']); ?></code>
+                                <?php if (!empty($l['org'])) : ?>
+                                    <div style="color:#777;font-size:11px">
+                                        <?php echo esc_html($l['org']); ?>
+                                        <?php if (!empty($l['type'])) : ?>
+                                            (<?php echo esc_html($labels[$l['type']] ?? $l['type']); ?>)
+                                        <?php endif; ?>
+                                    </div>
+                                <?php else : ?>
+                                    <span style="color:#777">(<?php echo esc_html($l['domain']); ?>)</span>
+                                <?php endif; ?>
+                            </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </td>

@@ -404,11 +404,16 @@ class LEM_Admin {
             wp_send_json_error('Нет доступа');
         }
 
-        $errors = lem()->importer->fetch_all();
+        $errors  = lem()->importer->fetch_all();
+        $domains = (int) lem()->importer->last_fetch_domains;
+        $extra   = $domains > 0
+            ? '. Из записей реестра добавлено доменов: ' . $domains
+            : '';
+
         if (empty($errors)) {
-            wp_send_json_success(['message' => 'Все реестры обновлены']);
+            wp_send_json_success(['message' => 'Все реестры обновлены' . $extra]);
         } else {
-            wp_send_json_success(['message' => 'Завершено с ошибками', 'errors' => $errors]);
+            wp_send_json_success(['message' => 'Завершено с ошибками' . $extra, 'errors' => $errors]);
         }
     }
 

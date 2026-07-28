@@ -41,7 +41,12 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
     <!-- Секция 1: Реестр доменов -->
     <div class="lem-card" style="margin-bottom:20px">
         <h2>Реестр запрещённых доменов</h2>
-        <p class="description">Домены сайтов экстремистских, террористических и нежелательных организаций.</p>
+        <p class="description">
+            Домены сайтов экстремистских, террористических и нежелательных организаций.
+            Для площадок, где у организации только аккаунт, укажите ссылку целиком
+            (<code>t.me/doxajournal</code>, <code>youtube.com/@channel</code>): запрещённым
+            станет этот аккаунт, а не весь телеграм или YouTube.
+        </p>
 
         <p>
             <button type="button" class="button button-primary" id="lem-add-site">Добавить домен</button>
@@ -64,7 +69,10 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
                 <?php foreach ($sites as $site) : ?>
                 <tr data-id="<?php echo esc_attr($site['id']); ?>">
                     <td><?php echo esc_html($site['id']); ?></td>
-                    <td><code><?php echo esc_html($site['domain']); ?></code></td>
+                    <td><code><?php
+                        echo esc_html($site['domain']
+                            . (!empty($site['account']) ? '/' . $site['account'] : ''));
+                    ?></code></td>
                     <td><?php echo esc_html($site['label']); ?></td>
                     <td><?php echo esc_html($site['added_at'] ? date('d.m.Y', strtotime($site['added_at'])) : ''); ?></td>
                     <td>
@@ -208,10 +216,13 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
         <input type="hidden" id="lem-site-id" value="0">
         <table class="form-table">
             <tr>
-                <th><label for="lem-site-domain">Домен</label></th>
+                <th><label for="lem-site-domain">Домен или аккаунт</label></th>
                 <td>
-                    <input type="text" id="lem-site-domain" class="regular-text" placeholder="example.org" required>
-                    <p class="description">Можно указать URL - домен извлечётся автоматически.</p>
+                    <input type="text" id="lem-site-domain" class="regular-text" placeholder="example.org или t.me/doxajournal" required>
+                    <p class="description">
+                        Можно указать URL целиком. Для обычного сайта запрещается весь домен,
+                        для телеграма, YouTube и соцсетей - только указанный аккаунт.
+                    </p>
                 </td>
             </tr>
             <tr>
@@ -253,7 +264,10 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
     function openSiteModal(site) {
         document.getElementById('lem-site-modal-title').textContent = site ? 'Редактирование' : 'Добавить домен';
         document.getElementById('lem-site-id').value = site ? site.id : 0;
-        document.getElementById('lem-site-domain').value = site ? site.domain : '';
+        // Аккаунт показываем вместе с площадкой, иначе при сохранении он потеряется
+        document.getElementById('lem-site-domain').value = site
+            ? (site.account ? site.domain + '/' + site.account : site.domain)
+            : '';
         document.getElementById('lem-site-label').value = site ? (site.label || '') : '';
         document.getElementById('lem-site-status-msg').textContent = '';
         siteModal.style.display = 'flex';

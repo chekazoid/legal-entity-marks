@@ -102,7 +102,9 @@ class LEM_CLI {
             if (isset($result['error'])) {
                 WP_CLI::error($result['error']);
             }
-            WP_CLI::success("Готово: добавлено={$result['added']}, обновлено={$result['updated']}");
+            $dom = (int) ($result['domains'] ?? 0);
+            WP_CLI::success("Готово: добавлено={$result['added']}, обновлено={$result['updated']}"
+                . ($dom > 0 ? ", новых доменов=$dom" : ''));
         }
     }
 

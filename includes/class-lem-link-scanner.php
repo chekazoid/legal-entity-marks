@@ -51,13 +51,22 @@ class LEM_Link_Scanner {
     }
 
     /**
-     * Сканирует контент на наличие ссылок на запрещённые домены.
+     * Сканирует контент на наличие ссылок на запрещённые домены и аккаунты.
+     *
+     * @param array|null $accounts Запрещённые аккаунты; null - взять из реестра
      */
-    public function scan_post_content($content, $banned_domains) {
+    public function scan_post_content($content, $banned_domains, $accounts = null) {
+        if ($accounts === null) {
+            $accounts = lem()->banned_sites->get_accounts();
+        }
         $links = $this->extract_links($content);
         $found = [];
         foreach ($links as $link) {
             $matched = LEM_Banned_Sites::is_domain_banned($link['host'], $banned_domains);
+            if ($matched === null) {
+                // Домен разрешён, но ссылка может вести на аккаунт организации
+                $matched = LEM_Banned_Sites::match_account($link['host'], $link['url'], $accounts);
+            }
             if ($matched !== null) {
                 $found[] = [
                     'url'            => $link['url'],
@@ -78,9 +87,12 @@ class LEM_Link_Scanner {
      * Удаляет все ссылки на запрещённые домены из контента.
      * <a href="banned.com">текст</a> → текст
      */
-    public function remove_banned_links($content, $banned_domains) {
+    public function remove_banned_links($content, $banned_domains, $accounts = null) {
+        if ($accounts === null) {
+            $accounts = lem()->banned_sites->get_accounts();
+        }
         $pattern = '/<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)<\/a>/si';
-        return preg_replace_callback($pattern, function ($m) use ($banned_domains) {
+        return preg_replace_callback($pattern, function ($m) use ($banned_domains, $accounts) {
             $url    = $m[1];
             $parsed = parse_url($url);
             $host   = $parsed['host'] ?? '';
@@ -88,7 +100,8 @@ class LEM_Link_Scanner {
                 return $m[0];
             }
             $host = mb_strtolower(preg_replace('/^www\./i', '', $host));
-            if (LEM_Banned_Sites::is_domain_banned($host, $banned_domains) !== null) {
+            if (LEM_Banned_Sites::is_domain_banned($host, $banned_domains) !== null
+                || LEM_Banned_Sites::match_account($host, $url, $accounts) !== null) {
                 return $m[2]; // только текст ссылки
             }
             return $m[0];
