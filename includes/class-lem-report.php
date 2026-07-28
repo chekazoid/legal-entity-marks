@@ -27,6 +27,10 @@ class LEM_Report {
         $registry = $args['registry'] ?? '';
         $mode     = $args['mode'] ?? 'all';
         $search   = trim((string) ($args['search'] ?? ''));
+        // Отсечка новизны: организация попала в реестр или упоминание найдено
+        // не раньше этого момента. Ради этого вопроса отчёт и открывают
+        $since      = trim((string) ($args['since'] ?? ''));
+        $links_only = !empty($args['links_only']);
         $limit    = max(1, (int) ($args['limit'] ?? 100));
         $offset   = max(0, (int) ($args['offset'] ?? 0));
 
@@ -84,7 +88,19 @@ class LEM_Report {
                     continue;
                 }
 
-                $eid = (int) ($match['id'] ?? 0);
+                $eid   = (int) ($match['id'] ?? 0);
+                $links = $links_by_post[$row->ID] ?? [];
+                if ($links_only && empty($links)) {
+                    continue;
+                }
+
+                $entity     = $entities[$eid] ?? [];
+                $first_seen = $match['first_seen'] ?? '';
+                $in_registry_since = $entity['first_seen'] ?? '';
+                if ($since !== '' && !self::is_new($first_seen, $in_registry_since, $since)) {
+                    continue;
+                }
+
                 $items[] = [
                     'post_id'    => (int) $row->ID,
                     'post_title' => $row->post_title,
@@ -96,8 +112,11 @@ class LEM_Report {
                     'matched_as' => $match['matched_as'] ?? '',
                     'marked'     => $is_marked,
                     'in_context' => $match['in_context'] ?? null,
-                    'links'      => $links_by_post[$row->ID] ?? [],
+                    'links'      => $links,
                     'active'     => isset($entities[$eid]) ? (int) $entities[$eid]['is_active'] : 0,
+                    'first_seen'    => $first_seen,
+                    'date_included' => $entity['date_included'] ?? '',
+                    'is_new'        => $since !== '',
                 ];
             }
         }
@@ -107,6 +126,7 @@ class LEM_Report {
             'mode'     => $mode,
             'search'   => $search,
             'track'    => $track,
+            'since'    => $since,
         ]));
 
         $total = count($items);
@@ -151,11 +171,17 @@ class LEM_Report {
             foreach ($links_by_post[$p->ID] as $l) {
                 $key = $l['org'] !== '' ? $l['org'] : $l['domain'];
                 $by_owner[$key]['type']    = $l['type'];
+                $by_owner[$key]['since']   = $l['owner_since'] ?? '';
+                $by_owner[$key]['included'] = $l['date_included'] ?? '';
                 $by_owner[$key]['links'][] = $l;
             }
 
             foreach ($by_owner as $org => $data) {
                 $type = $data['type'];
+                if ($args['since'] !== ''
+                    && !self::is_new('', $data['since'], $args['since'])) {
+                    continue;
+                }
                 // Ресурс без связки с реестром показываем всегда: домен добавили руками
                 if ($type !== '' && !in_array($type, $args['track'], true)) {
                     continue;
@@ -182,6 +208,9 @@ class LEM_Report {
                     'in_context' => null,
                     'links'      => $data['links'],
                     'active'     => 1,
+                    'first_seen'    => '',
+                    'date_included' => $data['included'] ?? '',
+                    'is_new'        => $args['since'] !== '',
                 ];
             }
         }
@@ -205,13 +234,15 @@ class LEM_Report {
         $sites  = $wpdb->prefix . 'lem_banned_sites';
         $ents   = $wpdb->prefix . LEM_TABLE;
         foreach ($wpdb->get_results(
-            "SELECT s.domain, s.account, s.label, e.name, e.type
+            "SELECT s.domain, s.account, s.label, e.name, e.type, e.first_seen, e.date_included
              FROM $sites s LEFT JOIN $ents e ON e.id = s.entity_id"
         ) as $s) {
             $key = $s->account !== '' ? $s->domain . '/' . $s->account : $s->domain;
             $owners[$key] = [
-                'org'  => $s->name ?: $s->label,
-                'type' => $s->type ?: '',
+                'org'           => $s->name ?: $s->label,
+                'type'          => $s->type ?: '',
+                'first_seen'    => $s->first_seen ?: '',
+                'date_included' => $s->date_included ?: '',
             ];
         }
 
@@ -221,15 +252,33 @@ class LEM_Report {
             foreach (($meta['links'] ?? []) as $l) {
                 $domain = $l['matched_domain'] ?? '';
                 $out[(int) $r->post_id][] = [
-                    'url'    => $l['url'] ?? '',
-                    'anchor' => $l['anchor'] ?? '',
-                    'domain' => $domain,
-                    'org'    => $owners[$domain]['org'] ?? '',
-                    'type'   => $owners[$domain]['type'] ?? '',
+                    'url'           => $l['url'] ?? '',
+                    'anchor'        => $l['anchor'] ?? '',
+                    'domain'        => $domain,
+                    'org'           => $owners[$domain]['org'] ?? '',
+                    'type'          => $owners[$domain]['type'] ?? '',
+                    'owner_since'   => $owners[$domain]['first_seen'] ?? '',
+                    'date_included' => $owners[$domain]['date_included'] ?? '',
                 ];
             }
         }
         return $out;
+    }
+
+    /**
+     * Новое ли это для сайта.
+     *
+     * Две разные новизны: организацию внесли в реестр после отсечки (упоминание
+     * лежало годами и вдруг стало значимым) либо упоминание впервые нашлось
+     * после отсечки (текст правили). Тревожит и то, и другое.
+     */
+    public static function is_new($match_first_seen, $entity_first_seen, $since) {
+        foreach ([$match_first_seen, $entity_first_seen] as $stamp) {
+            if (!empty($stamp) && strtotime($stamp) >= strtotime($since)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Сводка по реестрам для шапки отчёта. */

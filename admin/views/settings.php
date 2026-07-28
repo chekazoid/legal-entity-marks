@@ -62,20 +62,24 @@ $all_post_types = get_post_types(['public' => true], 'objects');
                             </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($registry_labels as $key => $label) : ?>
+                        <?php foreach ($registry_labels as $key => $label) :
+                            $is_marked = in_array($key, $settings['mark_registries'], true); ?>
                             <tr>
                                 <td><?php echo esc_html($label); ?></td>
                                 <td style="text-align:center">
-                                    <input type="checkbox" name="lem_mark_registries[]"
+                                    <input type="checkbox" class="lem-mark" data-registry="<?php echo esc_attr($key); ?>"
+                                           name="lem_mark_registries[]"
                                            value="<?php echo esc_attr($key); ?>"
-                                           <?php checked(in_array($key, $settings['mark_registries'], true)); ?>
+                                           <?php checked($is_marked); ?>
                                            <?php disabled(!$manual); ?>>
                                 </td>
                                 <td style="text-align:center">
-                                    <input type="checkbox" name="lem_track_registries[]"
+                                    <?php // Маркируемый реестр отслеживается по определению, галочку не снять ?>
+                                    <input type="checkbox" class="lem-track" data-registry="<?php echo esc_attr($key); ?>"
+                                           name="lem_track_registries[]"
                                            value="<?php echo esc_attr($key); ?>"
                                            <?php checked(in_array($key, $settings['track_registries'], true)); ?>
-                                           <?php disabled(!$manual); ?>>
+                                           <?php disabled(!$manual || $is_marked); ?>>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -88,11 +92,14 @@ $all_post_types = get_post_types(['public' => true], 'objects');
                         упоминания надо.<br>
                         Маркируемый реестр отслеживается автоматически. Изменения действуют сразу,
                         пересканирование не требуется.
-                        <?php if (!$manual) : ?>
-                            <br><em>Галочки расставляет выбранный профиль. Чтобы менять вручную,
-                            выберите профиль «Вручную».</em>
-                        <?php endif; ?>
+                        <br><em id="lem-preset-hint" <?php echo $manual ? 'style="display:none"' : ''; ?>>Галочки
+                        расставляет выбранный профиль. Чтобы менять вручную,
+                        выберите профиль «Вручную».</em>
                     </p>
+                    <?php // Признак того, что галочки были доступны для правки: без него
+                          // сохранение профиля не должно трогать сохранённые списки ?>
+                    <input type="hidden" id="lem-registries-present" name="lem_registries_present"
+                           value="1" <?php disabled(!$manual); ?>>
                 </td>
             </tr>
 
@@ -308,3 +315,65 @@ $all_post_types = get_post_types(['public' => true], 'objects');
         <?php submit_button('Сохранить настройки'); ?>
     </form>
 </div>
+
+<script>
+/* Профиль сайта расставляет галочки сразу, не дожидаясь сохранения:
+   иначе выбранный профиль и таблица показывают разное. */
+(function () {
+    var presets = <?php echo wp_json_encode(LEM_Plugin::PRESETS); ?>;
+    var marks   = document.querySelectorAll('.lem-mark');
+    var tracks  = document.querySelectorAll('.lem-track');
+    var hint    = document.getElementById('lem-preset-hint');
+    var present = document.getElementById('lem-registries-present');
+    if (!marks.length || !present) { return; }
+
+    function trackBox(registry) {
+        return document.querySelector('.lem-track[data-registry="' + registry + '"]');
+    }
+
+    // Маркируемый реестр отслеживается по определению: галочку ставим и запираем
+    function syncTrack(manual) {
+        marks.forEach(function (m) {
+            var t = trackBox(m.dataset.registry);
+            if (!t) { return; }
+            if (m.checked) {
+                t.checked  = true;
+                t.disabled = true;
+            } else {
+                t.disabled = !manual;
+            }
+        });
+    }
+
+    function apply(key) {
+        var preset = presets[key];
+        var manual = !preset || preset.mark === null;
+
+        if (!manual) {
+            marks.forEach(function (m) {
+                m.checked = preset.mark.indexOf(m.dataset.registry) !== -1;
+            });
+            tracks.forEach(function (t) {
+                t.checked = preset.track.indexOf(t.dataset.registry) !== -1
+                    || preset.mark.indexOf(t.dataset.registry) !== -1;
+            });
+        }
+
+        marks.forEach(function (m) { m.disabled = !manual; });
+        tracks.forEach(function (t) { t.disabled = !manual; });
+        syncTrack(manual);
+
+        // Отключённое поле браузер не отправляет - сервер поймёт, что галочки
+        // правил профиль, и не станет читать их из формы
+        present.disabled = !manual;
+        if (hint) { hint.style.display = manual ? 'none' : ''; }
+    }
+
+    document.querySelectorAll('input[name="lem_preset"]').forEach(function (radio) {
+        radio.addEventListener('change', function () { apply(this.value); });
+    });
+    marks.forEach(function (m) {
+        m.addEventListener('change', function () { syncTrack(true); });
+    });
+})();
+</script>

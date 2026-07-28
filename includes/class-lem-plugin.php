@@ -18,6 +18,7 @@ class LEM_Plugin {
     public $cli;
     public $banned_sites;
     public $link_scanner;
+    public $rescan;
     public $brands;
     public $report;
 
@@ -46,6 +47,7 @@ class LEM_Plugin {
         require_once $dir . 'class-lem-cron.php';
         require_once $dir . 'class-lem-banned-sites.php';
         require_once $dir . 'class-lem-link-scanner.php';
+        require_once $dir . 'class-lem-rescan.php';
         require_once $dir . 'class-lem-brands.php';
         require_once $dir . 'class-lem-report.php';
 
@@ -69,6 +71,7 @@ class LEM_Plugin {
         $this->cron         = new LEM_Cron();
         $this->banned_sites = new LEM_Banned_Sites();
         $this->link_scanner = new LEM_Link_Scanner();
+        $this->rescan       = new LEM_Rescan();
         $this->brands       = new LEM_Brands();
         $this->report       = new LEM_Report();
 

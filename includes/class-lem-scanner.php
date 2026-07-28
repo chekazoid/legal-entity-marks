@@ -686,6 +686,55 @@ class LEM_Scanner {
         return $out;
     }
 
+    /**
+     * Записывает находки, сохраняя отметку «когда впервые нашли».
+     *
+     * Без неё пересканирование делает все находки одинаково свежими, и вопрос
+     * «что принесло последнее обновление реестра» остаётся без ответа. Ключ -
+     * организация, а не позиция в тексте: правка статьи двигает смещения,
+     * но упоминание при этом остаётся тем же самым.
+     *
+     * @return int сколько организаций найдено в этом материале впервые
+     */
+    public static function write_matches($post_id, array $found, $now = null) {
+        $now = $now ?: current_time('mysql');
+
+        $old  = json_decode((string) get_post_meta($post_id, LEM_META_KEY, true), true);
+        $seen = [];
+        foreach ((array) ($old['entities'] ?? []) as $m) {
+            $key = ($m['id'] ?? 0) . '|' . ($m['type'] ?? '');
+            if (!empty($m['first_seen'])) {
+                $seen[$key] = $m['first_seen'];
+            }
+        }
+
+        $fresh = 0;
+        foreach ($found as &$match) {
+            $key = ($match['id'] ?? 0) . '|' . ($match['type'] ?? '');
+            if (isset($seen[$key])) {
+                $match['first_seen'] = $seen[$key];
+            } else {
+                $match['first_seen'] = $now;
+                $fresh++;
+            }
+        }
+        unset($match);
+
+        if (empty($found)) {
+            delete_post_meta($post_id, LEM_META_KEY);
+            return 0;
+        }
+
+        // wp_slash: update_post_meta снимает слэши и ломает экранирование в JSON
+        update_post_meta($post_id, LEM_META_KEY, wp_slash(wp_json_encode([
+            'entities'     => $found,
+            'scanned_at'   => $now,
+            'list_version' => get_option('lem_list_version', ''),
+        ], JSON_UNESCAPED_UNICODE)));
+
+        return $fresh;
+    }
+
     public function scan_post($post_id) {
         $post = get_post($post_id);
         if (!$post) {
@@ -699,13 +748,7 @@ class LEM_Scanner {
         }
 
         $found = $this->scan_text($this->collect_text($post, $settings));
-        $meta  = [
-            'entities'     => $found,
-            'scanned_at'   => current_time('mysql'),
-            'list_version' => get_option('lem_list_version', ''),
-        ];
-        // wp_slash: update_post_meta снимает слэши и иначе ломает экранирование кавычек в JSON
-        update_post_meta($post_id, LEM_META_KEY, wp_slash(wp_json_encode($meta, JSON_UNESCAPED_UNICODE)));
+        self::write_matches($post_id, $found);
 
         return $found;
     }
@@ -845,33 +888,11 @@ class LEM_Scanner {
         try {
             foreach ($posts as $post) {
                 $found = $this->scan_text($this->collect_text($post, $settings), $entities);
+                // Через write_matches, иначе теряется отметка «когда впервые нашли»
+                self::write_matches($post->ID, $found, $now);
                 if (!empty($found)) {
-                    $meta_json = wp_json_encode([
-                        'entities'     => $found,
-                        'scanned_at'   => $now,
-                        'list_version' => $list_ver,
-                    ], JSON_UNESCAPED_UNICODE);
-
-                    $existing = $wpdb->get_var($wpdb->prepare(
-                        "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s LIMIT 1",
-                        $post->ID, LEM_META_KEY
-                    ));
-                    if ($existing) {
-                        $wpdb->update($wpdb->postmeta, ['meta_value' => $meta_json], ['meta_id' => $existing]);
-                    } else {
-                        $wpdb->insert($wpdb->postmeta, [
-                            'post_id'    => $post->ID,
-                            'meta_key'   => LEM_META_KEY,
-                            'meta_value' => $meta_json,
-                        ]);
-                    }
                     $state['posts_with_matches']++;
                     $state['total_mentions'] += count($found);
-                } else {
-                    $wpdb->delete($wpdb->postmeta, [
-                        'post_id'  => $post->ID,
-                        'meta_key' => LEM_META_KEY,
-                    ]);
                 }
 
                 $processed++;
@@ -983,24 +1004,7 @@ class LEM_Scanner {
                 $found = $this->scan_text($this->collect_text($post, $settings), $entities);
                 if (!empty($found)) {
                     if (!$dry_run) {
-                        $meta_json = wp_json_encode([
-                            'entities'     => $found,
-                            'scanned_at'   => $now,
-                            'list_version' => $list_ver,
-                        ], JSON_UNESCAPED_UNICODE);
-                        $existing = $wpdb->get_var($wpdb->prepare(
-                            "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s LIMIT 1",
-                            $post->ID, LEM_META_KEY
-                        ));
-                        if ($existing) {
-                            $wpdb->update($wpdb->postmeta, ['meta_value' => $meta_json], ['meta_id' => $existing]);
-                        } else {
-                            $wpdb->insert($wpdb->postmeta, [
-                                'post_id'    => $post->ID,
-                                'meta_key'   => LEM_META_KEY,
-                                'meta_value' => $meta_json,
-                            ]);
-                        }
+                        self::write_matches($post->ID, $found, $now);
                     }
                     $posts_with_matches++;
                     $total_mentions += count($found);

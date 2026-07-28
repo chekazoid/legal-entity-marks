@@ -27,7 +27,8 @@ class LEM_Entities {
         $table = $wpdb->prefix . LEM_TABLE;
         $where = $include_excluded ? '1=1' : 'is_active = 1';
         $rows  = $wpdb->get_results(
-            "SELECT id, type, name, aliases, is_person, status_text, is_active, date_excluded
+            "SELECT id, type, name, aliases, is_person, status_text, is_active,
+                    date_included, date_excluded, first_seen
              FROM $table WHERE $where",
             ARRAY_A
         );

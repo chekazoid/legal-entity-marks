@@ -6,6 +6,14 @@ class LEM_Importer {
     /** Итоги последнего обновления реестров: домены, собранные из данных Минюста. */
     public $last_fetch_domains = 0;
 
+    /** Человеческие названия реестров для сообщений в админке. */
+    const REGISTRY_LABELS = [
+        'inoagent'    => 'Иностранные агенты',
+        'extremist'   => 'Экстремистские организации',
+        'terrorist'   => 'Террористические организации',
+        'undesirable' => 'Нежелательные организации',
+    ];
+
     public function import_all_bundled() {
         $files = [
             'inoagent'    => LEM_DATA_DIR . '/foreign-agents-raw.json',
@@ -411,9 +419,6 @@ class LEM_Importer {
     }
 
     public function import_json($file, $type_override = null) {
-        global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
-
         $json = file_get_contents($file);
         if ($json === false) {
             return ['error' => "Cannot read file: $file"];
@@ -422,6 +427,17 @@ class LEM_Importer {
         if (!is_array($data)) {
             return ['error' => "Invalid JSON in: $file"];
         }
+        return $this->import_entries($data, $type_override);
+    }
+
+    /**
+     * Импорт уже разобранных записей.
+     * Отдельно от import_json: сетевой источник не обязан ложиться на диск,
+     * папка плагина на части хостингов доступна только на чтение.
+     */
+    public function import_entries(array $data, $type_override = null) {
+        global $wpdb;
+        $table = $wpdb->prefix . LEM_TABLE;
 
         $added = 0;
         $skipped = 0;
@@ -480,6 +496,8 @@ class LEM_Importer {
                     'date_included' => $date_in,
                     'date_excluded' => $date_out,
                     'is_active'     => $is_active,
+                    // Когда запись появилась именно у нас: по ней считаются новички
+                    'first_seen'    => current_time('mysql'),
                 ]);
                 $entity_id = (int) $wpdb->insert_id;
                 $added++;
@@ -643,6 +661,13 @@ class LEM_Importer {
         $errors  = [];
         $domains = 0;
 
+        // Всё, что появится в реестре после этой отметки, считается новичком
+        $started = current_time('mysql');
+        global $wpdb;
+        $had_entities = (int) $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}" . LEM_TABLE
+        ) > 0;
+
         $sources = [
             'inoagent'    => 'fetch_inoagents',
             'extremist'   => 'fetch_extremist_orgs',
@@ -651,11 +676,12 @@ class LEM_Importer {
         ];
 
         foreach ($sources as $type => $method) {
+            $label = self::REGISTRY_LABELS[$type] ?? $type;
             $log("Fetching: $type...");
             $result = $this->$method();
+
             if (isset($result['error'])) {
                 $log("  ERROR: {$result['error']}. Trying local fallback...");
-                $errors[] = "$type: {$result['error']}";
                 $fallback_files = [
                     'inoagent'    => 'foreign-agents-raw.json',
                     'extremist'   => 'extremist-orgs.json',
@@ -663,16 +689,26 @@ class LEM_Importer {
                     'undesirable' => 'undesirable-orgs.json',
                 ];
                 $fallback = LEM_DATA_DIR . '/' . $fallback_files[$type];
+
+                // Встроенный перечень никуда не делся, поэтому сайт продолжает
+                // работать. Сообщение должно говорить именно это, а не пугать
                 if (file_exists($fallback)) {
                     $fb_result = $this->import_json($fallback, $type);
                     $domains  += (int) ($fb_result['domains'] ?? 0);
                     $log("  Fallback: added={$fb_result['added']}, updated={$fb_result['updated']}");
+                    $errors[] = "$label: {$result['error']}. Применён встроенный перечень, "
+                        . 'сайт работает по нему';
                 } else {
                     $log("  No fallback file found: $fallback");
+                    $errors[] = "$label: {$result['error']}. Встроенного перечня нет";
                 }
             } else {
                 $domains += (int) ($result['domains'] ?? 0);
                 $log("  OK: added={$result['added']}, updated={$result['updated']}, total={$result['total']}");
+                if (!empty($result['notice'])) {
+                    $log("  ВНИМАНИЕ: {$result['notice']}");
+                    $errors[] = "$label: {$result['notice']}";
+                }
             }
         }
 
@@ -698,6 +734,19 @@ class LEM_Importer {
 
         lem()->entities->flush_cache();
         $this->last_fetch_domains = $domains;
+
+        // Реестр обновился - значит, в старых публикациях могли появиться
+        // упоминания и ссылки, которых вчера ещё не было. Проверяем архив.
+        // При первичном наполнении новичками считался бы весь реестр,
+        // поэтому отсечку берём с текущего момента
+        $first_run = !get_option('lem_first_fetch_done');
+        update_option('lem_first_fetch_done', 1, false);
+
+        lem()->rescan->enqueue(
+            ($first_run || !$had_entities) ? 'initial' : 'registry-update',
+            $started
+        );
+
         return $errors;
     }
 
@@ -840,29 +889,51 @@ class LEM_Importer {
         return $this->import_json($file, 'extremist');
     }
 
+    /** Единый перечень ФСБ. Работает только по http: на 443 порту сайт не отвечает. */
+    const TERROR_URL = 'http://www.fsb.ru/fsb/npd/terror.htm';
+
+    /**
+     * Запасной источник - копия перечня в репозитории плагина.
+     * Раньше здесь стоял nac.gov.ru, но там список рисует скрипт уже в браузере:
+     * страница отдавала 200, разбор давал ноль записей, и наружу вылезала
+     * ошибка парсера вместо настоящей причины.
+     */
+    const TERROR_MIRROR_URL = 'https://raw.githubusercontent.com/chekazoid/legal-entity-marks/main/data/terrorist-orgs.json';
+
     public function fetch_terrorist_orgs() {
-        $url    = 'http://www.fsb.ru/fsb/npd/terror.htm';
-        $result = $this->fetch_url($url, 45);
+        $notes  = [];
+        $result = $this->fetch_url(self::TERROR_URL, 45);
+
         if (isset($result['error'])) {
-            $url    = 'https://nac.gov.ru/main/list/terroristExtremistOrganizations';
-            $result = $this->fetch_url($url, 45);
-        }
-        if (isset($result['error'])) {
-            return $result;
-        }
-
-        $entries = $this->parse_generic_list($result['body']);
-        if (empty($entries)) {
-            return ['error' => 'Failed to parse terrorist orgs page, 0 entries found'];
-        }
-
-        foreach ($entries as &$e) {
-            $e['type'] = 'terrorist';
+            $notes[] = 'fsb.ru не открылся (' . $result['error'] . ')';
+        } else {
+            $entries = $this->parse_generic_list($result['body']);
+            if (!empty($entries)) {
+                foreach ($entries as &$e) {
+                    $e['type'] = 'terrorist';
+                }
+                unset($e);
+                return $this->import_entries($entries, 'terrorist');
+            }
+            $notes[] = 'fsb.ru ответил, но список не разобран (получено '
+                . strlen($result['body']) . ' байт)';
         }
 
-        $file = LEM_DATA_DIR . '/terrorist-orgs-fetched.json';
-        file_put_contents($file, wp_json_encode($entries, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        return $this->import_json($file, 'terrorist');
+        $mirror = $this->fetch_url(self::TERROR_MIRROR_URL, 45);
+        if (isset($mirror['error'])) {
+            $notes[] = 'зеркало недоступно (' . $mirror['error'] . ')';
+            return ['error' => implode('; ', $notes)];
+        }
+
+        $data = json_decode($mirror['body'], true);
+        if (!is_array($data) || empty($data)) {
+            $notes[] = 'зеркало вернуло неожиданный ответ';
+            return ['error' => implode('; ', $notes)];
+        }
+
+        $imported = $this->import_entries($data, 'terrorist');
+        $imported['notice'] = implode('; ', $notes) . '; перечень взят из зеркала';
+        return $imported;
     }
 
     /**
@@ -973,6 +1044,85 @@ class LEM_Importer {
     /* ------------------------------------------------------------------
      * Helpers
      * ------------------------------------------------------------------ */
+
+    /**
+     * Опрос источников: что именно видит этот сервер.
+     *
+     * Нужна поддержке. Хостинг может резать исходящие соединения, источник может
+     * банить диапазон адресов - со стороны это выглядит как «плагин не обновляет
+     * реестры», а без доступа к серверу причину не увидеть.
+     *
+     * @return array<int, array{name: string, url: string, ok: bool, detail: string}>
+     */
+    public function check_sources() {
+        $out = [];
+
+        // Реестры Минюста отвечают на POST, обычный GET там ничего не скажет
+        $api = [
+            'Иностранные агенты'        => '39b95df9-9a68-6b6d-e1e3-e6388507067e',
+            'Нежелательные организации' => 'c2d1692e-a9f6-5a79-13ee-5da5b42980df',
+        ];
+        foreach ($api as $name => $grid) {
+            $url      = 'https://reestrs.minjust.gov.ru/rest/registry/' . $grid . '/values';
+            $response = wp_remote_post($url, [
+                'timeout'   => 20,
+                'sslverify' => false,
+                'headers'   => ['Content-Type' => 'application/json'],
+                'body'      => wp_json_encode(['offset' => 0, 'limit' => 1, 'search' => '']),
+            ]);
+
+            if (is_wp_error($response)) {
+                $out[] = ['name' => $name, 'url' => $url, 'ok' => false,
+                          'detail' => 'соединение не удалось: ' . $response->get_error_message()];
+                continue;
+            }
+            $code = wp_remote_retrieve_response_code($response);
+            $data = json_decode(wp_remote_retrieve_body($response), true);
+            $ok   = $code === 200 && isset($data['values']);
+            $out[] = [
+                'name' => $name, 'url' => $url, 'ok' => $ok,
+                'detail' => $ok
+                    ? 'отвечает, записей в реестре: ' . (int) ($data['count'] ?? 0)
+                    : "HTTP $code, ответ не похож на реестр",
+            ];
+        }
+
+        // Страницы, которые разбираются как HTML
+        $pages = [
+            'Экстремистские организации'   => 'https://minjust.gov.ru/ru/documents/7822/',
+            'Террористические организации' => self::TERROR_URL,
+        ];
+        foreach ($pages as $name => $url) {
+            $result = $this->fetch_url($url, 30);
+            if (isset($result['error'])) {
+                $out[] = ['name' => $name, 'url' => $url, 'ok' => false,
+                          'detail' => 'не открылась: ' . $result['error']];
+                continue;
+            }
+            $parsed = $name === 'Экстремистские организации'
+                ? $this->parse_minjust_list($result['body'])
+                : $this->parse_generic_list($result['body']);
+            $out[] = [
+                'name' => $name, 'url' => $url, 'ok' => !empty($parsed),
+                'detail' => 'HTTP 200, получено ' . strlen($result['body']) . ' байт, '
+                    . 'разобрано записей: ' . count($parsed),
+            ];
+        }
+
+        // Зеркало на случай, когда сайт ФСБ недоступен с этого сервера
+        $mirror = $this->fetch_url(self::TERROR_MIRROR_URL, 30);
+        $data   = isset($mirror['body']) ? json_decode($mirror['body'], true) : null;
+        $out[]  = [
+            'name' => 'Зеркало террористического перечня',
+            'url'  => self::TERROR_MIRROR_URL,
+            'ok'   => is_array($data) && !empty($data),
+            'detail' => isset($mirror['error'])
+                ? 'не открылось: ' . $mirror['error']
+                : 'записей: ' . (is_array($data) ? count($data) : 0),
+        ];
+
+        return $out;
+    }
 
     public function fetch_url($url, $timeout = 30) {
         $response = wp_remote_get($url, [

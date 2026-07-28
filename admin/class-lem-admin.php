@@ -13,6 +13,7 @@ class LEM_Admin {
         add_action('wp_ajax_lem_delete_entity', [$this, 'ajax_delete_entity']);
         add_action('wp_ajax_lem_fetch_registries', [$this, 'ajax_fetch_registries']);
         add_action('wp_ajax_lem_purge_cache', [$this, 'ajax_purge_cache']);
+        add_action('wp_ajax_lem_check_sources', [$this, 'ajax_check_sources']);
 
         add_action('wp_ajax_lem_save_banned_site', [$this, 'ajax_save_banned_site']);
         add_action('wp_ajax_lem_delete_banned_site', [$this, 'ajax_delete_banned_site']);
@@ -159,7 +160,7 @@ class LEM_Admin {
         if (!empty($error)) {
             $last = get_option('lem_last_fetch_time', '');
             echo '<div class="notice notice-warning"><p><strong>Маркировка:</strong> '
-                . 'Ошибка обновления реестров: ' . esc_html($error)
+                . 'Реестры обновились не полностью. ' . esc_html($error)
                 . ($last ? ' (' . esc_html($last) . ')' : '')
                 . '</p></div>';
         }
@@ -175,7 +176,42 @@ class LEM_Admin {
             }
         }
 
+        $this->show_update_notice();
         $this->show_stale_notice();
+    }
+
+    /**
+     * Что принесло последнее обновление реестров.
+     *
+     * Организация, о которой вчера писали свободно, сегодня может оказаться
+     * в реестре, а публикация со ссылкой на неё никуда не делась. Поэтому итог
+     * проверки архива показываем на всех страницах, пока его не закроют.
+     */
+    private function show_update_notice() {
+        $report = lem()->rescan->last_report();
+        if (empty($report['at']) || (int) $report['mentioned'] < 1) {
+            return;
+        }
+        if (get_option('lem_update_notice_seen') === $report['at']) {
+            return;
+        }
+
+        $report_url = admin_url('admin.php?page=lem-report&fresh=update');
+        $hide_url   = wp_nonce_url(
+            add_query_arg('lem_hide_update', '1', admin_url('admin.php?page=lem-dashboard')),
+            'lem_hide_update'
+        );
+
+        printf(
+            '<div class="notice notice-warning"><p><strong>Маркировка:</strong> '
+            . 'после обновления реестров в материалах сайта нашлись новые организации: '
+            . '<strong>%d</strong> в %d публикациях. '
+            . '<a href="%s">Посмотреть список</a> · <a href="%s">Скрыть</a></p></div>',
+            (int) $report['mentioned'],
+            (int) $report['mentioned_in'],
+            esc_url($report_url),
+            esc_url($hide_url)
+        );
     }
 
     /**
@@ -226,6 +262,12 @@ class LEM_Admin {
         $this->handle_brand_actions();
         $this->handle_report_export();
 
+        if (isset($_GET['lem_hide_update']) && current_user_can('manage_options')) {
+            check_admin_referer('lem_hide_update');
+            $report = lem()->rescan->last_report();
+            update_option('lem_update_notice_seen', $report['at'] ?? '', false);
+        }
+
         if (!isset($_POST['lem_settings_nonce'])) {
             return;
         }
@@ -258,18 +300,29 @@ class LEM_Admin {
         }
         $settings['auto_scan_on_publish'] = !empty($_POST['lem_auto_scan']);
 
-        // Профиль сайта и реестры. Отсутствие ключа означает «все галочки сняты»
+        // Профиль сайта и реестры
         $preset = sanitize_text_field(wp_unslash($_POST['lem_preset'] ?? 'manual'));
-        $settings['preset'] = isset(LEM_Plugin::PRESETS[$preset]) ? $preset : 'manual';
+        $preset = isset(LEM_Plugin::PRESETS[$preset]) ? $preset : 'manual';
+        $settings['preset'] = $preset;
 
-        $settings['mark_registries'] = array_values(array_intersect(
-            LEM_Plugin::REGISTRY_TYPES,
-            array_map('sanitize_text_field', (array) ($_POST['lem_mark_registries'] ?? []))
-        ));
-        $settings['track_registries'] = array_values(array_intersect(
-            LEM_Plugin::REGISTRY_TYPES,
-            array_map('sanitize_text_field', (array) ($_POST['lem_track_registries'] ?? []))
-        ));
+        if (LEM_Plugin::PRESETS[$preset]['mark'] !== null) {
+            // Галочки профиля приходят отключёнными и браузером не отправляются,
+            // поэтому берём их из самого профиля, а не из формы
+            $settings['mark_registries']  = LEM_Plugin::PRESETS[$preset]['mark'];
+            $settings['track_registries'] = LEM_Plugin::PRESETS[$preset]['track'];
+        } elseif (isset($_POST['lem_registries_present'])) {
+            $settings['mark_registries'] = array_values(array_intersect(
+                LEM_Plugin::REGISTRY_TYPES,
+                array_map('sanitize_text_field', (array) wp_unslash($_POST['lem_mark_registries'] ?? []))
+            ));
+            $settings['track_registries'] = array_values(array_intersect(
+                LEM_Plugin::REGISTRY_TYPES,
+                array_map('sanitize_text_field', (array) wp_unslash($_POST['lem_track_registries'] ?? []))
+            ));
+        }
+        // Переключение на «Вручную» без работающего скрипта оставляет то, что было:
+        // иначе форма молча снимала бы всю маркировку с сайта
+
         unset($settings['registries']); // пересоберётся из mark_registries
 
         // Морфология: словоформы и правило для одиночной фамилии
@@ -410,11 +463,25 @@ class LEM_Admin {
             ? '. Из записей реестра добавлено доменов: ' . $domains
             : '';
 
+        $extra .= '. Проверка архива запущена в фоне';
+
         if (empty($errors)) {
             wp_send_json_success(['message' => 'Все реестры обновлены' . $extra]);
         } else {
             wp_send_json_success(['message' => 'Завершено с ошибками' . $extra, 'errors' => $errors]);
         }
+    }
+
+    /**
+     * Опрос источников с этого сервера: у поддержки нет доступа к чужому хостингу,
+     * а «реестры не обновляются» может означать что угодно
+     */
+    public function ajax_check_sources() {
+        check_ajax_referer('lem_crud_nonce', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Нет доступа');
+        }
+        wp_send_json_success(['sources' => lem()->importer->check_sources()]);
     }
 
     public function ajax_purge_cache() {

@@ -3,7 +3,7 @@ defined('ABSPATH') || exit;
 
 class LEM_Database {
 
-    const DB_VERSION = '1.0.0';
+    const DB_VERSION = '1.1.0';
 
     public function __construct() {
         add_action('admin_init', [$this, 'check_version']);
@@ -25,13 +25,20 @@ class LEM_Database {
             date_included DATE DEFAULT NULL,
             date_excluded DATE DEFAULT NULL,
             is_active TINYINT(1) DEFAULT 1,
+            first_seen DATETIME DEFAULT NULL,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            INDEX idx_type_active (type, is_active)
+            INDEX idx_type_active (type, is_active),
+            INDEX idx_first_seen (first_seen)
         ) $charset;";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($sql);
+
+        // У записей, заведённых до появления колонки, новичками считаться нечего:
+        // проставляем дату включения в реестр, иначе всё разом станет «свежим»
+        $wpdb->query("UPDATE $table SET first_seen = COALESCE(date_included, '2000-01-01')
+                      WHERE first_seen IS NULL");
 
         update_option('lem_db_version', self::DB_VERSION);
     }

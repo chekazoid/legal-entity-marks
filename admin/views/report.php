@@ -4,6 +4,18 @@ $settings = lem()->get_settings();
 $registry = sanitize_text_field(wp_unslash($_GET['registry'] ?? ''));
 $mode     = sanitize_text_field(wp_unslash($_GET['mode'] ?? 'all'));
 $search   = sanitize_text_field(wp_unslash($_GET['s'] ?? ''));
+$fresh    = sanitize_text_field(wp_unslash($_GET['fresh'] ?? ''));
+$links_only = !empty($_GET['links_only']);
+
+// «Новое» отсчитывается от последнего обновления реестров: именно тогда
+// в старых публикациях появляются организации, которых вчера не было
+$update = lem()->rescan->last_report();
+$since  = '';
+if ($fresh === 'update' && !empty($update['since'])) {
+    $since = $update['since'];
+} elseif ($fresh === '30') {
+    $since = gmdate('Y-m-d H:i:s', time() - 30 * DAY_IN_SECONDS);
+}
 $paged    = max(1, (int) ($_GET['paged'] ?? 1));
 $per_page = 100;
 
@@ -11,6 +23,8 @@ $result = lem()->report->get_rows([
     'registry' => $registry,
     'mode'     => in_array($mode, ['all', 'marked', 'tracked'], true) ? $mode : 'all',
     'search'   => $search,
+    'since'    => $since,
+    'links_only' => $links_only,
     'limit'    => $per_page,
     'offset'   => ($paged - 1) * $per_page,
 ]);
@@ -32,6 +46,15 @@ $total_pages = (int) ceil($result['total'] / $per_page);
         видит ли метку читатель. Реестры, которые только отслеживаются, меток на сайте
         не оставляют, но их упоминания и ссылки видны здесь.
     </p>
+
+    <?php if (!empty($update['at'])) : ?>
+        <p class="description" style="max-width:820px">
+            Последняя проверка архива: <?php echo esc_html($update['at']); ?>.
+            Реестры пополнились на <?php echo (int) $update['new_entities']; ?> записей,
+            из них в материалах сайта встречается <?php echo (int) $update['mentioned']; ?>.
+            Отбор «новое с последнего обновления» показывает именно их.
+        </p>
+    <?php endif; ?>
 
     <?php
     $summary = lem()->report->summary();
@@ -63,6 +86,15 @@ $total_pages = (int) ceil($result['total'] / $per_page);
             <option value="marked" <?php selected($mode, 'marked'); ?>>Только маркируемые</option>
             <option value="tracked" <?php selected($mode, 'tracked'); ?>>Только без меток</option>
         </select>
+        <select name="fresh">
+            <option value="">За всё время</option>
+            <option value="update" <?php selected($fresh, 'update'); ?>>Новое с последнего обновления реестров</option>
+            <option value="30" <?php selected($fresh, '30'); ?>>Новое за 30 дней</option>
+        </select>
+        <label style="margin-left:6px">
+            <input type="checkbox" name="links_only" value="1" <?php checked($links_only); ?>>
+            только со ссылками
+        </label>
         <input type="search" name="s" value="<?php echo esc_attr($search); ?>" placeholder="организация или заголовок">
         <button type="submit" class="button">Фильтр</button>
 
@@ -73,6 +105,8 @@ $total_pages = (int) ceil($result['total'] / $per_page);
             'registry'   => $registry,
             'mode'       => $mode,
             's'          => $search,
+            'fresh'      => $fresh,
+            'links_only' => $links_only ? 1 : '',
         ], admin_url('admin.php')), 'lem_export_csv');
         ?>
         <a href="<?php echo esc_url($csv_url); ?>" class="button" style="margin-left:8px">Выгрузить CSV</a>
@@ -86,6 +120,7 @@ $total_pages = (int) ceil($result['total'] / $per_page);
                 <th style="width:24%">Материал</th>
                 <th style="width:24%">Организация</th>
                 <th style="width:11%">Реестр</th>
+                <th style="width:11%">В реестре с</th>
                 <th style="width:12%">Найдено как</th>
                 <th style="width:9%">Маркируется</th>
                 <th>Запрещённые ссылки</th>
@@ -93,7 +128,7 @@ $total_pages = (int) ceil($result['total'] / $per_page);
         </thead>
         <tbody>
         <?php if (empty($result['items'])) : ?>
-            <tr><td colspan="6">Ничего не найдено. Если материалы давно не сканировались,
+            <tr><td colspan="7">Ничего не найдено. Если материалы давно не сканировались,
                 запустите сканирование в разделе «Сканер».</td></tr>
         <?php else : ?>
             <?php foreach ($result['items'] as $r) : ?>
@@ -119,6 +154,16 @@ $total_pages = (int) ceil($result['total'] / $per_page);
                 <td><?php echo $r['type'] !== ''
                     ? esc_html($labels[$r['type']] ?? $r['type'])
                     : '<span style="color:#777">-</span>'; ?></td>
+                <td>
+                    <?php if (!empty($r['date_included'])) : ?>
+                        <?php echo esc_html(date_i18n('d.m.Y', strtotime($r['date_included']))); ?>
+                    <?php else : ?>
+                        <span style="color:#777">-</span>
+                    <?php endif; ?>
+                    <?php if ($since !== '' && LEM_Report::is_new($r['first_seen'], '', $since)) : ?>
+                        <br><span style="color:#b32d2e;font-size:11px">найдено недавно</span>
+                    <?php endif; ?>
+                </td>
                 <td><code><?php echo esc_html($r['matched_as']); ?></code></td>
                 <td>
                     <?php if ($r['marked']) : ?>
