@@ -182,9 +182,25 @@ def fetch_html(url):
     with urllib.request.urlopen(req, context=CTX, timeout=60) as r:
         return r.read().decode('utf-8', errors='replace')
 
+# Парсер берёт абзацы страницы подряд, поэтому в перечень попадают куски
+# описаний: «Организация исключена...», «эмблема Партии представляет собой...».
+# Те же правила действуют в плагине при импорте (LEM_Importer::is_junk_name):
+# фильтровать надо в обоих местах, иначе мусор возвращается со следующей выгрузкой
+JUNK_START = re.compile(
+    r'^(Организация исключена|Организация ликвидирована|Решение[мс]?\s|Признан[оаы]?\s'
+    r'|Указанн|Согласно\s|В соответствии\s|в соответствии\s|Деятельность организации призна'
+    r'|[Ээ]мблема|[Фф]лаг\s|Символика|а также\s|при этом\s|кроме того)')
+JUNK_ANY = re.compile(r'(представляет собой|имеет свои символы|по основаниям, предусмотренным)')
+
+def is_junk_name(name):
+    n = (name or '').strip()
+    if not n:
+        return True
+    return bool(JUNK_START.match(n) or JUNK_ANY.search(n))
+
 def clean_list_text(text, generic=False):
     text = re.sub(r'^\d+[\.\)]\s*', '', text).strip()
-    if len(text) < 5:
+    if len(text) < 5 or is_junk_name(text):
         return None
     if re.match(r'^Наименование\s+организации', text, re.I):
         return None
@@ -198,6 +214,8 @@ def clean_list_text(text, generic=False):
     if re.match(r'^(Решение|Приговор|Определение|Постановление)\b', name):
         return None
     if len(name) < 5 or (generic and len(name) >= 300):
+        return None
+    if is_junk_name(name):
         return None
     return name
 
@@ -225,7 +243,8 @@ def update_from_html(url, typ, existing_file, generic):
         k = norm_key(e['name'])
         n = e['name']
         is_noise = (re.match(r'^[а-яё]', n) or
-                    re.match(r'^(Решение|Приговор|Определение|Постановление)\b', n))
+                    re.match(r'^(Решение|Приговор|Определение|Постановление)\b', n) or
+                    is_junk_name(n))
         if k not in seen and not is_noise:
             seen.add(k)
             entries.append(e)

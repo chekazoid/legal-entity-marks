@@ -22,6 +22,25 @@ class LEM_Rescan {
 
     public function __construct() {
         add_action(self::HOOK, [$this, 'run']);
+        add_action('admin_init', [$this, 'watchdog']);
+    }
+
+    /**
+     * Сторож зависшей очереди.
+     *
+     * Если запуск умер по лимиту памяти или времени, следующий он запланировать
+     * не успевает, и проверка встаёт навсегда: состояние есть, задачи нет.
+     * Возвращаем задачу в расписание при любом заходе в админку.
+     */
+    public function watchdog() {
+        $state = get_option(self::STATE_OPTION, []);
+        if (empty($state) || !empty($state['done'])) {
+            return;
+        }
+        if (wp_next_scheduled(self::HOOK) || get_transient(self::LOCK)) {
+            return; // задача ждёт своей очереди или прямо сейчас работает
+        }
+        wp_schedule_single_event(time() + 30, self::HOOK);
     }
 
     /**

@@ -6,7 +6,10 @@ class LEM_Database {
     const DB_VERSION = '1.1.0';
 
     public function __construct() {
-        add_action('admin_init', [$this, 'check_version']);
+        // Не admin_init: плагин может обновиться автообновлением, и тогда
+        // WP-Cron пойдёт за реестрами раньше, чем человек зайдёт в админку.
+        // Импорт при этом писал бы в колонки, которых ещё нет
+        add_action('init', [$this, 'check_version'], 5);
     }
 
     public function create_table() {
@@ -43,7 +46,7 @@ class LEM_Database {
         update_option('lem_db_version', self::DB_VERSION);
     }
 
-    const BANNED_SITES_DB_VERSION = '1.1.0';
+    const BANNED_SITES_DB_VERSION = '1.2.0';
 
     public function create_banned_sites_table() {
         global $wpdb;
@@ -57,6 +60,7 @@ class LEM_Database {
             domain VARCHAR(255) NOT NULL,
             account VARCHAR(190) NOT NULL DEFAULT '',
             label VARCHAR(500) DEFAULT '',
+            registry VARCHAR(20) NOT NULL DEFAULT '',
             entity_id BIGINT UNSIGNED DEFAULT NULL,
             added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),

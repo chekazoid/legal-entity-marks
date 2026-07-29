@@ -35,6 +35,7 @@ class LEM_Cron {
     public function clear_events() {
         wp_clear_scheduled_hook('lem_fetch_registries');
         wp_clear_scheduled_hook('lem_scan_updated');
+        wp_clear_scheduled_hook(LEM_Rescan::HOOK);
     }
 
     public function run_fetch() {
@@ -45,18 +46,16 @@ class LEM_Cron {
         });
     }
 
+    /**
+     * Недельная подстраховка: пройти архив, даже если обновление реестров
+     * не состоялось. Сам проход делает очередь - порциями и с оглядкой
+     * на лимит выполнения, иначе на большом сайте задача обрывалась молча.
+     */
     public function run_scan_updated() {
-        $result = lem()->scanner->batch_scan([
-            'batch' => 200,
-            'log'   => function ($msg) {
-                if (function_exists('error_log')) {
-                    error_log('[LEM] ' . $msg);
-                }
-            },
-        ]);
-
-        if ($result['posts_with_matches'] > 0) {
-            lem()->cache->purge_all_marked();
+        $state = lem()->rescan->status();
+        if ($state && empty($state['done'])) {
+            return; // проверка и так идёт
         }
+        lem()->rescan->enqueue('weekly', current_time('mysql'));
     }
 }

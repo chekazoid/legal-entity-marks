@@ -8,24 +8,49 @@
     $report_url    = admin_url('admin.php?page=lem-report&fresh=update');
     ?>
 
-    <?php if ($rescan_state && empty($rescan_state['done'])) : ?>
+    <?php if ($rescan_state && empty($rescan_state['done'])) :
+        $next_run = wp_next_scheduled(LEM_Rescan::HOOK);
+        $cron_off = defined('DISABLE_WP_CRON') && DISABLE_WP_CRON;
+    ?>
         <div class="notice notice-info inline" style="margin:0 0 16px">
             <p>
                 <strong>Идёт проверка архива после обновления реестров.</strong>
                 Просмотрено <?php echo (int) $rescan_state['offset']; ?>
                 из <?php echo (int) $rescan_state['total']; ?>
                 (<?php echo (int) $rescan_state['percent']; ?>%).
-                Работа идёт частями в фоне, страницу можно закрыть.
+                <?php if ($cron_off) : ?>
+                    <br><strong>На сайте отключён WP-Cron</strong>, сама по себе проверка
+                    не сдвинется. Запустите её кнопкой ниже или настройте системный cron.
+                <?php elseif ($next_run) : ?>
+                    Следующая порция: <?php echo esc_html(date_i18n('H:i:s', $next_run + (int) (get_option('gmt_offset') * HOUR_IN_SECONDS))); ?>.
+                    Работа идёт частями в фоне, страницу можно закрыть.
+                <?php else : ?>
+                    Задача в расписании не найдена, запустите проверку вручную.
+                <?php endif; ?>
             </p>
+            <p>
+                <button type="button" class="button button-primary" id="lem-btn-rescan">
+                    Проверить архив сейчас
+                </button>
+                <span id="lem-rescan-status" class="lem-inline-status"></span>
+            </p>
+            <div class="lem-progress-bar" id="lem-rescan-bar" style="display:none">
+                <div class="lem-progress-fill" id="lem-rescan-fill" style="width:0%"></div>
+            </div>
         </div>
-    <?php elseif (!empty($update_report['at']) && !empty($update_report['initial'])) : ?>
+    <?php elseif (!empty($update_report['at'])
+        && ($update_report['trigger'] ?? '') !== 'registry-update') : ?>
         <div class="notice notice-success inline" style="margin:0 0 16px">
             <p>
-                <strong>Первичная проверка архива завершена <?php echo esc_html($update_report['at']); ?>.</strong>
+                <strong>Проверка архива завершена <?php echo esc_html($update_report['at']); ?>.</strong>
                 Просмотрено материалов: <?php echo (int) $update_report['posts_scanned']; ?>,
                 из них с упоминаниями: <?php echo (int) $update_report['with_matches']; ?>.
-                Дальше при каждом обновлении реестров плагин будет проверять архив сам
-                и показывать здесь, кого принесло новым обновлением.
+                <?php if ((int) $update_report['links'] > 0) : ?>
+                    Ссылок на ресурсы из реестров: <?php echo (int) $update_report['links']; ?>
+                    в <?php echo (int) $update_report['with_links']; ?> материалах.
+                <?php endif; ?>
+                <br>Кого принесло очередным обновлением реестров, будет показано здесь же
+                после ближайшего обновления.
             </p>
         </div>
     <?php elseif (!empty($update_report['at'])) : ?>
@@ -170,6 +195,12 @@
                 <span id="lem-purge-status" class="lem-inline-status"></span>
             </p>
             <p>
+                <button type="button" class="button" id="lem-btn-rescan-start">
+                    Проверить архив
+                </button>
+                <span id="lem-rescan-start-status" class="lem-inline-status"></span>
+            </p>
+            <p>
                 <button type="button" class="button" id="lem-btn-sources">
                     Проверить источники
                 </button>
@@ -231,6 +262,49 @@
             box.style.display = '';
         })
         .catch(function() { st.textContent = 'Ошибка'; btn.disabled = false; });
+    });
+
+    /* Прогон очереди из браузера: WP-Cron срабатывает только при заходах
+       на сайт, а где-то отключён совсем */
+    function runRescan(btn, statusEl, start) {
+        var bar  = document.getElementById('lem-rescan-bar');
+        var fill = document.getElementById('lem-rescan-fill');
+        btn.disabled = true;
+        if (bar) bar.style.display = '';
+
+        function step(first) {
+            var body = 'action=lem_rescan_step&nonce=' + cfg.crudNonce + (first ? '&start=1' : '');
+            fetch(cfg.ajaxUrl, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: body
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (!d.success) { statusEl.textContent = 'Ошибка'; btn.disabled = false; return; }
+                statusEl.textContent = d.data.offset + ' из ' + d.data.total
+                    + ' (' + d.data.percent + '%)';
+                if (fill) fill.style.width = d.data.percent + '%';
+                if (d.data.done) {
+                    statusEl.textContent = 'Проверка завершена';
+                    setTimeout(function() { location.reload(); }, 1200);
+                    return;
+                }
+                step(false);
+            })
+            .catch(function() { statusEl.textContent = 'Ошибка сети'; btn.disabled = false; });
+        }
+        step(start);
+    }
+
+    document.getElementById('lem-btn-rescan')?.addEventListener('click', function() {
+        runRescan(this, document.getElementById('lem-rescan-status'), false);
+    });
+
+    document.getElementById('lem-btn-rescan-start')?.addEventListener('click', function() {
+        if (!confirm('Проверить весь архив на упоминания и запрещённые ссылки? '
+            + 'Это может занять несколько минут, вкладку надо держать открытой.')) return;
+        runRescan(this, document.getElementById('lem-rescan-start-status'), true);
     });
 
     document.getElementById('lem-btn-purge')?.addEventListener('click', function() {

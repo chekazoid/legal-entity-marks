@@ -50,9 +50,15 @@ $total_pages = (int) ceil($result['total'] / $per_page);
     <?php if (!empty($update['at'])) : ?>
         <p class="description" style="max-width:820px">
             Последняя проверка архива: <?php echo esc_html($update['at']); ?>.
-            Реестры пополнились на <?php echo (int) $update['new_entities']; ?> записей,
-            из них в материалах сайта встречается <?php echo (int) $update['mentioned']; ?>.
-            Отбор «новое с последнего обновления» показывает именно их.
+            <?php if (($update['trigger'] ?? '') === 'registry-update') : ?>
+                Реестры пополнились на <?php echo (int) $update['new_entities']; ?> записей,
+                из них в материалах сайта встречается <?php echo (int) $update['mentioned']; ?>.
+                Отбор «новое с последнего обновления» показывает именно их.
+            <?php else : ?>
+                Просмотрено материалов: <?php echo (int) $update['posts_scanned']; ?>.
+                Отбор «новое с последнего обновления» заработает после ближайшего
+                обновления реестров.
+            <?php endif; ?>
         </p>
     <?php endif; ?>
 
@@ -117,12 +123,12 @@ $total_pages = (int) ceil($result['total'] / $per_page);
     <table class="wp-list-table widefat fixed striped">
         <thead>
             <tr>
-                <th style="width:24%">Материал</th>
-                <th style="width:24%">Организация</th>
-                <th style="width:11%">Реестр</th>
-                <th style="width:11%">В реестре с</th>
-                <th style="width:12%">Найдено как</th>
-                <th style="width:9%">Маркируется</th>
+                <th style="width:20%">Материал</th>
+                <th style="width:20%">Организация</th>
+                <th style="width:10%">Реестр</th>
+                <th style="width:9%">В реестре с</th>
+                <th style="width:11%">Найдено как</th>
+                <th style="width:8%">Маркируется</th>
                 <th>Запрещённые ссылки</th>
             </tr>
         </thead>
@@ -172,13 +178,13 @@ $total_pages = (int) ceil($result['total'] / $per_page);
                         <span style="color:#777">нет</span>
                     <?php endif; ?>
                 </td>
-                <td>
+                <td style="word-break:break-word">
                     <?php if (empty($r['links'])) : ?>
                         <span style="color:#777">-</span>
                     <?php else : ?>
                         <?php foreach ($r['links'] as $l) : ?>
                             <div>
-                                <code><?php echo esc_html($l['url']); ?></code>
+                                <code style="word-break:break-all"><?php echo esc_html($l['url']); ?></code>
                                 <?php if (!empty($l['org'])) : ?>
                                     <div style="color:#777;font-size:11px">
                                         <?php echo esc_html($l['org']); ?>

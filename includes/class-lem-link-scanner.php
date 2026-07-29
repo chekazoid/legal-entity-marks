@@ -68,10 +68,15 @@ class LEM_Link_Scanner {
                 $matched = LEM_Banned_Sites::match_account($link['host'], $link['url'], $accounts);
             }
             if ($matched !== null) {
+                // Реестр владельца: ссылка на сайт иноагента законом не запрещена,
+                // а ссылка на ресурс нежелательной организации это уже риск
+                $type = lem()->banned_sites->type_of($matched);
                 $found[] = [
                     'url'            => $link['url'],
                     'anchor'         => $link['anchor'],
                     'matched_domain' => $matched,
+                    'registry'       => $type,
+                    'removable'      => lem()->banned_sites->is_removable($type),
                     'offset'         => $link['offset'],
                 ];
             }
@@ -100,12 +105,73 @@ class LEM_Link_Scanner {
                 return $m[0];
             }
             $host = mb_strtolower(preg_replace('/^www\./i', '', $host));
-            if (LEM_Banned_Sites::is_domain_banned($host, $banned_domains) !== null
-                || LEM_Banned_Sites::match_account($host, $url, $accounts) !== null) {
+            $matched = LEM_Banned_Sites::is_domain_banned($host, $banned_domains);
+            if ($matched === null) {
+                $matched = LEM_Banned_Sites::match_account($host, $url, $accounts);
+            }
+            // Ресурсы иноагентов из текста не вычищаем: ссылка на них разрешена,
+            // достаточно маркировки. Иначе кнопка «удалить» снесла бы
+            // нормальные ссылки на издания
+            if ($matched !== null && lem()->banned_sites->is_removable(
+                    lem()->banned_sites->type_of($matched))) {
                 return $m[2]; // только текст ссылки
             }
             return $m[0];
         }, $content);
+    }
+
+    /**
+     * Материалы, где есть хотя бы одна ссылка к удалению.
+     *
+     * Мета хранит все найденные ссылки, включая ресурсы иноагентов: они нужны
+     * отчёту. Но для чистки текста годятся не все, иначе счётчики обещают
+     * убрать сотню статей, а меняется десяток
+     */
+    public static function posts_with_removable() {
+        global $wpdb;
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT post_id, meta_value FROM {$wpdb->postmeta}
+             WHERE meta_key = %s AND meta_value != '' LIMIT 5000",
+            LEM_BANNED_LINKS_META_KEY
+        ));
+
+        $out = [];
+        foreach ($rows as $r) {
+            $meta = json_decode($r->meta_value, true);
+            foreach ((array) ($meta['links'] ?? []) as $l) {
+                if (self::link_is_removable($l)) {
+                    $out[] = (int) $r->post_id;
+                    break;
+                }
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Убирать ли эту ссылку из текста.
+     *
+     * Мета, записанная до разделения реестров, отметки не содержит. Считать
+     * такую ссылку удаляемой нельзя: на сайтах СМИ там лежат ресурсы
+     * иноагентов, ссылаться на которые не запрещено. Поэтому реестр
+     * определяем по текущему списку ресурсов.
+     */
+    public static function link_is_removable(array $link) {
+        if (array_key_exists('removable', $link)) {
+            return !empty($link['removable']);
+        }
+        $type = lem()->banned_sites->type_of($link['matched_domain'] ?? '');
+        return lem()->banned_sites->is_removable($type);
+    }
+
+    /**
+     * Оставляет только ссылки, которые полагается убирать из текста.
+     * Ресурсы иноагентов остаются: ссылаться на них не запрещено.
+     */
+    public static function removable_only(array $links) {
+        return array_values(array_filter($links, static function ($l) {
+            return self::link_is_removable($l);
+        }));
     }
 
     /**
@@ -126,7 +192,17 @@ class LEM_Link_Scanner {
         global $wpdb;
         $wpdb->update($wpdb->posts, ['post_content' => $cleaned], ['ID' => $post_id]);
         clean_post_cache($post_id);
-        delete_post_meta($post_id, LEM_BANNED_LINKS_META_KEY);
+
+        // Пересобираем мету по очищенному тексту: часть ссылок остаётся
+        // (ресурсы иноагентов), и отчёт должен их видеть
+        $left = $this->scan_post_content($cleaned, $banned_domains);
+        if (!empty($left)) {
+            update_post_meta($post_id, LEM_BANNED_LINKS_META_KEY, wp_slash(wp_json_encode([
+                'links' => $left, 'scanned_at' => current_time('mysql'),
+            ], JSON_UNESCAPED_UNICODE)));
+        } else {
+            delete_post_meta($post_id, LEM_BANNED_LINKS_META_KEY);
+        }
         lem()->cache->purge_post($post_id);
 
         return 1;
@@ -291,14 +367,10 @@ class LEM_Link_Scanner {
             wp_send_json_error('Нет доступа');
         }
 
-        global $wpdb;
-        $total = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT post_id) FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value != ''",
-            LEM_BANNED_LINKS_META_KEY
-        ));
+        $total = count(self::posts_with_removable());
 
         if ($total === 0) {
-            wp_send_json_error('Нет статей с запрещёнными ссылками');
+            wp_send_json_error('Нет статей со ссылками, которые нужно убирать');
         }
 
         $state = [
@@ -325,11 +397,8 @@ class LEM_Link_Scanner {
         global $wpdb;
         $banned = lem()->banned_sites->get_all_domains();
 
-        // Берём батч из 20 постов с запрещёнными ссылками
-        $post_ids = $wpdb->get_col($wpdb->prepare(
-            "SELECT DISTINCT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value != '' LIMIT 20",
-            LEM_BANNED_LINKS_META_KEY
-        ));
+        // Берём батч из 20 материалов, где есть что удалять
+        $post_ids = array_slice(self::posts_with_removable(), 0, 20);
 
         if (empty($post_ids)) {
             $state['status']      = 'complete';
@@ -346,10 +415,7 @@ class LEM_Link_Scanner {
         }
 
         // Проверяем, остались ли ещё
-        $remaining = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT post_id) FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value != ''",
-            LEM_BANNED_LINKS_META_KEY
-        ));
+        $remaining = count(self::posts_with_removable());
 
         if ($remaining === 0) {
             $state['status']      = 'complete';
@@ -505,20 +571,18 @@ class LEM_Link_Scanner {
             if ($dry_run) {
                 $post  = get_post((int) $args['post_id']);
                 $found = $post ? $this->scan_post_content($post->post_content, $banned) : [];
-                $log('Найдено ' . count($found) . ' запрещённых ссылок (пробный запуск).');
+                $found = self::removable_only($found);
+                $log('Найдено ' . count($found) . ' ссылок к удалению (пробный запуск).');
                 return ['cleaned' => 0, 'would_clean' => count($found) > 0 ? 1 : 0];
             }
             $result = $this->clean_post((int) $args['post_id'], $banned);
             return ['cleaned' => $result];
         }
 
-        $post_ids = $wpdb->get_col($wpdb->prepare(
-            "SELECT DISTINCT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value != ''",
-            LEM_BANNED_LINKS_META_KEY
-        ));
+        $post_ids = self::posts_with_removable();
 
         $total = count($post_ids);
-        $log("Статей с запрещёнными ссылками: $total");
+        $log("Статей со ссылками к удалению: $total");
 
         if ($total === 0) {
             return ['cleaned' => 0];

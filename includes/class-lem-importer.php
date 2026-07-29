@@ -625,8 +625,11 @@ class LEM_Importer {
             return ['added' => 0, 'skipped' => 0, 'error' => 'Invalid JSON'];
         }
 
+        global $wpdb;
+        $table   = $wpdb->prefix . 'lem_banned_sites';
         $added   = 0;
         $skipped = 0;
+        $typed   = 0;
 
         foreach ($data as $entry) {
             // insert() сам разберёт t.me/doxajournal на площадку и аккаунт
@@ -635,21 +638,38 @@ class LEM_Importer {
                 $skipped++;
                 continue;
             }
+            $type = LEM_Banned_Sites::clean_registry($entry['type'] ?? '');
 
             $result = lem()->banned_sites->insert([
-                'domain' => $raw,
-                'label'  => $entry['label'] ?? '',
+                'domain'   => $raw,
+                'label'    => $entry['label'] ?? '',
+                'registry' => $type,
             ]);
 
             if ($result) {
                 $added++;
-            } else {
-                $skipped++;
+                continue;
+            }
+
+            $skipped++;
+            // Домен уже заведён. До версии 1.12.0 тип из файла не сохранялся,
+            // и такие домены выглядели как добавленные вручную
+            if ($type !== '') {
+                $target = LEM_Banned_Sites::split_target($raw);
+                $typed += (int) $wpdb->query($wpdb->prepare(
+                    "UPDATE $table SET registry = %s
+                     WHERE domain = %s AND account = %s AND registry = '' AND entity_id IS NULL",
+                    $type, $target['domain'], $target['account']
+                ));
             }
         }
 
+        if ($typed > 0) {
+            lem()->banned_sites->flush_cache();
+        }
+
         lem()->banned_sites->flush_cache();
-        return ['added' => $added, 'skipped' => $skipped];
+        return ['added' => $added, 'skipped' => $skipped, 'typed' => $typed];
     }
 
     /* ------------------------------------------------------------------
@@ -1079,10 +1099,21 @@ class LEM_Importer {
             $code = wp_remote_retrieve_response_code($response);
             $data = json_decode(wp_remote_retrieve_body($response), true);
             $ok   = $code === 200 && isset($data['values']);
+
+            // Поле с общим числом записей у реестров называется по-разному,
+            // а в ответе на пробный запрос его может не быть вовсе
+            $total = null;
+            foreach (['count', 'total', 'totalCount', 'recordsTotal'] as $key) {
+                if (isset($data[$key]) && (int) $data[$key] > 0) {
+                    $total = (int) $data[$key];
+                    break;
+                }
+            }
+
             $out[] = [
                 'name' => $name, 'url' => $url, 'ok' => $ok,
                 'detail' => $ok
-                    ? 'отвечает, записей в реестре: ' . (int) ($data['count'] ?? 0)
+                    ? ('отвечает' . ($total !== null ? ', записей в реестре: ' . $total : ''))
                     : "HTTP $code, ответ не похож на реестр",
             ];
         }

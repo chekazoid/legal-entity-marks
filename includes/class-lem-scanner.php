@@ -876,7 +876,6 @@ class LEM_Scanner {
         ));
 
         $entities = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
-        $list_ver = get_option('lem_list_version', '');
         $now      = current_time('mysql');
 
         $budget    = self::time_budget();
@@ -982,7 +981,6 @@ class LEM_Scanner {
         }
 
         $entities = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
-        $list_ver = get_option('lem_list_version', '');
         $now      = current_time('mysql');
         $offset   = 0;
         $posts_with_matches = 0;

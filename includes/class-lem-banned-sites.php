@@ -5,7 +5,17 @@ class LEM_Banned_Sites {
 
     const TRANSIENT_KEY  = 'lem_banned_sites_all';
     const ACCOUNTS_KEY   = 'lem_banned_sites_accounts';
+    const INDEX_KEY      = 'lem_banned_sites_index';
     const TRANSIENT_TTL  = HOUR_IN_SECONDS;
+
+    /**
+     * Реестры, ссылки на ресурсы которых считаются запрещёнными по умолчанию.
+     *
+     * Иноагента сюда не включаем: ссылка на его сайт законом не запрещена,
+     * её достаточно промаркировать. А ссылка на ресурс нежелательной
+     * организации может толковаться как участие в её деятельности.
+     */
+    const REMOVABLE_TYPES = ['extremist', 'terrorist', 'undesirable'];
 
     /**
      * Площадки, где первый сегмент пути это имя аккаунта.
@@ -45,6 +55,9 @@ class LEM_Banned_Sites {
         'home', 'about', 'login', 'help', 'terms', 'privacy', 'share', 'post', 'posts',
         'media', 'feed', 'wall', 'photo', 'album', 'event', 'live', 'joinchat',
     ];
+
+    /** Индекс ресурсов в пределах запроса. */
+    private $index_cache = null;
 
     private function table() {
         global $wpdb;
@@ -127,6 +140,7 @@ class LEM_Banned_Sites {
             'domain'    => $domain,
             'account'   => $account,
             'label'     => $data['label'] ?? '',
+            'registry'  => self::clean_registry($data['registry'] ?? ''),
             'entity_id' => !empty($data['entity_id']) ? (int) $data['entity_id'] : null,
         ]);
 
@@ -151,6 +165,9 @@ class LEM_Banned_Sites {
         }
         if (array_key_exists('label', $data)) {
             $update['label'] = $data['label'];
+        }
+        if (array_key_exists('registry', $data)) {
+            $update['registry'] = self::clean_registry($data['registry']);
         }
         if (array_key_exists('entity_id', $data)) {
             $update['entity_id'] = !empty($data['entity_id']) ? (int) $data['entity_id'] : null;
@@ -219,6 +236,76 @@ class LEM_Banned_Sites {
     public function flush_cache() {
         delete_transient(self::TRANSIENT_KEY);
         delete_transient(self::ACCOUNTS_KEY);
+        delete_transient(self::INDEX_KEY);
+        $this->index_cache = null;
+    }
+
+    /**
+     * Ресурс -> реестр его владельца.
+     *
+     * Ключ такой же, каким сканер помечает найденную ссылку: «example.org»
+     * или «t.me/channel». Домены, добавленные руками, реестра не имеют
+     * и считаются запрещёнными: их внесли осознанно.
+     *
+     * @return array<string, string> ключ => тип реестра ('' для ручных)
+     */
+    public function get_index() {
+        if ($this->index_cache !== null) {
+            return $this->index_cache;
+        }
+        $index = get_transient(self::INDEX_KEY);
+        if ($index !== false) {
+            $this->index_cache = $index;
+            return $index;
+        }
+
+        global $wpdb;
+        $ents  = $wpdb->prefix . LEM_TABLE;
+        $index = [];
+        foreach ($wpdb->get_results(
+            "SELECT s.domain, s.account, s.registry, e.type
+             FROM {$this->table()} s LEFT JOIN $ents e ON e.id = s.entity_id"
+        ) as $row) {
+            $key = $row->account !== '' ? $row->domain . '/' . $row->account : $row->domain;
+            // Комплектные домены реестра не связаны с записью, но свой тип знают
+            $index[$key] = $row->type ?: ($row->registry ?: '');
+        }
+
+        set_transient(self::INDEX_KEY, $index, self::TRANSIENT_TTL);
+        $this->index_cache = $index;
+        return $index;
+    }
+
+    /** Только известные реестры, иначе пустая строка. */
+    public static function clean_registry($type) {
+        $type = sanitize_key((string) $type);
+        return in_array($type, LEM_Plugin::REGISTRY_TYPES, true) ? $type : '';
+    }
+
+    /** Реестр ресурса по ключу, каким его пометил сканер. */
+    public function type_of($key) {
+        $index = $this->get_index();
+        return $index[$key] ?? '';
+    }
+
+    /**
+     * Ссылку на этот ресурс полагается убирать из текста?
+     * Настройка позволяет расширить список, если сайт хочет строже.
+     */
+    public function is_removable($type) {
+        $settings = lem()->get_settings();
+        $allowed  = $settings['link_registries'] ?? self::REMOVABLE_TYPES;
+        return $type === '' || in_array($type, $allowed, true);
+    }
+
+    /** Сводка реестра доменов по типам: для страницы «Ссылки». */
+    public function count_by_type() {
+        $out = [];
+        foreach ($this->get_index() as $type) {
+            $key = $type ?: 'manual';
+            $out[$key] = ($out[$key] ?? 0) + 1;
+        }
+        return $out;
     }
 
     /**

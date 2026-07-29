@@ -89,6 +89,47 @@ class LEM_Plugin {
         register_activation_hook(LEM_FILE, [$this, 'activate']);
         register_deactivation_hook(LEM_FILE, [$this, 'deactivate']);
         add_action('admin_init', [$this, 'maybe_run_upgrade_tasks']);
+        add_action('admin_init', [$this, 'maybe_sync_bundled_data'], 11);
+    }
+
+    /**
+     * Отметка о содержимом комплектных данных.
+     * Меняется, когда в data/ появляется то, что надо докатить на уже
+     * установленные сайты: новые брендовые правила, типы доменов и подобное.
+     */
+    const BUNDLED_DATA_VERSION = '1.12.0-sites-registry';
+
+    /**
+     * Докатка комплектных данных.
+     *
+     * Отдельно от maybe_run_upgrade_tasks: та привязана к номеру версии плагина
+     * и не сработает, если под одним номером приедет пересобранный архив.
+     * Здесь своя отметка, поэтому докатку можно повторить, подняв её.
+     */
+    public function maybe_sync_bundled_data() {
+        if (get_option('lem_bundled_data_version') === self::BUNDLED_DATA_VERSION) {
+            return;
+        }
+        if (!$this->database->table_exists()) {
+            return;
+        }
+
+        // Типы у комплектных доменов: без них экстремистские и нежелательные
+        // выглядят как добавленные вручную
+        $this->importer->import_banned_sites();
+
+        // Сначала довозим новые комплектные правила, потом применяем: иначе
+        // свежие правила (DOXA, «Вёрстка») добавились бы уже ПОСЛЕ применения
+        // и не попали бы в алиасы до следующего обновления реестров
+        $this->brands->sync_bundled();
+
+        global $wpdb;
+        $table = $wpdb->prefix . LEM_TABLE;
+        if ((int) $wpdb->get_var("SELECT COUNT(*) FROM $table") > 0) {
+            $this->importer->apply_brand_aliases();
+        }
+
+        update_option('lem_bundled_data_version', self::BUNDLED_DATA_VERSION, false);
     }
 
     public function activate() {
@@ -133,19 +174,8 @@ class LEM_Plugin {
 
         add_option('lem_installed_at', current_time('mysql'));
 
-        // Сначала довозим новые комплектные правила, потом применяем: иначе
-        // свежие правила (DOXA, «Вёрстка») добавились бы уже ПОСЛЕ применения
-        // и не попали бы в алиасы до следующего обновления реестров
-        $this->brands->sync_bundled();
-
-        // На пустой базе алиасы применит активация/импорт, здесь только докатываем
-        if ($this->database->table_exists()) {
-            global $wpdb;
-            $table = $wpdb->prefix . LEM_TABLE;
-            if ((int) $wpdb->get_var("SELECT COUNT(*) FROM $table") > 0) {
-                $this->importer->apply_brand_aliases();
-            }
-        }
+        // Комплектные данные (брендовые правила, типы доменов) довозит
+        // maybe_sync_bundled_data: у неё своя отметка, не зависящая от номера версии
 
         wp_schedule_single_event(time() + MINUTE_IN_SECONDS, 'lem_fetch_registries');
 
@@ -191,6 +221,9 @@ class LEM_Plugin {
     public function get_settings() {
         $defaults = [
             'post_types'            => ['post'],
+            // Ссылка на сайт иноагента законом не запрещена, поэтому в чистку
+            // по умолчанию идут только три реестра
+            'link_registries'       => LEM_Banned_Sites::REMOVABLE_TYPES,
             'filter_priority'       => 9999,
             'accent_color'          => '#f88c00',
             'disclaimer_bg'         => '#fff9f0',
@@ -242,6 +275,11 @@ class LEM_Plugin {
         }
 
         // Реестр, который маркируется, отслеживается по определению
+        $settings['link_registries'] = array_values(array_intersect(
+            self::REGISTRY_TYPES,
+            (array) ($settings['link_registries'] ?: [])
+        ));
+
         $settings['track_registries'] = array_values(array_unique(array_merge(
             $settings['track_registries'],
             $settings['mark_registries']

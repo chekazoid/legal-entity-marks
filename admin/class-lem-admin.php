@@ -14,6 +14,7 @@ class LEM_Admin {
         add_action('wp_ajax_lem_fetch_registries', [$this, 'ajax_fetch_registries']);
         add_action('wp_ajax_lem_purge_cache', [$this, 'ajax_purge_cache']);
         add_action('wp_ajax_lem_check_sources', [$this, 'ajax_check_sources']);
+        add_action('wp_ajax_lem_rescan_step', [$this, 'ajax_rescan_step']);
 
         add_action('wp_ajax_lem_save_banned_site', [$this, 'ajax_save_banned_site']);
         add_action('wp_ajax_lem_delete_banned_site', [$this, 'ajax_delete_banned_site']);
@@ -99,10 +100,22 @@ class LEM_Admin {
         header('Content-Disposition: attachment; filename=lem-mentions-'
             . gmdate('Y-m-d') . '.csv');
 
+        // Отборы те же, что на экране: иначе выгрузка молча отдаёт другое
+        $fresh  = sanitize_text_field(wp_unslash($_GET['fresh'] ?? ''));
+        $update = lem()->rescan->last_report();
+        $since  = '';
+        if ($fresh === 'update' && !empty($update['since'])) {
+            $since = $update['since'];
+        } elseif ($fresh === '30') {
+            $since = gmdate('Y-m-d H:i:s', time() - 30 * DAY_IN_SECONDS);
+        }
+
         lem()->report->export_csv([
-            'registry' => sanitize_text_field(wp_unslash($_GET['registry'] ?? '')),
-            'mode'     => sanitize_text_field(wp_unslash($_GET['mode'] ?? 'all')),
-            'search'   => sanitize_text_field(wp_unslash($_GET['s'] ?? '')),
+            'registry'   => sanitize_text_field(wp_unslash($_GET['registry'] ?? '')),
+            'mode'       => sanitize_text_field(wp_unslash($_GET['mode'] ?? 'all')),
+            'search'     => sanitize_text_field(wp_unslash($_GET['s'] ?? '')),
+            'since'      => $since,
+            'links_only' => !empty($_GET['links_only']),
         ]);
         exit;
     }
@@ -323,6 +336,11 @@ class LEM_Admin {
         // Переключение на «Вручную» без работающего скрипта оставляет то, что было:
         // иначе форма молча снимала бы всю маркировку с сайта
 
+        $settings['link_registries'] = array_values(array_intersect(
+            LEM_Plugin::REGISTRY_TYPES,
+            array_map('sanitize_text_field', (array) wp_unslash($_POST['lem_link_registries'] ?? []))
+        ));
+
         unset($settings['registries']); // пересоберётся из mark_registries
 
         // Морфология: словоформы и правило для одиночной фамилии
@@ -484,6 +502,34 @@ class LEM_Admin {
         wp_send_json_success(['sources' => lem()->importer->check_sources()]);
     }
 
+    /**
+     * Шаг проверки архива по требованию.
+     *
+     * Очередь рассчитана на WP-Cron, но он срабатывает только при заходах
+     * на сайт, а на части хостингов отключён вовсе. Кнопка в админке даёт
+     * прогнать архив вручную, не дожидаясь крона.
+     */
+    public function ajax_rescan_step() {
+        check_ajax_referer('lem_crud_nonce', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Нет доступа');
+        }
+
+        if (!empty($_POST['start'])) {
+            lem()->rescan->enqueue('manual', current_time('mysql'));
+        }
+
+        lem()->rescan->run();
+        $state = lem()->rescan->status();
+
+        wp_send_json_success([
+            'offset'  => (int) ($state['offset'] ?? 0),
+            'total'   => (int) ($state['total'] ?? 0),
+            'percent' => (int) ($state['percent'] ?? 100),
+            'done'    => !empty($state['done']),
+        ]);
+    }
+
     public function ajax_purge_cache() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
@@ -505,6 +551,7 @@ class LEM_Admin {
         $data = [
             'domain'    => sanitize_text_field(wp_unslash($_POST['domain'] ?? '')),
             'label'     => sanitize_text_field(wp_unslash($_POST['label'] ?? '')),
+            'registry'  => sanitize_text_field(wp_unslash($_POST['registry'] ?? '')),
             'entity_id' => (int) ($_POST['entity_id'] ?? 0) ?: null,
         ];
 

@@ -104,6 +104,30 @@ $all_post_types = get_post_types(['public' => true], 'objects');
             </tr>
 
             <tr>
+                <th scope="row">Запрещённые ссылки</th>
+                <td>
+                    <p class="description" style="max-width:640px;margin-bottom:8px">
+                        Ссылка на ресурс нежелательной организации может толковаться как
+                        участие в её деятельности, такие ссылки убирают из текста.
+                        Ссылка на сайт иноагента ничем не запрещена, ей достаточно маркировки.
+                        Отметьте реестры, ссылки на ресурсы которых считать подлежащими удалению.
+                    </p>
+                    <?php foreach ($registry_labels as $key => $label) : ?>
+                        <label style="display:inline-block;margin-right:16px">
+                            <input type="checkbox" name="lem_link_registries[]"
+                                   value="<?php echo esc_attr($key); ?>"
+                                   <?php checked(in_array($key, $settings['link_registries'], true)); ?>>
+                            <?php echo esc_html($label); ?>
+                        </label>
+                    <?php endforeach; ?>
+                    <p class="description">
+                        Найденные ссылки видны в разделе «Ссылки» в любом случае, отметка
+                        влияет только на то, что удаляется из текста.
+                    </p>
+                </td>
+            </tr>
+
+            <tr>
                 <th scope="row">Поиск имён</th>
                 <td>
                     <label style="display:block;margin-bottom:4px">

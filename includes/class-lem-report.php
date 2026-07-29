@@ -10,6 +10,18 @@ defined('ABSPATH') || exit;
  */
 class LEM_Report {
 
+    /** Разобранная мета в пределах запроса: страница отчёта строит её дважды. */
+    private $rows_cache  = null;
+    private $links_cache = null;
+
+    /**
+     * Сколько материалов разбирать за раз. На больших архивах отчёт иначе
+     * съедает память; предел можно поднять фильтром.
+     */
+    private function max_posts() {
+        return (int) apply_filters('lem_report_max_posts', 5000);
+    }
+
     /**
      * Строки отчёта.
      *
@@ -36,16 +48,19 @@ class LEM_Report {
 
         // Мета пишется сканером и содержит всё найденное, независимо от того,
         // маркируется реестр или только отслеживается
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT p.ID, p.post_title, p.post_type, p.post_status, pm.meta_value
-             FROM {$wpdb->posts} p
-             INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-             WHERE pm.meta_key = %s AND pm.meta_value != ''
-               AND p.post_status IN ('publish','draft','pending','private','future')
-             ORDER BY p.post_date DESC
-             LIMIT 5000",
-            LEM_META_KEY
-        ));
+        if ($this->rows_cache === null) {
+            $this->rows_cache = $wpdb->get_results($wpdb->prepare(
+                "SELECT p.ID, p.post_title, p.post_type, p.post_status, pm.meta_value
+                 FROM {$wpdb->posts} p
+                 INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+                 WHERE pm.meta_key = %s AND pm.meta_value != ''
+                   AND p.post_status IN ('publish','draft','pending','private','future')
+                 ORDER BY p.post_date DESC
+                 LIMIT " . $this->max_posts(),
+                LEM_META_KEY
+            ));
+        }
+        $rows = $this->rows_cache;
 
         $entities = [];
         foreach (lem()->entities->get_for_marking(true) as $e) {
@@ -221,10 +236,14 @@ class LEM_Report {
      * Запрещённые ссылки по материалам: post_id => [ [url, anchor, domain], ... ]
      */
     private function links_by_post() {
+        if ($this->links_cache !== null) {
+            return $this->links_cache;
+        }
+
         global $wpdb;
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT post_id, meta_value FROM {$wpdb->postmeta}
-             WHERE meta_key = %s AND meta_value != '' LIMIT 5000",
+             WHERE meta_key = %s AND meta_value != '' LIMIT " . $this->max_posts(),
             LEM_BANNED_LINKS_META_KEY
         ));
 
@@ -262,6 +281,8 @@ class LEM_Report {
                 ];
             }
         }
+
+        $this->links_cache = $out;
         return $out;
     }
 

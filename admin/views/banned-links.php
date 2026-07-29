@@ -1,7 +1,17 @@
 <?php defined('ABSPATH') || exit;
 
 $sites  = lem()->banned_sites->get_all();
-$search = sanitize_text_field($_GET['s'] ?? '');
+$search = sanitize_text_field(wp_unslash($_GET['s'] ?? ''));
+
+$type_labels = [
+    'inoagent'    => 'иноагент',
+    'extremist'   => 'экстремистская',
+    'terrorist'   => 'террористическая',
+    'undesirable' => 'нежелательная',
+    'manual'      => 'добавлен вручную',
+];
+$by_type   = lem()->banned_sites->count_by_type();
+$site_index = lem()->banned_sites->get_index();
 
 // Результаты сканирования
 global $wpdb;
@@ -28,6 +38,10 @@ foreach ($flagged_posts as $fp) {
             'url'            => $link['url'],
             'anchor'         => $link['anchor'],
             'matched_domain' => $link['matched_domain'],
+            // Мета, записанная до разделения реестров, отметки не содержит:
+            // тип берём из текущего списка ресурсов
+            'registry'       => $link['registry'] ?? ($site_index[$link['matched_domain']] ?? ''),
+            'removable'      => LEM_Link_Scanner::link_is_removable($link),
         ];
         $total_flagged_links++;
     }
@@ -41,12 +55,29 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
     <!-- Секция 1: Реестр доменов -->
     <div class="lem-card" style="margin-bottom:20px">
         <h2>Реестр запрещённых доменов</h2>
-        <p class="description">
-            Домены сайтов экстремистских, террористических и нежелательных организаций.
-            Для площадок, где у организации только аккаунт, укажите ссылку целиком
-            (<code>t.me/doxajournal</code>, <code>youtube.com/@channel</code>): запрещённым
-            станет этот аккаунт, а не весь телеграм или YouTube.
+        <p class="description" style="max-width:820px">
+            Ресурсы организаций из реестров. Часть приезжает автоматически: у записей
+            об иноагентах Минюст публикует ссылки на их сайты и аккаунты.
+            Для площадок, где у организации только аккаунт, указывайте ссылку целиком
+            (<code>t.me/doxajournal</code>, <code>youtube.com/@channel</code>): помечен
+            будет этот аккаунт, а не весь телеграм или YouTube.
         </p>
+        <p class="description" style="max-width:820px">
+            <strong>Удаляются из текста не все.</strong> Ссылка на ресурс нежелательной
+            организации может толковаться как участие в её деятельности, её убирают.
+            Ссылка на сайт иноагента ничем не запрещена, ей достаточно маркировки,
+            и чистка её не трогает. Список удаляемых реестров задаётся в настройках.
+        </p>
+        <?php if (!empty($by_type)) : ?>
+            <p>
+                <?php foreach ($by_type as $type => $count) : ?>
+                    <span style="margin-right:16px">
+                        <?php echo esc_html($type_labels[$type] ?? $type); ?>:
+                        <strong><?php echo (int) $count; ?></strong>
+                    </span>
+                <?php endforeach; ?>
+            </p>
+        <?php endif; ?>
 
         <p>
             <button type="button" class="button button-primary" id="lem-add-site">Добавить домен</button>
@@ -60,6 +91,7 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
                 <tr>
                     <th style="width:40px">ID</th>
                     <th>Домен</th>
+                    <th style="width:130px">Реестр</th>
                     <th>Название организации</th>
                     <th style="width:140px">Добавлен</th>
                     <th style="width:140px">Действия</th>
@@ -69,12 +101,19 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
                 <?php foreach ($sites as $site) : ?>
                 <tr data-id="<?php echo esc_attr($site['id']); ?>">
                     <td><?php echo esc_html($site['id']); ?></td>
-                    <td><code><?php
-                        echo esc_html($site['domain']
-                            . (!empty($site['account']) ? '/' . $site['account'] : ''));
-                    ?></code></td>
+                    <?php
+                    $site_key  = $site['domain'] . (!empty($site['account']) ? '/' . $site['account'] : '');
+                    $site_type = $site_index[$site_key] ?? '';
+                    ?>
+                    <td><code><?php echo esc_html($site_key); ?></code></td>
+                    <td>
+                        <?php echo esc_html($type_labels[$site_type ?: 'manual'] ?? $site_type); ?>
+                        <?php if (!lem()->banned_sites->is_removable($site_type)) : ?>
+                            <br><span style="color:#777;font-size:11px">не удаляется</span>
+                        <?php endif; ?>
+                    </td>
                     <td><?php echo esc_html($site['label']); ?></td>
-                    <td><?php echo esc_html($site['added_at'] ? date('d.m.Y', strtotime($site['added_at'])) : ''); ?></td>
+                    <td><?php echo esc_html($site['added_at'] ? date_i18n('d.m.Y', strtotime($site['added_at'])) : ''); ?></td>
                     <td>
                         <button type="button" class="button button-small lem-edit-site"
                                 data-site="<?php echo esc_attr(wp_json_encode($site)); ?>">Изменить</button>
@@ -136,18 +175,31 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
 
     <!-- Секция 3: Результаты и удаление -->
     <?php if ($total_flagged_links > 0) : ?>
+    <?php
+    $removable_rows  = array_filter($results_rows, static function ($r) { return $r['removable']; });
+    $removable_links = count($removable_rows);
+    $removable_posts = count(array_unique(array_column($removable_rows, 'post_id')));
+    ?>
     <div class="lem-card">
-        <h2>Найденные запрещённые ссылки</h2>
+        <h2>Найденные ссылки на ресурсы из реестров</h2>
         <p>
-            Найдено <strong><?php echo $total_flagged_links; ?></strong> запрещённых ссылок
+            Найдено <strong><?php echo $total_flagged_links; ?></strong> ссылок
             в <strong><?php echo $total_flagged_posts; ?></strong> статьях.
+            Из них подлежат удалению: <strong><?php echo $removable_links; ?></strong>
+            в <?php echo $removable_posts; ?> статьях.
+            <?php if ($removable_links < $total_flagged_links) : ?>
+                Остальные - ресурсы иноагентов, ссылаться на них не запрещено,
+                чистка их не тронет.
+            <?php endif; ?>
         </p>
 
+        <?php if ($removable_links > 0) : ?>
         <p>
             <button type="button" class="button button-danger button-hero" id="lem-remove-all-links">
-                Удалить все запрещённые ссылки
+                Удалить ссылки, подлежащие удалению (<?php echo $removable_links; ?>)
             </button>
         </p>
+        <?php endif; ?>
 
         <div id="lem-remove-progress" style="display:none;margin-top:20px">
             <div class="lem-progress-bar">
@@ -168,7 +220,8 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
                     <th style="width:250px">Статья</th>
                     <th>URL ссылки</th>
                     <th style="width:200px">Текст ссылки</th>
-                    <th style="width:150px">Совпавший домен</th>
+                    <th style="width:150px">Совпавший ресурс</th>
+                    <th style="width:120px">Реестр</th>
                     <th style="width:120px">Действие</th>
                 </tr>
             </thead>
@@ -190,6 +243,12 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
                     <td><span class="lem-banned-link-url"><?php echo esc_html($row['url']); ?></span></td>
                     <td><?php echo esc_html($row['anchor']); ?></td>
                     <td><code><?php echo esc_html($row['matched_domain']); ?></code></td>
+                    <td>
+                        <?php echo esc_html($type_labels[$row['registry'] ?: 'manual'] ?? $row['registry']); ?>
+                        <?php if (!$row['removable']) : ?>
+                            <br><span style="color:#777;font-size:11px">не удаляется</span>
+                        <?php endif; ?>
+                    </td>
                     <td>
                         <?php if ($is_first) : ?>
                         <button type="button" class="button button-small lem-remove-post-links"
@@ -222,6 +281,23 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
                     <p class="description">
                         Можно указать URL целиком. Для обычного сайта запрещается весь домен,
                         для телеграма, YouTube и соцсетей - только указанный аккаунт.
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="lem-site-registry">Реестр</label></th>
+                <td>
+                    <select id="lem-site-registry">
+                        <option value="">Не указан</option>
+                        <option value="inoagent">Иностранные агенты</option>
+                        <option value="extremist">Экстремистские организации</option>
+                        <option value="terrorist">Террористические организации</option>
+                        <option value="undesirable">Нежелательные организации</option>
+                    </select>
+                    <p class="description">
+                        От реестра зависит, убирать ли такие ссылки из текста.
+                        Без указания домен считается запрещённым: раз внесли руками,
+                        значит, ссылаться на него не собираетесь.
                     </p>
                 </td>
             </tr>
@@ -269,6 +345,7 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
             ? (site.account ? site.domain + '/' + site.account : site.domain)
             : '';
         document.getElementById('lem-site-label').value = site ? (site.label || '') : '';
+        document.getElementById('lem-site-registry').value = site ? (site.registry || '') : '';
         document.getElementById('lem-site-status-msg').textContent = '';
         siteModal.style.display = 'flex';
     }
@@ -288,6 +365,7 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
             action: 'lem_save_banned_site', nonce: cfg.crudNonce,
             id: document.getElementById('lem-site-id').value,
             domain: document.getElementById('lem-site-domain').value,
+            registry: document.getElementById('lem-site-registry').value,
             label: document.getElementById('lem-site-label').value
         });
 
@@ -430,7 +508,7 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
     document.querySelectorAll('.lem-remove-post-links').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var postId = this.dataset.postId;
-            if (!confirm('Удалить запрещённые ссылки из этой статьи? Тег <a> будет заменён текстом ссылки.')) return;
+            if (!confirm('Удалить из этой статьи ссылки, подлежащие удалению? Тег <a> будет заменён текстом ссылки. Ресурсы иноагентов останутся.')) return;
             btn.disabled = true; btn.textContent = '...';
 
             fetch(cfg.ajaxUrl, {
@@ -454,9 +532,10 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
 
     /* --- Массовое удаление всех ссылок --- */
     document.getElementById('lem-remove-all-links')?.addEventListener('click', function() {
-        var total = <?php echo $total_flagged_links; ?>;
-        var posts = <?php echo $total_flagged_posts; ?>;
-        if (!confirm('Будут удалены ' + total + ' ссылок из ' + posts + ' статей.\nТег <a> будет заменён текстом ссылки.\n\nПродолжить?')) return;
+        // Считаем только то, что действительно уйдёт: ресурсы иноагентов остаются
+        var total = <?php echo $removable_links; ?>;
+        var posts = <?php echo $removable_posts; ?>;
+        if (!confirm('Будут удалены ' + total + ' ссылок из ' + posts + ' статей.\nТег <a> будет заменён текстом ссылки.\nСсылки на ресурсы иноагентов не затрагиваются.\n\nПродолжить?')) return;
 
         if (removing) return;
         removing = true;
