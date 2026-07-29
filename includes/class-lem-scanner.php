@@ -25,6 +25,74 @@ class LEM_Scanner {
     /** Готовые регулярные выражения сущностей в пределах запроса. */
     private static $pattern_cache = [];
 
+    /** Основы слов, без которых сущность в тексте появиться не может. */
+    private static $stem_cache = [];
+
+    /**
+     * Длина основы. Четыре буквы переживают склонение («каида»/«каиды» -> «каид»)
+     * и при этом достаточно различают слова.
+     */
+    const STEM_LEN = 4;
+
+    /**
+     * Основы всех слов текста: по ним отсеиваются сущности, которых тут быть
+     * не может. Один разбор текста дешевле двух тысяч регулярных выражений.
+     */
+    public static function text_stems($text) {
+        $out = [];
+        foreach (preg_split('/[^\p{L}\p{N}]+/u', mb_strtolower($text), -1, PREG_SPLIT_NO_EMPTY) as $w) {
+            $out[mb_substr($w, 0, self::STEM_LEN)] = true;
+        }
+        return $out;
+    }
+
+    /**
+     * Основы, из которых состоит сущность.
+     *
+     * Для каждого варианта написания (название, каждый алиас, фамилия и имя)
+     * берём самое длинное слово: если сущность нашлась, это слово в тексте
+     * точно есть - пусть и в другом падеже, начало слова падеж не меняет.
+     * Пустой ответ означает «отсеивать нельзя, проверяй как обычно».
+     */
+    public static function entity_stems($entity, $settings = null) {
+        $key = $entity['id'] ?? $entity['name'];
+        if (isset(self::$stem_cache[$key])) {
+            return self::$stem_cache[$key];
+        }
+
+        $terms = self::search_terms($entity);
+        foreach ((array) ($entity['aliases'] ?? []) as $a) {
+            $inner = self::quoted_brand_inner($a);
+            if ($inner !== null) {
+                $terms[] = $inner;
+            }
+        }
+        if (!empty($entity['is_person'])) {
+            $parts = LEM_Morphology::split_name($entity['name']);
+            foreach ([$parts['surname'] ?? '', $parts['first'] ?? ''] as $part) {
+                if ($part !== '') {
+                    $terms[] = $part;
+                }
+            }
+        }
+
+        $stems = [];
+        foreach ($terms as $term) {
+            $words = preg_split('/[^\p{L}\p{N}]+/u', mb_strtolower((string) $term), -1, PREG_SPLIT_NO_EMPTY);
+            if (empty($words)) {
+                continue;
+            }
+            // Самое длинное слово варианта: оно обязано быть в тексте
+            usort($words, static function ($a, $b) {
+                return mb_strlen($b) - mb_strlen($a);
+            });
+            $stems[mb_substr($words[0], 0, self::STEM_LEN)] = true;
+        }
+
+        self::$stem_cache[$key] = $stems;
+        return $stems;
+    }
+
     public static function word_match($text, $term) {
         $quoted  = preg_quote($term, '/');
         $pattern = '/(?<!\pL)' . $quoted . '(?!\pL)/ui';
@@ -128,9 +196,13 @@ class LEM_Scanner {
         $curated = self::curated_aliases();
         $full_name = trim((string) ($entity['name'] ?? ''));
         foreach (self::search_terms($plain_entity) as $term) {
-            // Алиас из одних общеупотребительных слов («Служба поддержки»)
-            // ищем только в кавычках, иначе он ловит обычные обороты речи.
-            // Полное название из реестра и выбранное человеком не трогаем.
+            // Алиас из одних общеупотребительных слов («Служба поддержки»,
+            // «Новое поколение») ищем только в кавычках, иначе он ловит обычные
+            // обороты речи. Одиночные безнадёжные слова отсекает TERM_BLACKLIST.
+            //
+            // Проверяем при каждом поиске, а не только при импорте: на сайтах,
+            // обновившихся с прежних версий, такие алиасы уже лежат в базе
+            // без ёлочек. Полное название и выбранное человеком не трогаем.
             if ($term !== $full_name
                 && !isset($curated[mb_strtolower(trim($term))])
                 && self::is_generic_phrase($term)) {
@@ -156,11 +228,24 @@ class LEM_Scanner {
         // (звёздочка редактора заменяет кавычки как подтверждение).
         // Внутри кавычек допускаем падежи: в статьях пишут «материал «Вёрстки»».
         foreach ($quoted_terms as $q) {
+            // Безнадёжные слова кавычки не спасают: «голос» бренда, «база»
+            // данных, «фонд» оплаты труда. Такие термины не ищем вовсе,
+            // а вернуть их можно через «Бренды СМИ» - там выбор осознанный
+            $bare = mb_strtolower(preg_replace('/^[«"„“]+|[»"”“]+$/u', '', trim($q)));
+            if (!isset($curated[$bare]) && in_array($bare, self::TERM_BLACKLIST, true)) {
+                continue;
+            }
+
             $forms = LEM_Morphology::brand_forms($q);
             $alt   = self::alternation($forms);
-            $frags[] = ($variant === 'all')
-                ? $alt
-                : '[«"„“]\s*' . $alt . '\s*[»"”“]';
+            if ($variant === 'all') {
+                $frags[] = $alt;
+                continue;
+            }
+            // Прописная буква обязательна: в кавычках бывает и обычная речь,
+            // а название пишут с большой. (?-i:...) отключает нечувствительность
+            // к регистру только для этой проверки
+            $frags[] = '[«"„“]\s*(?=(?-i:\p{Lu}))' . $alt . '\s*[»"”“]';
         }
 
         $body = empty($frags) ? null : implode('|', $frags);
@@ -195,6 +280,7 @@ class LEM_Scanner {
 
     public static function flush_pattern_cache() {
         self::$pattern_cache = [];
+        self::$stem_cache    = [];
     }
 
     /**
@@ -267,7 +353,7 @@ class LEM_Scanner {
         'справедливость', 'держава', 'путь', 'воля', 'честь',
         'поколение', 'агора', 'зимин',
         'голос', 'агентство', 'белый', 'атака', 'акцент', 'арктика',
-        'башня', 'таганрог',
+        'башня', 'таганрог', 'база', 'поколения', 'мнение',
         // Countries
         'швейцария', 'финляндия', 'норвегия', 'германия', 'франция',
         'великобритания', 'нидерланды', 'турция', 'канада', 'литва',
@@ -302,6 +388,11 @@ class LEM_Scanner {
         'некоммерческая', 'некоммерческое', 'благотворительный',
         'региональная', 'региональный', 'местная', 'местный',
         'молодежная', 'молодёжная', 'женская', 'женщин', 'молодежь', 'молодёжь',
+        'новое', 'новый', 'новая', 'новые', 'поколение', 'поколения',
+        'движение', 'движения', 'христианское', 'христианская', 'религиозная',
+        'церковь', 'община', 'миссия', 'проект', 'проекта', 'программа',
+        'открытая', 'открытый', 'открытое', 'свободная', 'свободный', 'свободное',
+        'гражданская', 'гражданский', 'гражданское', 'народная', 'народный',
     ];
 
     /** Служебные слова, которые сами по себе ничего не решают. */
@@ -330,6 +421,43 @@ class LEM_Scanner {
         foreach ($words as $w) {
             if (!in_array($w, self::GENERIC_WORDS, true)) {
                 return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Алиас, который без кавычек ловил бы обычную речь.
+     *
+     * Короткое кириллическое название из одного-трёх слов («ВОТ ТАК»,
+     * «Служба поддержки», «Досье», «Калининград») в тексте статьи неотличимо
+     * от обычного слова. Латиница и цифры (DOXA, SOTA, 7х7) различимы сами
+     * по себе, длинные названия из четырёх и более слов - тоже.
+     *
+     * Составные имена через дефис («Аль-Каида», «Хизб ут-Тахрир») и редкие
+     * длинные слова считаем различимыми. Названия городов под это правило тоже
+     * подходят, поэтому их убираем в другом месте - у записей местных отделений
+     * алиасы не создаются вовсе, см. is_local_branch().
+     */
+    public static function is_risky_term($alias) {
+        $alias = trim((string) preg_replace('/^[«"„“]+|[»"”“]+$/u', '', trim($alias)));
+        if ($alias === '') {
+            return false;
+        }
+        if (preg_match('/[A-Za-z0-9]/', $alias)) {
+            return false; // латиница или цифры: ни с чем не спутать
+        }
+        // Дефис между заглавными частями: так пишут имена, а не обиходные слова
+        if (preg_match('/\p{Lu}[\p{L}]*-\p{Lu}/u', $alias)) {
+            return false;
+        }
+        $words = preg_split('/\s+/u', $alias, -1, PREG_SPLIT_NO_EMPTY);
+        if (count($words) > 3) {
+            return false; // длинное название само по себе конкретно
+        }
+        foreach ($words as $w) {
+            if (mb_strlen($w) > 12) {
+                return false; // редкое длинное слово различимо
             }
         }
         return true;
@@ -526,7 +654,20 @@ class LEM_Scanner {
         $mode     = $settings['surname_mode'] ?? 'confirmed';
         $has_star = mb_strpos($plain, '*') !== false;
 
+        // Отсев по основам слов: две тысячи регулярных выражений на каждый
+        // материал - самая дорогая часть прохода по архиву, а большинство
+        // сущностей в тексте не встречается ни в каком виде
+        // Отключается фильтром на случай, если отсев когда-нибудь ошибётся
+        $prefilter  = (bool) apply_filters('lem_scan_prefilter', true);
+        $text_stems = $prefilter ? self::text_stems($plain) : [];
+
         foreach ($entities as $entity) {
+            if ($prefilter) {
+                $stems = self::entity_stems($entity, $settings);
+                if (!empty($stems) && !array_intersect_key($stems, $text_stems)) {
+                    continue;
+                }
+            }
             // Полное имя ищем по всей статье: этим подтверждается, что
             // дальнейшие упоминания одной фамилии относятся к тому же человеку
             $strict     = self::first_hit($plain, self::build_pattern($entity, $settings, 'strict'));
@@ -790,8 +931,12 @@ class LEM_Scanner {
             @set_time_limit(60);
             $max = (int) ini_get('max_execution_time');
         }
-        if ($max <= 0) {
-            $budget = 15.0; // лимита нет (CLI/некоторые хостинги)
+        // Системный cron через WP-CLI: обрывать нечему, и растягивать проход
+        // архива на часы незачем. Веб-запрос при этом остаётся коротким
+        if (defined('WP_CLI') && WP_CLI && $max <= 0) {
+            $budget = 120.0;
+        } elseif ($max <= 0) {
+            $budget = 15.0; // лимита нет, но контекст веб-запроса
         } else {
             // Половина лимита, но не больше 15 c и всегда с запасом ниже лимита
             $budget = min(15.0, $max * 0.5);

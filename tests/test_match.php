@@ -77,5 +77,33 @@ t('однофамилица Смирнова не ловится',   'Дирек
 t('в режиме «всегда» однофамилец ловится (риск)',
   'Заместитель мэра Пономарев доложил о ремонте', $lev, $S, true);
 
+echo "\n=== отсев по основам слов (ускорение прохода по архиву) ===\n";
+function has_stem($e, $text) {
+    $st = LEM_Scanner::entity_stems($e);
+    return !empty($st) && (bool) array_intersect_key($st, LEM_Scanner::text_stems($text));
+}
+function st($d, $got, $want) {
+    global $fail;
+    $ok = ($got === $want);
+    if (!$ok) $fail++;
+    printf("%s  %-46s %s\n", $ok ? 'OK  ' : 'ФЕЙЛ', mb_substr($d, 0, 46), $got ? 'кандидат' : 'отсеян');
+}
+
+$med = ['id'=>101,'type'=>'inoagent','name'=>'SIA «Medusa Project»','aliases'=>['Медуза','Meduza'],'is_person'=>0];
+st('«Медузы» в родительном -> кандидат', has_stem($med, 'по данным Медузы стало известно'), true);
+st('текст без упоминаний -> отсеян',     has_stem($med, 'обычная статья про погоду и спорт'), false);
+st('латиница Meduza -> кандидат',        has_stem($med, 'report by Meduza published'), true);
+
+$alq = ['id'=>102,'type'=>'terrorist','name'=>'«База» («Аль-Каида»)','aliases'=>['Аль-Каида'],'is_person'=>0];
+st('«Аль-Каиды» через дефис -> кандидат', has_stem($alq, 'боевики Аль-Каиды взяли ответственность'), true);
+
+$per2 = ['id'=>103,'type'=>'inoagent','name'=>'Пономарев Лев Александрович','aliases'=>[],'is_person'=>1];
+st('одна фамилия в падеже -> кандидат',  has_stem($per2, 'по словам Пономарева, ситуация'), true);
+st('чужая фамилия -> отсеян',            has_stem($per2, 'по словам Сидорова, ситуация'), false);
+
+// Отсев не должен менять итог поиска
+t('после отсева поиск работает', 'по данным Медузы стало известно', $med, $S, true);
+t('после отсева ложного нет',    'обычная статья про погоду',       $med, $S, false);
+
 echo "\n" . ($fail === 0 ? "ВСЕ ПРОВЕРКИ ПРОЙДЕНЫ\n" : "ПРОВАЛЕНО: $fail\n");
 exit($fail === 0 ? 0 : 1);

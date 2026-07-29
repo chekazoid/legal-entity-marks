@@ -115,6 +115,9 @@ class LEM_Rescan {
      * Обработка очередной порции. Сама себя перезапускает, пока архив не кончится.
      */
     public function run() {
+        // Задача сработала - значит, планировщик жив, каким бы он ни был
+        update_option('lem_cron_last_run', time(), false);
+
         $state = get_option(self::STATE_OPTION, []);
         if (empty($state) || !empty($state['done'])) {
             return;

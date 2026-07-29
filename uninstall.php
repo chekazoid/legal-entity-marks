@@ -37,6 +37,7 @@ delete_option('lem_last_update_report');
 delete_option('lem_update_notice_seen');
 delete_option('lem_first_fetch_done');
 delete_option('lem_bundled_data_version');
+delete_option('lem_cron_last_run');
 delete_transient('lem_entities_active');
 delete_transient('lem_entities_active_all');
 delete_transient('lem_scan_state');

@@ -220,7 +220,7 @@ class LEM_Link_Scanner {
 
         $banned = lem()->banned_sites->get_all_domains();
         if (empty($banned)) {
-            wp_send_json_error('Реестр запрещённых доменов пуст. Добавьте домены перед сканированием.');
+            wp_send_json_error('Реестр ресурсов пуст. Добавьте домены перед сканированием.');
         }
 
         global $wpdb;
@@ -462,11 +462,11 @@ class LEM_Link_Scanner {
         $banned     = lem()->banned_sites->get_all_domains();
 
         if (empty($banned)) {
-            $log('Реестр запрещённых доменов пуст.');
+            $log('Реестр ресурсов пуст.');
             return ['posts_with_links' => 0, 'total_links' => 0, 'total_posts' => 0];
         }
 
-        $log('Загружено ' . count($banned) . ' запрещённых доменов.');
+        $log('Загружено ' . count($banned) . ' ресурсов из реестров.');
 
         if (!empty($args['post_id'])) {
             $post    = get_post((int) $args['post_id']);

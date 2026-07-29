@@ -144,6 +144,7 @@ class LEM_Admin {
                 'aliases' => $split($row['aliases'] ?? ''),
                 'quoted'  => $split($row['quoted'] ?? ''),
                 'note'    => sanitize_text_field(wp_unslash($row['note'] ?? '')),
+                'status'  => sanitize_text_field(wp_unslash($row['status'] ?? '')),
                 'enabled' => !empty($row['enabled']),
             ];
         }

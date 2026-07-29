@@ -338,7 +338,9 @@ class LEM_Frontend {
 
     /** Прямые кавычки в названии заменяем на ёлочки (см. disclaimer_text). */
     private static function normalize_quotes($name) {
-        $name = (string) $name;
+        // Хвостовые двоеточия и запятые остаются от разбора страниц Минюста
+        // («...местные религиозные организации:») и в сноске читаются как ошибка
+        $name = rtrim(trim((string) $name), " \t:;,-–—");
         if (strpos($name, '"') === false) {
             return $name;
         }

@@ -68,6 +68,10 @@ settings_errors('lem_brands');
                     <td>
                         <input type="text" style="width:100%" name="lem_brand[<?php echo $i; ?>][note]"
                                value="<?php echo esc_attr($rule['note']); ?>">
+                        <input type="text" style="width:100%;margin-top:4px"
+                               name="lem_brand[<?php echo $i; ?>][status]"
+                               value="<?php echo esc_attr($rule['status']); ?>"
+                               placeholder="своя формулировка сноски (необязательно)">
                     </td>
                     <td style="text-align:center">
                         <?php if ($hits === 0) : ?>
@@ -92,7 +96,12 @@ settings_errors('lem_brands');
                     <td><input type="text" style="width:100%" name="lem_brand[<?php echo $i; ?>][match]" placeholder="кусок названия из реестра"></td>
                     <td><input type="text" style="width:100%" name="lem_brand[<?php echo $i; ?>][aliases]" placeholder="через запятую"></td>
                     <td><input type="text" style="width:100%" name="lem_brand[<?php echo $i; ?>][quoted]" placeholder="через запятую"></td>
-                    <td><input type="text" style="width:100%" name="lem_brand[<?php echo $i; ?>][note]"></td>
+                    <td>
+                        <input type="text" style="width:100%" name="lem_brand[<?php echo $i; ?>][note]">
+                        <input type="text" style="width:100%;margin-top:4px"
+                               name="lem_brand[<?php echo $i; ?>][status]"
+                               placeholder="своя формулировка сноски (необязательно)">
+                    </td>
                     <td></td>
                     <td style="text-align:center"><input type="checkbox" name="lem_brand[<?php echo $i; ?>][enabled]" value="1" checked></td>
                     <td></td>

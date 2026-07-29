@@ -129,7 +129,7 @@ $total_pages = (int) ceil($result['total'] / $per_page);
                 <th style="width:9%">В реестре с</th>
                 <th style="width:11%">Найдено как</th>
                 <th style="width:8%">Маркируется</th>
-                <th>Запрещённые ссылки</th>
+                <th>Ссылки на ресурсы</th>
             </tr>
         </thead>
         <tbody>

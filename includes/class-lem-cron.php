@@ -38,7 +38,28 @@ class LEM_Cron {
         wp_clear_scheduled_hook(LEM_Rescan::HOOK);
     }
 
+    /**
+     * Планировщик жив? Отметку ставят сами задачи.
+     *
+     * DISABLE_WP_CRON сам по себе ничего не значит: на нормально настроенном
+     * сервере это признак того, что задачи запускает системный cron, а не
+     * посетители сайта. Судить надо по тому, выполняются ли они на самом деле.
+     */
+    public static function last_run() {
+        return (int) get_option('lem_cron_last_run', 0);
+    }
+
+    public static function looks_alive() {
+        $last = self::last_run();
+        if ($last > 0) {
+            return (time() - $last) < 2 * HOUR_IN_SECONDS;
+        }
+        // Отметки ещё нет: считаем живым, если WP-Cron не отключён
+        return !(defined('DISABLE_WP_CRON') && DISABLE_WP_CRON);
+    }
+
     public function run_fetch() {
+        update_option('lem_cron_last_run', time(), false);
         lem()->importer->fetch_all(function ($msg) {
             if (function_exists('error_log')) {
                 error_log('[LEM] ' . $msg);

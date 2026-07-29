@@ -96,7 +96,7 @@ class LEM_Importer {
             }
 
             $rows = $wpdb->get_results($wpdb->prepare(
-                "SELECT id, aliases FROM $table WHERE name LIKE %s",
+                "SELECT id, aliases, status_text FROM $table WHERE name LIKE %s",
                 '%' . $wpdb->esc_like($match) . '%'
             ));
 
@@ -107,15 +107,23 @@ class LEM_Importer {
                 continue;
             }
 
+            $status = trim((string) ($rule['status'] ?? ''));
+
             foreach ($rows as $row) {
                 $old    = json_decode($row->aliases, true) ?: [];
                 $merged = array_values(array_unique(array_merge($old, $aliases)));
+
+                $update = [];
                 if ($merged !== $old) {
-                    $wpdb->update(
-                        $table,
-                        ['aliases' => wp_json_encode($merged, JSON_UNESCAPED_UNICODE)],
-                        ['id' => $row->id]
-                    );
+                    $update['aliases'] = wp_json_encode($merged, JSON_UNESCAPED_UNICODE);
+                }
+                // Своя формулировка сноски вместо общей фразы реестра
+                if ($status !== '' && $status !== $row->status_text) {
+                    $update['status_text'] = $status;
+                }
+
+                if (!empty($update)) {
+                    $wpdb->update($table, $update, ['id' => $row->id]);
                     $applied++;
                 }
             }
@@ -168,11 +176,20 @@ class LEM_Importer {
             return array_values(array_unique($aliases));
         }
 
-        // Организации: содержимое кавычек
-        if (preg_match_all('/[«"„]([^«»"“”]{3,60})[»"“”]/u', $name, $m)) {
+        // Организации: содержимое кавычек. У местных отделений там город,
+        // а не название, поэтому такие фрагменты пропускаем
+        if (!self::is_local_branch($name)
+            && preg_match_all('/[«"„]([^«»"“”]{3,60})[»"“”]/u', $name, $m)) {
             foreach ($m[1] as $frag) {
                 $out[] = trim($frag);
             }
+        }
+
+        // Аббревиатура латинского названия: в текстах пишут GIJN, а не
+        // Global Investigative Journalism Network
+        $acronym = self::acronym($name);
+        if ($acronym !== '') {
+            $out[] = $acronym;
         }
         // Название без хвоста страны и организационно-правовой формы:
         // «Eurasianet, США» -> «Eurasianet», «Hidemy.network Ltd.» -> «Hidemy.network».
@@ -225,26 +242,106 @@ class LEM_Importer {
 
     /**
      * Алиас, который без кавычек ловил бы обычную речь.
-     *
-     * Короткое кириллическое название из одного-трёх обиходных по длине слов
-     * («ВОТ ТАК», «Служба поддержки», «Досье») в тексте статьи неотличимо от
-     * оборота речи. Длинные слова («Национал-большевистская») и латиница
-     * (DOXA, SOTA) различимы сами по себе, их оставляем как есть.
+     * Правило живёт в сканере: там же оно применяется при поиске.
      */
-    private static function is_risky_alias($alias) {
-        if (preg_match('/[A-Za-z0-9]/', $alias)) {
-            return false; // латиница или цифры: ни с чем не спутать
-        }
-        $words = preg_split('/\s+/u', trim($alias), -1, PREG_SPLIT_NO_EMPTY);
-        if (count($words) > 3) {
-            return false; // длинное название само по себе конкретно
-        }
-        foreach ($words as $w) {
-            if (mb_strlen($w) > 10) {
-                return false; // редкое длинное слово различимо
+    public static function is_risky_alias($alias) {
+        return LEM_Scanner::is_risky_term($alias);
+    }
+
+    /**
+     * Чистка алиасов, накопленных прежними версиями.
+     *
+     * Импорт алиасы только доклеивает, поэтому городá из записей местных
+     * отделений («Калининград», «Йошкар-Ола») остаются в базе навсегда, даже
+     * когда генератор их больше не делает. Убираем то, что было вырезано
+     * из кавычек в названии самой записи.
+     *
+     * @return int сколько записей поправлено
+     */
+    public function prune_aliases() {
+        global $wpdb;
+        $table = $wpdb->prefix . LEM_TABLE;
+        $fixed = 0;
+
+        $rows = $wpdb->get_results(
+            "SELECT id, name, aliases FROM $table WHERE aliases != '' AND aliases != '[]'"
+        );
+
+        foreach ($rows as $row) {
+            $aliases = json_decode($row->aliases, true);
+            if (!is_array($aliases) || empty($aliases)) {
+                continue;
+            }
+
+            // У местного отделения алиасов не бывает: генератор их больше не
+            // делает, а накопленные - это город («Калининград») или название
+            // головной организации, из-за которого одно упоминание давало
+            // сразу две сноски
+            $keep = self::is_local_branch($row->name) ? [] : $aliases;
+
+            // Хвост страны алиасом не бывает: «Латвийская Республика»
+            $keep = array_values(array_filter($keep, static function ($a) {
+                $bare = trim(preg_replace('/^[«"„“]+|[»"”“]+$/u', '', trim((string) $a)));
+                return $bare !== '' && !self::is_country($bare);
+            }));
+
+            if ($keep !== $aliases) {
+                $wpdb->update(
+                    $table,
+                    ['aliases' => wp_json_encode($keep, JSON_UNESCAPED_UNICODE)],
+                    ['id' => $row->id]
+                );
+                $fixed++;
             }
         }
-        return true;
+
+        if ($fixed > 0) {
+            lem()->entities->flush_cache();
+        }
+        return $fixed;
+    }
+
+    /**
+     * Запись местного отделения: «Местная религиозная организация Свидетелей
+     * Иеговы «Калининград»».
+     *
+     * Кавычки в таких названиях содержат город, а не имя организации. Алиас
+     * из них делать нельзя: упоминание всё равно ловится по головной записи,
+     * а город даёт ложные срабатывания в любом тексте.
+     */
+    public static function is_local_branch($name) {
+        return (bool) preg_match(
+            '/^(Местн(ая|ое)|Первичн(ая|ое)|Религиозная группа|Региональн(ая|ое)\s+религиозн)/u',
+            trim((string) $name)
+        );
+    }
+
+    /**
+     * Аббревиатура латинского названия: Global Investigative Journalism Network
+     * -> GIJN. В текстах организацию чаще называют именно так, а в реестре
+     * аббревиатуры нет вовсе.
+     */
+    public static function acronym($name) {
+        $name = trim((string) preg_replace('/\s*\(.*$/u', '', (string) $name));
+        $words = preg_split('/[\s\-]+/u', $name, -1, PREG_SPLIT_NO_EMPTY);
+
+        $letters = '';
+        foreach ($words as $w) {
+            $w = preg_replace('/^[«"„“(]+|[»"”“).,]+$/u', '', $w);
+            if ($w === '') {
+                continue;
+            }
+            // Служебные слова в аббревиатуру не входят: Reporters without Borders -> RWB
+            if (mb_strlen($w) <= 3 && mb_strtolower($w) === $w) {
+                continue;
+            }
+            if (!preg_match('/^[A-Za-z]/', $w)) {
+                return ''; // не латинское название
+            }
+            $letters .= mb_strtoupper(mb_substr($w, 0, 1));
+        }
+
+        return (mb_strlen($letters) >= 3 && mb_strlen($letters) <= 6) ? $letters : '';
     }
 
     /**
@@ -405,7 +502,7 @@ class LEM_Importer {
     }
 
     /** Страны и их официальные формы, встречающиеся в записях реестра. */
-    private static function is_country($text) {
+    public static function is_country($text) {
         $t = mb_strtolower(trim($text));
         $t = preg_replace('/^(федеративная|чешская|литовская|латвийская|эстонская|словацкая|французская)\s+/u', '', $t);
         $countries = [

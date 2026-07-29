@@ -6,6 +6,8 @@
 define('ABSPATH','/tmp/'); define('HOUR_IN_SECONDS', 3600);
 function add_action(){} function add_filter(){}
 function esc_html($s){return $s;} function esc_attr($s){return $s;}
+require_once __DIR__ . '/../includes/class-lem-morphology.php';
+require_once __DIR__ . '/../includes/class-lem-scanner.php';
 require_once __DIR__ . '/../includes/class-lem-banned-sites.php';
 require_once __DIR__ . '/../includes/class-lem-importer.php';
 
@@ -122,6 +124,32 @@ eq('физлицо: Фамилия Имя без кавычек',
     LEM_Importer::generate_aliases('Иванов Иван Иванович', true), ['Иванов Иван']);
 eq('физлицо с псевдонимом',
     LEM_Importer::generate_aliases('Федоров Мирон Янович «Оксимирон»', true), ['Федоров Мирон', '«Оксимирон»']);
+
+echo "\n=== местные отделения и аббревиатуры ===\n";
+eq('местное отделение: алиасов нет',
+    LEM_Importer::generate_aliases('Местная религиозная организация Свидетелей Иеговы «Калининград»'), []);
+eq('первичное отделение: алиасов нет',
+    LEM_Importer::generate_aliases('Первичная организация «Йошкар-Ола»'), []);
+eq('обычная организация алиасы даёт',
+    LEM_Importer::generate_aliases('Новостной портал «DOXA»'), ['DOXA']);
+eq('аббревиатура GIJN',
+    LEM_Importer::acronym('Global Investigative Journalism Network («Глобальная сеть»)'), 'GIJN');
+eq('Reporters without Borders -> RWB',
+    LEM_Importer::acronym('Reporters without Borders'), 'RWB');
+eq('короткие служебные слова пропускаются',
+    LEM_Importer::acronym('Committee to Protect Journalists'), 'CPJ');
+eq('кириллица аббревиатуры не даёт',
+    LEM_Importer::acronym('Международный историко-просветительский центр'), '');
+eq('двух букв мало',
+    LEM_Importer::acronym('Open Society'), '');
+
+echo "\n=== что ищется только в кавычках ===\n";
+foreach ([['Голос', true], ['Новое поколение', true], ['Аль-Каида', false],
+          ['DOXA', false], ['Национал-большевистская партия', false],
+          ['Медуза', true], ['Глобальная сеть журналистов-расследователей', false]] as $c) {
+    eq('«' . $c[0] . '»', LEM_Importer::is_risky_alias($c[0]) ? 'в кавычках' : 'как есть',
+        $c[1] ? 'в кавычках' : 'как есть');
+}
 
 echo $fail ? "\nПРОВАЛЕНО: $fail\n" : "\nВСЕ ПРОВЕРКИ ПРОЙДЕНЫ\n";
 exit($fail ? 1 : 0);

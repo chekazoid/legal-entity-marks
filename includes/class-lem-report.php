@@ -333,7 +333,7 @@ class LEM_Report {
         $fh = fopen('php://output', 'w');
         fprintf($fh, "\xEF\xBB\xBF"); // BOM, чтобы Excel не ломал кириллицу
         fputcsv($fh, ['Материал', 'Ссылка', 'Тип', 'Организация', 'Реестр',
-                      'Найдено как', 'Маркируется', 'Запрещённые ссылки'], ';');
+                      'Найдено как', 'Маркируется', 'Ссылки на ресурсы'], ';');
 
         foreach ($rows['items'] as $r) {
             $links = array_map(static function ($l) {

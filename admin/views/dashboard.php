@@ -10,7 +10,10 @@
 
     <?php if ($rescan_state && empty($rescan_state['done'])) :
         $next_run = wp_next_scheduled(LEM_Rescan::HOOK);
-        $cron_off = defined('DISABLE_WP_CRON') && DISABLE_WP_CRON;
+        // Судим по тому, выполняются ли задачи, а не по константе в конфиге:
+        // на сервере с системным cron DISABLE_WP_CRON - это норма
+        $cron_off  = !LEM_Cron::looks_alive();
+        $cron_last = LEM_Cron::last_run();
     ?>
         <div class="notice notice-info inline" style="margin:0 0 16px">
             <p>
@@ -19,11 +22,16 @@
                 из <?php echo (int) $rescan_state['total']; ?>
                 (<?php echo (int) $rescan_state['percent']; ?>%).
                 <?php if ($cron_off) : ?>
-                    <br><strong>На сайте отключён WP-Cron</strong>, сама по себе проверка
-                    не сдвинется. Запустите её кнопкой ниже или настройте системный cron.
+                    <br><strong>Планировщик не подаёт признаков жизни</strong>: задачи
+                    не выполнялись больше двух часов. Запустите проверку кнопкой ниже
+                    или настройте системный cron на выполнение задач WordPress.
                 <?php elseif ($next_run) : ?>
                     Следующая порция: <?php echo esc_html(date_i18n('H:i:s', $next_run + (int) (get_option('gmt_offset') * HOUR_IN_SECONDS))); ?>.
                     Работа идёт частями в фоне, страницу можно закрыть.
+                    <?php if ($cron_last) : ?>
+                        Планировщик работает, последняя задача:
+                        <?php echo esc_html(human_time_diff($cron_last) . ' назад'); ?>.
+                    <?php endif; ?>
                 <?php else : ?>
                     Задача в расписании не найдена, запустите проверку вручную.
                 <?php endif; ?>
@@ -72,9 +80,9 @@
                         echo count($update_report['names']) > 5 ? ' и другие' : ''; ?></span>
                 <?php endif; ?>
                 <?php if ((int) $update_report['links'] > 0) : ?>
-                    <br>Запрещённых ссылок в архиве: <strong><?php echo (int) $update_report['links']; ?></strong>
+                    <br>Ссылок на ресурсы из реестров: <strong><?php echo (int) $update_report['links']; ?></strong>
                     в <?php echo (int) $update_report['with_links']; ?> материалах.
-                    <a href="<?php echo esc_url(admin_url('admin.php?page=lem-banned-links')); ?>">Разобрать</a>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=lem-banned-links')); ?>">Посмотреть</a>
                 <?php endif; ?>
             </p>
         </div>
@@ -97,6 +105,8 @@
             "SELECT COUNT(DISTINCT post_id) FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value != ''",
             LEM_BANNED_LINKS_META_KEY
         ));
+        // Из них те, где ссылки действительно полагается убирать
+        $removable_posts = count(LEM_Link_Scanner::posts_with_removable());
         ?>
 
         <div class="lem-card">
@@ -146,12 +156,16 @@
                     <strong><?php echo esc_html($marked_posts); ?></strong>
                 </li>
                 <li>
-                    <span class="lem-label">Запрещ. доменов:</span>
+                    <span class="lem-label">Ресурсов в реестре:</span>
                     <strong><?php echo esc_html($banned_sites_count); ?></strong>
                 </li>
                 <li>
-                    <span class="lem-label">Статей с запрещ. ссылками:</span>
+                    <span class="lem-label">Статей со ссылками на них:</span>
                     <strong><?php echo esc_html($banned_links_posts); ?></strong>
+                    <?php if ($removable_posts !== $banned_links_posts) : ?>
+                        <span style="color:#777">, из них подлежат чистке:
+                        <?php echo (int) $removable_posts; ?></span>
+                    <?php endif; ?>
                 </li>
                 <li>
                     <span class="lem-label">Версия списков:</span>
@@ -302,7 +316,7 @@
     });
 
     document.getElementById('lem-btn-rescan-start')?.addEventListener('click', function() {
-        if (!confirm('Проверить весь архив на упоминания и запрещённые ссылки? '
+        if (!confirm('Проверить весь архив на упоминания и ссылки на ресурсы из реестров? '
             + 'Это может занять несколько минут, вкладку надо держать открытой.')) return;
         runRescan(this, document.getElementById('lem-rescan-start-status'), true);
     });

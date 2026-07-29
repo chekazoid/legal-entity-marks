@@ -33,8 +33,19 @@ def distinctive(term, min_cyr_len=None):
         return True
     return min_cyr_len is not None and len(term) >= min_cyr_len
 
+LOCAL_BRANCH = re.compile(
+    r'^(Местн(ая|ое)|Первичн(ая|ое)|Религиозная группа|Региональн(ая|ое)\s+религиозн)')
+
+def is_local_branch(name):
+    """У местного отделения в кавычках стоит город, а не название организации.
+    Алиас из него ловит любой текст про этот город, а само упоминание всё равно
+    находится по головной записи. То же правило действует в плагине."""
+    return bool(LOCAL_BRANCH.match((name or '').strip()))
+
 def gen_org_aliases(name):
     """Алиасы: содержимое «...» и имя без внешних кавычек."""
+    if is_local_branch(name):
+        return []
     out = []
     for q in re.findall(r'«([^«»]{5,})»', name):
         q = q.strip()

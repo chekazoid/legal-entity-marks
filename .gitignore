@@ -3,3 +3,6 @@
 node_modules/
 data/*-fetched.json
 data/foreign-agents-github.json
+
+# Кеш Python из bin/update-registries.py
+__pycache__/

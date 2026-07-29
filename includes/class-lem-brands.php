@@ -127,6 +127,9 @@ class LEM_Brands {
             'aliases' => $aliases,
             'quoted'  => $quoted,
             'note'    => trim((string) ($rule['note'] ?? '')),
+            // Своя формулировка сноски: у Meta это «продукт компании...»,
+            // а не общая фраза про экстремистскую организацию
+            'status'  => trim((string) ($rule['status'] ?? '')),
             'enabled' => !array_key_exists('enabled', $rule) || (bool) $rule['enabled'],
         ];
     }

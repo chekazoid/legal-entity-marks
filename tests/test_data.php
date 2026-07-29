@@ -71,7 +71,8 @@ $brands = load('brand-aliases.json');
 ok('файл читается', is_array($brands) && !empty($brands), is_array($brands) ? count($brands) . ' правил' : 'не разобрался');
 
 if (is_array($brands)) {
-    $known   = ['match', 'aliases', 'quoted', 'note', 'enabled'];
+    // status - своя формулировка сноски, пишется в status_text записи реестра
+    $known   = ['match', 'aliases', 'quoted', 'note', 'status', 'enabled'];
     $unknown = [];
     $empty_match = $empty_alias = 0;
     foreach ($brands as $rule) {
@@ -85,6 +86,24 @@ if (is_array($brands)) {
         empty($unknown) ? '' : 'лишние: ' . implode(', ', array_keys($unknown)));
     ok('у всех правил есть что искать', $empty_match === 0, $empty_match ? "пустых: $empty_match" : '');
     ok('у всех правил есть что добавить', $empty_alias === 0, $empty_alias ? "пустых: $empty_alias" : '');
+
+    // Городá местных отделений алиасами быть не должны: ловят любой текст
+    $branch_alias = [];
+    foreach (['extremist-orgs.json', 'undesirable-orgs.json'] as $f) {
+        foreach ((array) load($f) as $e) {
+            if (!LEM_Importer::is_local_branch($e['name'] ?? '')) {
+                continue;
+            }
+            foreach (($e['aliases'] ?? []) as $a) {
+                $bare = trim(preg_replace('/^[«"„“]+|[»"”“]+$/u', '', (string) $a));
+                if ($bare !== '' && mb_stripos($e['name'], $bare) !== false) {
+                    $branch_alias[] = $bare;
+                }
+            }
+        }
+    }
+    ok('у местных отделений нет алиасов-городов', empty($branch_alias),
+        empty($branch_alias) ? '' : 'нашлись: ' . implode(', ', array_slice($branch_alias, 0, 4)));
 }
 
 echo "\n=== реестры организаций ===\n";

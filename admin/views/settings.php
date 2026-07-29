@@ -104,7 +104,7 @@ $all_post_types = get_post_types(['public' => true], 'objects');
             </tr>
 
             <tr>
-                <th scope="row">Запрещённые ссылки</th>
+                <th scope="row">Ссылки, подлежащие удалению</th>
                 <td>
                     <p class="description" style="max-width:640px;margin-bottom:8px">
                         Ссылка на ресурс нежелательной организации может толковаться как

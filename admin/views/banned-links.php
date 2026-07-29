@@ -50,11 +50,11 @@ foreach ($flagged_posts as $fp) {
 $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
 ?>
 <div class="wrap">
-    <h1>Запрещённые ссылки</h1>
+    <h1>Ссылки на ресурсы из реестров</h1>
 
     <!-- Секция 1: Реестр доменов -->
     <div class="lem-card" style="margin-bottom:20px">
-        <h2>Реестр запрещённых доменов</h2>
+        <h2>Реестр ресурсов</h2>
         <p class="description" style="max-width:820px">
             Ресурсы организаций из реестров. Часть приезжает автоматически: у записей
             об иноагентах Минюст публикует ссылки на их сайты и аккаунты.
@@ -80,9 +80,9 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
         <?php endif; ?>
 
         <p>
-            <button type="button" class="button button-primary" id="lem-add-site">Добавить домен</button>
+            <button type="button" class="button button-primary" id="lem-add-site">Добавить ресурс</button>
             <button type="button" class="button" id="lem-import-sites">Массовый импорт</button>
-            <span style="margin-left:10px;color:#666">Всего доменов: <strong><?php echo count($sites); ?></strong></span>
+            <span style="margin-left:10px;color:#666">Всего ресурсов: <strong><?php echo count($sites); ?></strong></span>
         </p>
 
         <?php if (!empty($sites)) : ?>
@@ -90,7 +90,7 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
             <thead>
                 <tr>
                     <th style="width:40px">ID</th>
-                    <th>Домен</th>
+                    <th>Ресурс</th>
                     <th style="width:130px">Реестр</th>
                     <th>Название организации</th>
                     <th style="width:140px">Добавлен</th>
@@ -133,7 +133,7 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
     <div class="lem-card" style="margin-bottom:20px">
         <h2>Сканер ссылок</h2>
         <p class="description">
-            Сканирует все опубликованные статьи на наличие ссылок на запрещённые домены.
+            Сканирует все опубликованные статьи и отмечает ссылки на ресурсы организаций из реестров.
         </p>
 
         <p>
@@ -263,7 +263,7 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
     <?php elseif ($scan_state && $scan_state['status'] === 'complete') : ?>
     <div class="lem-card">
         <h2>Результаты</h2>
-        <p>Запрещённых ссылок не найдено.</p>
+        <p>Ссылок на ресурсы из реестров не найдено.</p>
     </div>
     <?php endif; ?>
 </div>
@@ -279,7 +279,7 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
                 <td>
                     <input type="text" id="lem-site-domain" class="regular-text" placeholder="example.org или t.me/doxajournal" required>
                     <p class="description">
-                        Можно указать URL целиком. Для обычного сайта запрещается весь домен,
+                        Можно указать URL целиком. Для обычного сайта помечается весь домен,
                         для телеграма, YouTube и соцсетей - только указанный аккаунт.
                     </p>
                 </td>
@@ -296,7 +296,7 @@ $scan_state = get_transient(LEM_Link_Scanner::SCAN_STATE_KEY);
                     </select>
                     <p class="description">
                         От реестра зависит, убирать ли такие ссылки из текста.
-                        Без указания домен считается запрещённым: раз внесли руками,
+                        Без указания ссылки на домен считаются подлежащими удалению: раз внесли руками,
                         значит, ссылаться на него не собираетесь.
                     </p>
                 </td>
