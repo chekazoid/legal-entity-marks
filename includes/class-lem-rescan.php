@@ -17,12 +17,35 @@ class LEM_Rescan {
     const STATE_OPTION  = 'lem_rescan_state';
     const REPORT_OPTION = 'lem_last_update_report';
     const HOOK          = 'lem_run_rescan';
-    const LOCK          = 'lem_rescan_lock';
+    const SCHEDULE      = 'lem_every_minute';
     const SLICE         = 25;
+
+    /** Сколько ждать зависший запуск, прежде чем считать его умершим. */
+    const LOCK_TTL = 300;
 
     public function __construct() {
         add_action(self::HOOK, [$this, 'run']);
         add_action('admin_init', [$this, 'watchdog']);
+        add_filter('cron_schedules', [$this, 'add_schedule']);
+    }
+
+    /**
+     * Расписание для проверки архива.
+     *
+     * Раньше каждая порция сама планировала следующую одноразовым событием.
+     * Стоило одному запуску не дожить до конца (лимит памяти, убитый процесс),
+     * и цепочка рвалась: состояние осталось, задачи в очереди нет, проверка
+     * стоит навсегда. Повторяющееся событие такого не допускает - пропущенный
+     * тик просто пропущен, и его видно в `wp cron event list`.
+     */
+    public function add_schedule($schedules) {
+        if (!isset($schedules[self::SCHEDULE])) {
+            $schedules[self::SCHEDULE] = [
+                'interval' => MINUTE_IN_SECONDS,
+                'display'  => 'Каждую минуту (проверка архива)',
+            ];
+        }
+        return $schedules;
     }
 
     /**
@@ -37,10 +60,10 @@ class LEM_Rescan {
         if (empty($state) || !empty($state['done'])) {
             return;
         }
-        if (wp_next_scheduled(self::HOOK) || get_transient(self::LOCK)) {
-            return; // задача ждёт своей очереди или прямо сейчас работает
+        if (wp_next_scheduled(self::HOOK)) {
+            return; // задача в расписании, всё идёт своим чередом
         }
-        wp_schedule_single_event(time() + 30, self::HOOK);
+        $this->ensure_scheduled();
     }
 
     /**
@@ -70,9 +93,12 @@ class LEM_Rescan {
             'trigger'    => $trigger,
             'since'      => $since ?: current_time('mysql'),
             'started_at' => current_time('mysql'),
-            'offset'     => 0,
-            'total'      => $total,
-            'done'       => false,
+            'offset'       => 0,
+            'total'        => $total,
+            'done'         => false,
+            'attempts'      => 0,
+            'last_attempt'  => 0,
+            'running_until' => 0,
             'counters'   => [
                 'scanned'      => 0,
                 'with_matches' => 0,
@@ -82,10 +108,15 @@ class LEM_Rescan {
             ],
         ], false);
 
-        if (!wp_next_scheduled(self::HOOK)) {
-            wp_schedule_single_event(time() + 10, self::HOOK);
-        }
+        $this->ensure_scheduled();
         return true;
+    }
+
+    /** Задача в расписании, пока проверка не закончена. */
+    private function ensure_scheduled() {
+        if (!wp_next_scheduled(self::HOOK)) {
+            wp_schedule_event(time() + 10, self::SCHEDULE, self::HOOK);
+        }
     }
 
     /** Состояние для админки. */
@@ -108,7 +139,7 @@ class LEM_Rescan {
     public function cancel() {
         delete_option(self::STATE_OPTION);
         wp_clear_scheduled_hook(self::HOOK);
-        delete_transient(self::LOCK);
+        delete_transient('lem_rescan_lock'); // хвост от версий до 1.14.0
     }
 
     /**
@@ -122,10 +153,20 @@ class LEM_Rescan {
         if (empty($state) || !empty($state['done'])) {
             return;
         }
-        if (get_transient(self::LOCK)) {
+        // Блокировка хранится в самом состоянии, а не в отдельной записи:
+        // просроченный транзиент может пережить свой срок, и тогда проверка
+        // стоит, а причина не видна
+        if (!empty($state['running_until']) && $state['running_until'] > time()) {
             return; // предыдущий запуск ещё идёт
         }
-        set_transient(self::LOCK, 1, 5 * MINUTE_IN_SECONDS);
+
+        // Отметка попытки до начала работы: если процесс умрёт от нехватки
+        // памяти, поймать это исключением нельзя, а по расхождению «попытка
+        // была, прогресс не сдвинулся» видно, что запуск не доживает до конца
+        $state['running_until'] = time() + self::LOCK_TTL;
+        $state['last_attempt']  = time();
+        $state['attempts']      = (int) ($state['attempts'] ?? 0) + 1;
+        update_option(self::STATE_OPTION, $state, false);
 
         global $wpdb;
         $settings   = lem()->get_settings();
@@ -196,18 +237,20 @@ class LEM_Rescan {
             $state['error'] = $e->getMessage();
         }
 
-        delete_transient(self::LOCK);
+        $state['running_until'] = 0;
 
         if ($state['offset'] >= $state['total'] || !empty($state['error'])) {
             $state['done']        = true;
             $state['finished_at'] = current_time('mysql');
             update_option(self::STATE_OPTION, $state, false);
+            // Работа кончилась - снимаем задачу с расписания
+            wp_clear_scheduled_hook(self::HOOK);
             $this->finish($state);
             return;
         }
 
         update_option(self::STATE_OPTION, $state, false);
-        wp_schedule_single_event(time() + 30, self::HOOK);
+        $this->ensure_scheduled();
     }
 
     /**

@@ -19,6 +19,7 @@ class LEM_Plugin {
     public $banned_sites;
     public $link_scanner;
     public $rescan;
+    public $channel;
     public $brands;
     public $report;
 
@@ -48,6 +49,7 @@ class LEM_Plugin {
         require_once $dir . 'class-lem-banned-sites.php';
         require_once $dir . 'class-lem-link-scanner.php';
         require_once $dir . 'class-lem-rescan.php';
+        require_once $dir . 'class-lem-channel.php';
         require_once $dir . 'class-lem-brands.php';
         require_once $dir . 'class-lem-report.php';
 
@@ -72,6 +74,7 @@ class LEM_Plugin {
         $this->banned_sites = new LEM_Banned_Sites();
         $this->link_scanner = new LEM_Link_Scanner();
         $this->rescan       = new LEM_Rescan();
+        $this->channel      = new LEM_Channel();
         $this->brands       = new LEM_Brands();
         $this->report       = new LEM_Report();
 
@@ -228,6 +231,12 @@ class LEM_Plugin {
             // Ссылка на сайт иноагента законом не запрещена, поэтому в чистку
             // по умолчанию идут только три реестра
             'link_registries'       => LEM_Banned_Sites::REMOVABLE_TYPES,
+            // Канал реестров: запасной источник, когда официальный не ответил
+            'channel_enabled'       => true,
+            'channel_url'           => LEM_Channel::DEFAULT_URL,
+            'channel_token'         => '',
+            // Анонимный счётчик установок: идентификатор и версия плагина
+            'stats_enabled'         => true,
             'filter_priority'       => 9999,
             'accent_color'          => '#f88c00',
             'disclaimer_bg'         => '#fff9f0',

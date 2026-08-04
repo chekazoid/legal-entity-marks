@@ -35,6 +35,16 @@
                 <?php else : ?>
                     Задача в расписании не найдена, запустите проверку вручную.
                 <?php endif; ?>
+                <?php
+                // Попытки идут, а счётчик стоит: запуск не доживает до конца.
+                // Чаще всего это нехватка памяти на большом материале
+                $attempts = (int) ($rescan_state['attempts'] ?? 0);
+                if ($attempts >= 3 && (int) $rescan_state['offset'] === 0) : ?>
+                    <br><strong>Попыток было <?php echo $attempts; ?>, а прогресса нет.</strong>
+                    Похоже, проверка обрывается на первой же порции: обычно это нехватка
+                    памяти. Помогает увеличение <code>WP_MEMORY_LIMIT</code>, а до того
+                    маркировка продолжает работать по прежним результатам.
+                <?php endif; ?>
             </p>
             <p>
                 <button type="button" class="button button-primary" id="lem-btn-rescan">
@@ -175,6 +185,33 @@
                     <span class="lem-label">Последнее обновление:</span>
                     <?php echo esc_html($last_fetch); ?>
                 </li>
+                <?php
+                // Откуда пришли данные: важно, когда официальный реестр молчит
+                $sources = (array) get_option('lem_last_fetch_sources', []);
+                $src_names = [
+                    'official' => 'официальный реестр',
+                    'channel'  => 'канал реестров',
+                    'bundled'  => 'встроенный перечень',
+                    'none'     => 'данных нет',
+                ];
+                $non_official = array_filter($sources, static function ($v) {
+                    return $v !== 'official';
+                });
+                if (!empty($sources)) : ?>
+                <li>
+                    <span class="lem-label">Источник данных:</span>
+                    <?php if (empty($non_official)) : ?>
+                        официальные реестры
+                    <?php else : ?>
+                        <?php $parts = [];
+                        foreach ($non_official as $type => $src) {
+                            $parts[] = (LEM_Importer::REGISTRY_LABELS[$type] ?? $type)
+                                . ' - ' . ($src_names[$src] ?? $src);
+                        }
+                        echo esc_html(implode('; ', $parts)); ?>
+                    <?php endif; ?>
+                </li>
+                <?php endif; ?>
                 <?php if ($error) : ?>
                 <li class="lem-error">
                     <span class="lem-label">Последнее обновление прошло не полностью:</span>

@@ -36,6 +36,7 @@ class LEM_Cron {
         wp_clear_scheduled_hook('lem_fetch_registries');
         wp_clear_scheduled_hook('lem_scan_updated');
         wp_clear_scheduled_hook(LEM_Rescan::HOOK);
+        delete_transient('lem_rescan_lock'); // хвост от версий до 1.14.0
     }
 
     /**
@@ -51,11 +52,23 @@ class LEM_Cron {
 
     public static function looks_alive() {
         $last = self::last_run();
-        if ($last > 0) {
-            return (time() - $last) < 2 * HOUR_IN_SECONDS;
+        if ($last > 0 && (time() - $last) < 2 * HOUR_IN_SECONDS) {
+            return true;
         }
-        // Отметки ещё нет: считаем живым, если WP-Cron не отключён
-        return !(defined('DISABLE_WP_CRON') && DISABLE_WP_CRON);
+
+        // Своих отметок может не быть: плагин только обновился, а его задачи
+        // ещё не подходили. Тогда смотрим на общую очередь WordPress: если
+        // самая ранняя задача просрочена ненадолго, планировщик работает
+        if (!function_exists('_get_cron_array')) {
+            return true;
+        }
+        $crons = _get_cron_array();
+        if (empty($crons)) {
+            return true; // задач нет вовсе, судить не по чему
+        }
+
+        $earliest = min(array_keys($crons));
+        return (time() - $earliest) < HOUR_IN_SECONDS;
     }
 
     public function run_fetch() {
@@ -73,6 +86,8 @@ class LEM_Cron {
      * на лимит выполнения, иначе на большом сайте задача обрывалась молча.
      */
     public function run_scan_updated() {
+        update_option('lem_cron_last_run', time(), false);
+
         $state = lem()->rescan->status();
         if ($state && empty($state['done'])) {
             return; // проверка и так идёт

@@ -15,6 +15,8 @@ class LEM_Admin {
         add_action('wp_ajax_lem_purge_cache', [$this, 'ajax_purge_cache']);
         add_action('wp_ajax_lem_check_sources', [$this, 'ajax_check_sources']);
         add_action('wp_ajax_lem_rescan_step', [$this, 'ajax_rescan_step']);
+        add_action('wp_ajax_lem_check_channel', [$this, 'ajax_check_channel']);
+        add_action('wp_ajax_lem_register_site', [$this, 'ajax_register_site']);
 
         add_action('wp_ajax_lem_save_banned_site', [$this, 'ajax_save_banned_site']);
         add_action('wp_ajax_lem_delete_banned_site', [$this, 'ajax_delete_banned_site']);
@@ -342,6 +344,22 @@ class LEM_Admin {
             array_map('sanitize_text_field', (array) wp_unslash($_POST['lem_link_registries'] ?? []))
         ));
 
+        // Канал реестров. Токен не выводится на страницу, поэтому пустое поле
+        // означает «оставить прежний», а не «стереть»: для стирания есть галочка
+        $settings['channel_enabled'] = !empty($_POST['lem_channel_enabled']);
+        $settings['channel_url']     = esc_url_raw(trim((string) wp_unslash($_POST['lem_channel_url'] ?? '')));
+        if ($settings['channel_url'] === '') {
+            $settings['channel_url'] = LEM_Channel::DEFAULT_URL;
+        }
+        $settings['stats_enabled'] = !empty($_POST['lem_stats_enabled']);
+
+        $token_input = trim((string) wp_unslash($_POST['lem_channel_token'] ?? ''));
+        if (!empty($_POST['lem_channel_token_clear'])) {
+            $settings['channel_token'] = '';
+        } elseif ($token_input !== '') {
+            $settings['channel_token'] = sanitize_text_field($token_input);
+        }
+
         unset($settings['registries']); // пересоберётся из mark_registries
 
         // Морфология: словоформы и правило для одиночной фамилии
@@ -529,6 +547,60 @@ class LEM_Admin {
             'percent' => (int) ($state['percent'] ?? 100),
             'done'    => !empty($state['done']),
         ]);
+    }
+
+    /**
+     * Проверка канала реестров из админки.
+     * Токен в ответ не попадает: наружу идут только состояние и дата среза.
+     */
+    public function ajax_check_channel() {
+        check_ajax_referer('lem_crud_nonce', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Нет доступа');
+        }
+
+        $health = lem()->channel->health();
+        $lines  = [];
+
+        if ($health['ok']) {
+            $snapshot = $health['last_snapshot'] !== ''
+                ? date_i18n('d.m.Y H:i', strtotime($health['last_snapshot']))
+                : 'дата не указана';
+            $lines[] = 'Канал доступен, последний срез: ' . $snapshot;
+        } else {
+            $lines[] = 'Канал недоступен: ' . $health['error'];
+        }
+
+        // Пробуем самый маленький реестр: выгрузки открыты, токен для них не нужен
+        $probe = lem()->channel->fetch('terrorist');
+        $lines[] = isset($probe['error'])
+            ? 'Выгрузка не удалась: ' . $probe['error']
+            : 'Тестовая выгрузка: ' . (int) $probe['count'] . ' записей';
+
+        if (!lem()->channel->has_token()) {
+            $lines[] = 'Токен не задан, и для этих реестров он не нужен';
+        }
+
+        wp_send_json_success(['message' => implode('. ', $lines)]);
+    }
+
+    /**
+     * Регистрация сайта у автора. Только по нажатию кнопки и только тем
+     * составом, который человек увидел на странице настроек.
+     */
+    public function ajax_register_site() {
+        check_ajax_referer('lem_crud_nonce', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Нет доступа');
+        }
+
+        $email  = sanitize_email(wp_unslash($_POST['email'] ?? ''));
+        $result = lem()->channel->register_site($email);
+
+        if (empty($result['ok'])) {
+            wp_send_json_error($result['message']);
+        }
+        wp_send_json_success(['message' => $result['message']]);
     }
 
     public function ajax_purge_cache() {

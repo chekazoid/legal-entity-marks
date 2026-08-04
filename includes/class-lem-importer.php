@@ -780,6 +780,7 @@ class LEM_Importer {
 
         // Всё, что появится в реестре после этой отметки, считается новичком
         $started = current_time('mysql');
+        $sources = [];
         global $wpdb;
         $had_entities = (int) $wpdb->get_var(
             "SELECT COUNT(*) FROM {$wpdb->prefix}" . LEM_TABLE
@@ -798,7 +799,19 @@ class LEM_Importer {
             $result = $this->$method();
 
             if (isset($result['error'])) {
-                $log("  ERROR: {$result['error']}. Trying local fallback...");
+                $log("  ERROR: {$result['error']}");
+
+                // Запасной источник номер один - канал реестров: он свежее
+                // снимка из поставки, а формат данных тот же
+                $from_channel = $this->fetch_from_channel($type, $log);
+                if ($from_channel !== null) {
+                    $domains += (int) ($from_channel['domains'] ?? 0);
+                    $sources[$type] = 'channel';
+                    $errors[] = "$label: официальный источник не ответил ({$result['error']}). "
+                        . 'Данные взяты из канала реестров';
+                    continue;
+                }
+
                 $fallback_files = [
                     'inoagent'    => 'foreign-agents-raw.json',
                     'extremist'   => 'extremist-orgs.json',
@@ -812,15 +825,18 @@ class LEM_Importer {
                 if (file_exists($fallback)) {
                     $fb_result = $this->import_json($fallback, $type);
                     $domains  += (int) ($fb_result['domains'] ?? 0);
+                    $sources[$type] = 'bundled';
                     $log("  Fallback: added={$fb_result['added']}, updated={$fb_result['updated']}");
                     $errors[] = "$label: {$result['error']}. Применён встроенный перечень, "
                         . 'сайт работает по нему';
                 } else {
                     $log("  No fallback file found: $fallback");
+                    $sources[$type] = 'none';
                     $errors[] = "$label: {$result['error']}. Встроенного перечня нет";
                 }
             } else {
                 $domains += (int) ($result['domains'] ?? 0);
+                $sources[$type] = 'official';
                 $log("  OK: added={$result['added']}, updated={$result['updated']}, total={$result['total']}");
                 if (!empty($result['notice'])) {
                     $log("  ВНИМАНИЕ: {$result['notice']}");
@@ -843,6 +859,8 @@ class LEM_Importer {
 
         update_option('lem_list_version', gmdate('Y-m-d H:i:s'));
         update_option('lem_last_fetch_time', current_time('mysql'));
+        // Откуда пришли данные в этот раз: видно в админке
+        update_option('lem_last_fetch_sources', $sources, false);
         if (!empty($errors)) {
             update_option('lem_last_fetch_error', implode('; ', $errors));
         } else {
@@ -1161,6 +1179,34 @@ class LEM_Importer {
     /* ------------------------------------------------------------------
      * Helpers
      * ------------------------------------------------------------------ */
+
+    /**
+     * Данные из канала реестров.
+     *
+     * @return array|null результат импорта либо null, если канал не помог
+     */
+    private function fetch_from_channel($type, $log) {
+        if (!LEM_Channel::supports($type)) {
+            $log('  Канал такой реестр не ведёт, идём к встроенному перечню');
+            return null;
+        }
+        if (!lem()->channel->is_enabled()) {
+            $log('  Канал реестров выключен в настройках, идём к встроенному перечню');
+            return null;
+        }
+
+        $log('  Пробуем канал реестров...');
+        $channel = lem()->channel->fetch($type);
+        if (isset($channel['error'])) {
+            $log("  Канал не помог: {$channel['error']}");
+            return null;
+        }
+
+        $imported = $this->import_entries($channel['entries'], $type);
+        $log("  Канал: получено {$channel['count']}, добавлено {$imported['added']}, "
+            . "обновлено {$imported['updated']}");
+        return $imported;
+    }
 
     /**
      * Опрос источников: что именно видит этот сервер.

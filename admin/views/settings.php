@@ -128,6 +128,140 @@ $all_post_types = get_post_types(['public' => true], 'objects');
             </tr>
 
             <tr>
+                <th scope="row">Канал реестров</th>
+                <td>
+                    <p class="description" style="max-width:700px;margin-bottom:8px">
+                        Запасной источник на случай, когда официальный реестр не отвечает:
+                        сайт Минюста бывает недоступен, а хостинг может резать исходящие
+                        соединения. Данные там свежее снимка из поставки плагина.
+                        Порядок такой: официальный реестр, потом канал, потом встроенный перечень.
+                        Экстремистских организаций в канале нет, для них остаётся встроенный.
+                    </p>
+                    <label style="display:block;margin-bottom:8px">
+                        <input type="checkbox" name="lem_channel_enabled" value="1"
+                               <?php checked($settings['channel_enabled']); ?>>
+                        Использовать канал реестров как запасной источник
+                    </label>
+
+                    <p style="margin:0 0 6px">
+                        <label for="lem-channel-url" style="display:inline-block;min-width:70px">Адрес</label>
+                        <input type="url" id="lem-channel-url" name="lem_channel_url" class="regular-text"
+                               value="<?php echo esc_attr($settings['channel_url']); ?>"
+                               placeholder="<?php echo esc_attr(LEM_Channel::DEFAULT_URL); ?>">
+                    </p>
+
+                    <?php
+                    // Токен на страницу не выводим: поле всегда пустое, а сохранённый
+                    // остаётся, пока не введут новый или не отметят «удалить»
+                    $has_token   = lem()->channel->has_token();
+                    $from_config = defined('LEM_CHANNEL_TOKEN') && LEM_CHANNEL_TOKEN !== '';
+                    ?>
+                    <p style="margin:0 0 6px">
+                        <label for="lem-channel-token" style="display:inline-block;min-width:70px">Токен</label>
+                        <input type="password" id="lem-channel-token" name="lem_channel_token"
+                               class="regular-text" autocomplete="new-password"
+                               placeholder="<?php echo $has_token ? 'сохранён, оставьте пустым' : 'не требуется'; ?>"
+                               <?php disabled($from_config); ?>>
+                        <?php if ($has_token && !$from_config) : ?>
+                            <label style="margin-left:10px">
+                                <input type="checkbox" name="lem_channel_token_clear" value="1">
+                                удалить
+                            </label>
+                        <?php endif; ?>
+                    </p>
+                    <p class="description" style="max-width:700px">
+                        <strong>Для трёх реестров выше токен не нужен</strong>, выгрузки открыты.
+                        Он понадобится, только если появится доступ к перечню Росфинмониторинга
+                        (30 775 записей, из них 29 541 физлицо) - для расстановки сносок он
+                        избыточен, и плагин его не берёт.
+                        <?php if ($from_config) : ?>
+                            <br>Сейчас токен задан константой <code>LEM_CHANNEL_TOKEN</code>
+                            в wp-config.php и настройкой не перекрывается.
+                        <?php else : ?>
+                            <br>Токен хранится в настройках сайта и на страницу не выводится.
+                            Его можно держать вне базы, добавив в wp-config.php строку
+                            <code>define('LEM_CHANNEL_TOKEN', '...');</code>
+                        <?php endif; ?>
+                    </p>
+
+                    <p>
+                        <button type="button" class="button" id="lem-check-channel">Проверить канал</button>
+                        <span id="lem-channel-status" class="lem-inline-status"></span>
+                    </p>
+                </td>
+            </tr>
+
+            <tr>
+                <th scope="row">Помочь развитию плагина</th>
+                <td>
+                    <?php
+                    $payload       = lem()->channel->registration_payload();
+                    $registered_at = get_option('lem_registered_at', '');
+                    ?>
+                    <p class="description" style="max-width:700px;margin-bottom:10px">
+                        Плагин раздаётся бесплатно, и понять, сколько людей им пользуется,
+                        можно только с вашей помощью. Ничего обязательного тут нет:
+                        и счётчик, и регистрацию можно не включать, плагин будет работать
+                        точно так же.
+                    </p>
+
+                    <label style="display:block;margin-bottom:6px">
+                        <input type="checkbox" name="lem_stats_enabled" value="1"
+                               <?php checked($settings['stats_enabled']); ?>>
+                        Считать эту установку в общей статистике
+                    </label>
+                    <p class="description" style="max-width:700px;margin-bottom:14px">
+                        Вместе с обновлением реестров, которое и так уходит на сервер канала,
+                        отправляются две вещи: случайный идентификатор установки
+                        (<code><?php echo esc_html($payload['install_id']); ?></code>)
+                        и версия плагина. Ни домена, ни адреса, ни чего-либо о содержимом
+                        сайта. Идентификатор к сайту не привязан и меняется при переустановке.
+                        Отдельных запросов ради статистики плагин не делает.
+                    </p>
+
+                    <p style="margin-bottom:6px"><strong>Зарегистрировать сайт</strong></p>
+                    <p class="description" style="max-width:700px;margin-bottom:8px">
+                        Это уже не анонимно. Регистрация нужна, чтобы автор мог предупредить
+                        о важном обновлении или о поломке в реестрах. Отправляется
+                        <strong>только по нажатию кнопки</strong> и ровно в таком составе:
+                    </p>
+                    <table class="widefat" style="max-width:640px;margin-bottom:8px">
+                        <tbody>
+                            <tr><td style="width:190px">Адрес сайта</td>
+                                <td><code><?php echo esc_html($payload['site']); ?></code></td></tr>
+                            <tr><td>Название сайта</td>
+                                <td><?php echo esc_html($payload['name']); ?></td></tr>
+                            <tr><td>Версия плагина</td>
+                                <td><?php echo esc_html($payload['plugin']); ?></td></tr>
+                            <tr><td>Версия WordPress</td>
+                                <td><?php echo esc_html($payload['wordpress']); ?></td></tr>
+                            <tr><td>Версия PHP</td>
+                                <td><?php echo esc_html($payload['php']); ?></td></tr>
+                            <tr><td>Идентификатор установки</td>
+                                <td><code><?php echo esc_html($payload['install_id']); ?></code></td></tr>
+                            <tr><td>Почта для связи</td>
+                                <td><input type="email" id="lem-register-email" class="regular-text"
+                                           placeholder="необязательно"></td></tr>
+                        </tbody>
+                    </table>
+                    <p class="description" style="max-width:700px;margin-bottom:8px">
+                        Больше ничего не уходит: ни содержимое статей, ни списки найденных
+                        организаций, ни данные редакции.
+                    </p>
+                    <p>
+                        <button type="button" class="button" id="lem-register-site">
+                            <?php echo $registered_at ? 'Отправить ещё раз' : 'Отправить'; ?>
+                        </button>
+                        <span id="lem-register-status" class="lem-inline-status">
+                            <?php if ($registered_at) : ?>
+                                Сайт зарегистрирован <?php echo esc_html($registered_at); ?>
+                            <?php endif; ?>
+                        </span>
+                    </p>
+                </td>
+            </tr>
+
+            <tr>
                 <th scope="row">Поиск имён</th>
                 <td>
                     <label style="display:block;margin-bottom:4px">
@@ -341,6 +475,48 @@ $all_post_types = get_post_types(['public' => true], 'objects');
 </div>
 
 <script>
+/* Регистрация сайта: уходит только по нажатию и только то, что показано выше */
+document.getElementById('lem-register-site')?.addEventListener('click', function () {
+    var btn = this, out = document.getElementById('lem-register-status');
+    var cfg = window.lemAdmin || {};
+    var email = (document.getElementById('lem-register-email') || {}).value || '';
+    if (!confirm('Отправить автору плагина адрес сайта, его название, версии и почту?\n'
+        + 'Содержимое статей и результаты поиска не отправляются.')) { return; }
+
+    btn.disabled = true;
+    out.textContent = 'Отправляем...';
+    fetch(cfg.ajaxUrl, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'action=lem_register_site&nonce=' + cfg.crudNonce + '&email=' + encodeURIComponent(email)
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+        btn.disabled = false;
+        out.textContent = d.success ? d.data.message : (d.data || 'не получилось');
+    })
+    .catch(function () { btn.disabled = false; out.textContent = 'Ошибка сети'; });
+});
+
+/* Проверка канала реестров: токен наружу не отдаётся, только состояние */
+document.getElementById('lem-check-channel')?.addEventListener('click', function () {
+    var btn = this, out = document.getElementById('lem-channel-status');
+    var cfg = window.lemAdmin || {};
+    btn.disabled = true;
+    out.textContent = 'Проверяем...';
+    fetch(cfg.ajaxUrl, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'action=lem_check_channel&nonce=' + cfg.crudNonce
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+        btn.disabled = false;
+        out.textContent = d.success ? d.data.message : 'Ошибка проверки';
+    })
+    .catch(function () { btn.disabled = false; out.textContent = 'Ошибка сети'; });
+});
+
 /* Профиль сайта расставляет галочки сразу, не дожидаясь сохранения:
    иначе выбранный профиль и таблица показывают разное. */
 (function () {
