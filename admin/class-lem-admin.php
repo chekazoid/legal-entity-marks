@@ -351,7 +351,8 @@ class LEM_Admin {
         if ($settings['channel_url'] === '') {
             $settings['channel_url'] = LEM_Channel::DEFAULT_URL;
         }
-        $settings['stats_enabled'] = !empty($_POST['lem_stats_enabled']);
+        $settings['stats_enabled']            = !empty($_POST['lem_stats_enabled']);
+        $settings['delete_data_on_uninstall'] = !empty($_POST['lem_delete_data']);
 
         $token_input = trim((string) wp_unslash($_POST['lem_channel_token'] ?? ''));
         if (!empty($_POST['lem_channel_token_clear'])) {

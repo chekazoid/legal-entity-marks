@@ -135,7 +135,8 @@ class LEM_Scanner {
             $settings = lem()->get_settings();
         }
         $key = ($entity['id'] ?? $entity['name'])
-            . '|' . $variant . '|' . (int) !empty($settings['match_word_forms']);
+            . '|' . $variant . '|' . (int) !empty($settings['match_word_forms'])
+            . '|' . ($settings['surname_mode'] ?? 'confirmed');
         if (array_key_exists($key, self::$pattern_cache)) {
             return self::$pattern_cache[$key];
         }
@@ -168,8 +169,12 @@ class LEM_Scanner {
             $frags[] = $sur_alt . '\s+' . $first_alt;
         }
 
-        // 'all': одинокая фамилия (для звёздочного подтверждения, см. asterisk_hit)
-        if ($variant === 'all' && $sur_alt !== null && $bare_ok) {
+        // 'all': одинокая фамилия (для звёздочного подтверждения, см. asterisk_hit).
+        // Если поиск одиночных фамилий выключен вовсе, звёздочка их не воскрешает:
+        // у редакций старые статьи размечены вручную, и плагин ставил бы вторую
+        // метку рядом с редакционной вопреки настройке
+        if ($variant === 'all' && $sur_alt !== null && $bare_ok
+            && ($settings['surname_mode'] ?? 'confirmed') !== 'off') {
             $frags[] = $sur_alt;
         }
 

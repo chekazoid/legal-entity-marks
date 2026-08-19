@@ -237,6 +237,9 @@ class LEM_Plugin {
             'channel_token'         => '',
             // Анонимный счётчик установок: идентификатор и версия плагина
             'stats_enabled'         => true,
+            // При удалении плагина данные по умолчанию остаются: обновление
+            // через «удалить и поставить заново» иначе стирает всё нажитое
+            'delete_data_on_uninstall' => false,
             'filter_priority'       => 9999,
             'accent_color'          => '#f88c00',
             'disclaimer_bg'         => '#fff9f0',

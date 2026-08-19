@@ -250,6 +250,14 @@ class LEM_Frontend {
         if (!is_singular($settings['post_types'])) {
             return;
         }
+
+        // На страницах без находок стиль незачем: он попадал в код каждой
+        // страницы сайта и создавал впечатление, что плагин тут что-то пометил,
+        // хотя звёздочки в тексте могли быть расставлены редакцией вручную
+        $meta = json_decode((string) get_post_meta(get_queried_object_id(), LEM_META_KEY, true), true);
+        if (empty($meta['entities'])) {
+            return;
+        }
         $color = esc_attr($settings['accent_color']);
         echo '<style>.lem-ref{color:' . $color . ';font-weight:700;cursor:help;font-size:0.75em;vertical-align:super;text-decoration:none;margin-left:1px}</style>' . "\n";
     }
