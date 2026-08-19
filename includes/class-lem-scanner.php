@@ -102,6 +102,32 @@ class LEM_Scanner {
         return false;
     }
 
+    /**
+     * Многословное название с изменяемыми окончаниями.
+     *
+     * «Мужское государство» в тексте встречается как «Мужского государства»,
+     * и точное совпадение его не находит. Склонять по правилам мы умеем только
+     * однословные названия на -а/-я, поэтому у каждого слова берём основу
+     * и допускаем хвост до трёх букв.
+     *
+     * Только для названий из двух слов и больше: у одиночных так недолго
+     * поймать чужое слово («Сова» превратилась бы в «Совет»).
+     *
+     * @return string|null null, если приём тут не годится
+     */
+    private static function stem_alternation($term) {
+        $words = preg_split('/\s+/u', trim((string) $term), -1, PREG_SPLIT_NO_EMPTY);
+        if (count($words) < 2) {
+            return null;
+        }
+        // Прописная буква обязательна: «Мужского государства» это название,
+        // «в мужском государстве» - обычная речь. Вольность в окончании
+        // без этого условия ловила бы вторую
+        return '(?=(?-i:\\p{Lu}))(?:' . implode(self::WORD_SEP, array_map(
+            [LEM_Morphology::class, 'word_stem_pattern'], $words
+        )) . ')';
+    }
+
     /** Альтернатива из словоформ, длинные варианты первыми. */
     private static function alternation(array $forms) {
         $forms = array_values(array_unique(array_filter($forms)));
@@ -223,10 +249,19 @@ class LEM_Scanner {
 
             if (count($forms) > 1) {
                 $frags[] = self::alternation($forms);
-            } else {
-                // preg_quote пробел не экранирует, поэтому заменяем именно пробел
-                $frags[] = str_replace(' ', self::WORD_SEP, preg_quote($term, '/'));
+                continue;
             }
+
+            // Многословное название: «Мужского государства» вместо
+            // «Мужское государство». Точное совпадение падежи не ловит
+            $stems = self::stem_alternation($term);
+            if ($stems !== null) {
+                $frags[] = $stems;
+                continue;
+            }
+
+            // preg_quote пробел не экранирует, поэтому заменяем именно пробел
+            $frags[] = str_replace(' ', self::WORD_SEP, preg_quote($term, '/'));
         }
 
         // Брендовые алиасы: в 'strict' требуют кавычек, в 'all' матчатся и без
@@ -242,7 +277,12 @@ class LEM_Scanner {
             }
 
             $forms = LEM_Morphology::brand_forms($q);
-            $alt   = self::alternation($forms);
+            // Точные формы есть только у однословных названий на -а/-я.
+            // Для остальных («Мужское государство») берём основы слов:
+            // иначе название находится только в именительном падеже
+            $alt = count($forms) > 1
+                ? self::alternation($forms)
+                : (self::stem_alternation($q) ?? self::alternation($forms));
             if ($variant === 'all') {
                 $frags[] = $alt;
                 continue;

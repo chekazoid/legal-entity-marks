@@ -130,14 +130,14 @@ class LEM_Channel {
         ];
 
         $url      = $this->base_url() . self::REGISTRY_MAP[$type] . '/export/lem';
-        $response = wp_remote_get($url, $args);
+        $response = LEM_Http::get($url, $args);
 
         // Ограничение частоты на стороне канала: обновление берёт три реестра
         // подряд, и на общем адресе (офис, хостинг) счётчик может быть уже занят.
         // Одна повторная попытка дешевле, чем неделя на встроенном перечне
         if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 429) {
             sleep(3);
-            $response = wp_remote_get($url, $args);
+            $response = LEM_Http::get($url, $args);
         }
 
         if (is_wp_error($response)) {
@@ -208,7 +208,7 @@ class LEM_Channel {
      * @return array{ok: bool, message: string}
      */
     public function register_site($email = '') {
-        $response = wp_remote_post($this->base_url() . 'register', [
+        $response = LEM_Http::post($this->base_url() . 'register', [
             'timeout'    => 30,
             'user-agent' => 'LegalEntityMarks/' . LEM_VERSION,
             'headers'    => ['Content-Type' => 'application/json'],
@@ -238,7 +238,7 @@ class LEM_Channel {
      * @return array{ok: bool, last_snapshot: string, error: string}
      */
     public function health() {
-        $response = wp_remote_get($this->base_url() . 'health', [
+        $response = LEM_Http::get($this->base_url() . 'health', [
             'timeout'    => 20,
             'user-agent' => 'LegalEntityMarks/' . LEM_VERSION,
             'headers'    => $this->stats_headers(),

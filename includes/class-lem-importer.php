@@ -624,9 +624,6 @@ class LEM_Importer {
     }
 
     public function import_fz255($file) {
-        global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
-
         $json = file_get_contents($file);
         if ($json === false) {
             return ['error' => "Cannot read: $file"];
@@ -635,6 +632,13 @@ class LEM_Importer {
         if (!is_array($data)) {
             return ['error' => 'Invalid JSON'];
         }
+        return $this->import_fz255_entries($data);
+    }
+
+    /** Разбор записей формата ФЗ-255 без промежуточного файла на диске. */
+    public function import_fz255_entries(array $data) {
+        global $wpdb;
+        $table = $wpdb->prefix . LEM_TABLE;
 
         $added = 0;
         $updated = 0;
@@ -836,7 +840,8 @@ class LEM_Importer {
                 }
             } else {
                 $domains += (int) ($result['domains'] ?? 0);
-                $sources[$type] = 'official';
+                // Зеркало отвечает вместо официального источника и говорит об этом
+                $sources[$type] = $result['source'] ?? 'official';
                 $log("  OK: added={$result['added']}, updated={$result['updated']}, total={$result['total']}");
                 if (!empty($result['notice'])) {
                     $log("  ВНИМАНИЕ: {$result['notice']}");
@@ -856,6 +861,22 @@ class LEM_Importer {
         // Брендовые алиасы поверх свежих официальных названий
         $ba = $this->apply_brand_aliases();
         $log("  Брендовых алиасов применено: {$ba['applied']}");
+
+        // Раз в цикл обновления проверяем канал, даже если он не понадобился.
+        // Иначе о его доступности узнаёшь ровно в тот момент, когда он нужен,
+        // то есть когда официальный источник уже упал
+        if (lem()->channel->is_enabled()) {
+            $health = lem()->channel->health();
+            update_option('lem_channel_health', [
+                'ok'            => !empty($health['ok']),
+                'last_snapshot' => $health['last_snapshot'],
+                'error'         => $health['error'],
+                'checked_at'    => current_time('mysql'),
+            ], false);
+            $log($health['ok']
+                ? '  Канал реестров доступен, срез: ' . $health['last_snapshot']
+                : '  Канал реестров недоступен: ' . $health['error']);
+        }
 
         update_option('lem_list_version', gmdate('Y-m-d H:i:s'));
         update_option('lem_last_fetch_time', current_time('mysql'));
@@ -982,9 +1003,7 @@ class LEM_Importer {
         }
 
         if (!empty($entries)) {
-            $file = LEM_DATA_DIR . '/foreign-agents-fetched.json';
-            file_put_contents($file, wp_json_encode($entries, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-            return $this->import_json($file, 'inoagent');
+            return $this->import_entries($entries, 'inoagent');
         }
 
         // Fallback: GitHub fz255/foreign-agents (не обновляется с октября 2024)
@@ -997,31 +1016,71 @@ class LEM_Importer {
         if (isset($result['error'])) {
             return $result;
         }
-        // Отдельный файл, чтобы не перезаписывать встроенные данные другим форматом
-        $file = LEM_DATA_DIR . '/foreign-agents-github.json';
-        file_put_contents($file, $result['body']);
-        return $this->import_fz255($file);
+        $data = json_decode($result['body'], true);
+        if (!is_array($data) || empty($data)) {
+            return ['error' => 'источник вернул неожиданный ответ'];
+        }
+        return $this->import_fz255_entries($data);
     }
 
+    /** Страница Минюста с перечнем экстремистских организаций. */
+    const EXTREMIST_URL = 'https://minjust.gov.ru/ru/documents/7822/';
+
+    /**
+     * Зеркало перечня в репозитории плагина.
+     *
+     * Единственный реестр, которого нет в канале: если страница Минюста
+     * не открылась, откатываться было некуда, кроме снимка из поставки.
+     * Зеркало обновляется с каждым выпуском и всегда свежее его.
+     */
+    const EXTREMIST_MIRROR_URL = 'https://raw.githubusercontent.com/chekazoid/legal-entity-marks/main/data/extremist-orgs.json';
+
     public function fetch_extremist_orgs() {
-        $url    = 'https://minjust.gov.ru/ru/documents/7822/';
-        $result = $this->fetch_url($url);
+        $notes  = [];
+        $result = $this->fetch_url(self::EXTREMIST_URL, 45);
+
         if (isset($result['error'])) {
-            return $result;
+            $notes[] = 'minjust.gov.ru не открылся (' . $result['error'] . ')';
+        } else {
+            $entries = $this->parse_minjust_list($result['body']);
+            if (!empty($entries)) {
+                foreach ($entries as &$e) {
+                    $e['type'] = 'extremist';
+                }
+                unset($e);
+                return $this->import_entries($entries, 'extremist');
+            }
+            $notes[] = 'minjust.gov.ru ответил, но список не разобран (получено '
+                . strlen($result['body']) . ' байт)';
         }
 
-        $entries = $this->parse_minjust_list($result['body']);
-        if (empty($entries)) {
-            return ['error' => 'Failed to parse extremist orgs page, 0 entries found'];
+        $mirror = $this->fetch_mirror(self::EXTREMIST_MIRROR_URL, 'extremist', $notes);
+        return $mirror ?: ['error' => implode('; ', $notes)];
+    }
+
+    /**
+     * Перечень из зеркала в репозитории плагина.
+     *
+     * @param array $notes причины, по которым сюда дошли; дополняется на месте
+     * @return array|null результат импорта либо null
+     */
+    private function fetch_mirror($url, $type, array &$notes) {
+        $mirror = $this->fetch_url($url, 45);
+        if (isset($mirror['error'])) {
+            $notes[] = 'зеркало недоступно (' . $mirror['error'] . ')';
+            return null;
         }
 
-        foreach ($entries as &$e) {
-            $e['type'] = 'extremist';
+        $data = json_decode($mirror['body'], true);
+        if (!is_array($data) || empty($data)) {
+            $notes[] = 'зеркало вернуло неожиданный ответ';
+            return null;
         }
 
-        $file = LEM_DATA_DIR . '/extremist-orgs-fetched.json';
-        file_put_contents($file, wp_json_encode($entries, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        return $this->import_json($file, 'extremist');
+        $imported = $this->import_entries($data, $type);
+        $imported['notice'] = implode('; ', $notes) . '; перечень взят из зеркала';
+        $imported['source'] = 'mirror';
+        return $imported;
     }
 
     /** Единый перечень ФСБ. Работает только по http: на 443 порту сайт не отвечает. */
@@ -1054,21 +1113,8 @@ class LEM_Importer {
                 . strlen($result['body']) . ' байт)';
         }
 
-        $mirror = $this->fetch_url(self::TERROR_MIRROR_URL, 45);
-        if (isset($mirror['error'])) {
-            $notes[] = 'зеркало недоступно (' . $mirror['error'] . ')';
-            return ['error' => implode('; ', $notes)];
-        }
-
-        $data = json_decode($mirror['body'], true);
-        if (!is_array($data) || empty($data)) {
-            $notes[] = 'зеркало вернуло неожиданный ответ';
-            return ['error' => implode('; ', $notes)];
-        }
-
-        $imported = $this->import_entries($data, 'terrorist');
-        $imported['notice'] = implode('; ', $notes) . '; перечень взят из зеркала';
-        return $imported;
+        $mirror = $this->fetch_mirror(self::TERROR_MIRROR_URL, 'terrorist', $notes);
+        return $mirror ?: ['error' => implode('; ', $notes)];
     }
 
     /**
@@ -1132,9 +1178,7 @@ class LEM_Importer {
             return $this->fetch_undesirable_orgs_html();
         }
 
-        $file = LEM_DATA_DIR . '/undesirable-orgs-fetched.json';
-        file_put_contents($file, wp_json_encode($entries, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        return $this->import_json($file, 'undesirable');
+        return $this->import_entries($entries, 'undesirable');
     }
 
     private function fetch_undesirable_orgs_html() {
@@ -1171,9 +1215,7 @@ class LEM_Importer {
             return ['error' => 'Failed to parse undesirable orgs page'];
         }
 
-        $file = LEM_DATA_DIR . '/undesirable-orgs-fetched.json';
-        file_put_contents($file, wp_json_encode($entries, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        return $this->import_json($file, 'undesirable');
+        return $this->import_entries($entries, 'undesirable');
     }
 
     /* ------------------------------------------------------------------
@@ -1299,7 +1341,7 @@ class LEM_Importer {
     }
 
     public function fetch_url($url, $timeout = 30) {
-        $response = wp_remote_get($url, [
+        $response = LEM_Http::get($url, [
             'timeout'    => $timeout,
             'user-agent' => 'Mozilla/5.0 (compatible; LegalEntityMarksBot/1.0)',
             'sslverify'  => false,

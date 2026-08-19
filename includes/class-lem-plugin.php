@@ -49,6 +49,7 @@ class LEM_Plugin {
         require_once $dir . 'class-lem-banned-sites.php';
         require_once $dir . 'class-lem-link-scanner.php';
         require_once $dir . 'class-lem-rescan.php';
+        require_once $dir . 'class-lem-http.php';
         require_once $dir . 'class-lem-channel.php';
         require_once $dir . 'class-lem-brands.php';
         require_once $dir . 'class-lem-report.php';

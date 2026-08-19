@@ -186,10 +186,26 @@
                     <?php echo esc_html($last_fetch); ?>
                 </li>
                 <?php
+                $health = (array) get_option('lem_channel_health', []);
+                if (!empty($health['checked_at'])) : ?>
+                <li>
+                    <span class="lem-label">Канал реестров:</span>
+                    <?php if (!empty($health['ok'])) : ?>
+                        доступен<?php if (!empty($health['last_snapshot'])) : ?>,
+                        срез от <?php echo esc_html(date_i18n('d.m.Y',
+                            strtotime($health['last_snapshot']))); ?><?php endif; ?>
+                    <?php else : ?>
+                        <span style="color:#b32d2e">недоступен</span>
+                        <?php echo esc_html($health['error']); ?>
+                    <?php endif; ?>
+                </li>
+                <?php endif; ?>
+                <?php
                 // Откуда пришли данные: важно, когда официальный реестр молчит
                 $sources = (array) get_option('lem_last_fetch_sources', []);
                 $src_names = [
                     'official' => 'официальный реестр',
+                    'mirror'   => 'зеркало перечня',
                     'channel'  => 'канал реестров',
                     'bundled'  => 'встроенный перечень',
                     'none'     => 'данных нет',

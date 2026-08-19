@@ -271,6 +271,39 @@ class LEM_Morphology {
      *
      * @return string[]
      */
+    /**
+     * Кусок выражения для слова, у которого меняется окончание.
+     *
+     * Точные словоформы мы умеем строить только для однословных названий
+     * на -а/-я. Всё остальное («Мужское государство», «Дождь») склоняется
+     * не хуже, поэтому для таких слов берём основу и допускаем хвост
+     * до трёх букв: «Мужского государства», «Дождю».
+     *
+     * Правило применяется только внутри кавычек и при прописной букве,
+     * так что вольность в окончании ничем не грозит.
+     */
+    public static function word_stem_pattern($word) {
+        $word = trim((string) $word);
+        if ($word === '') {
+            return '';
+        }
+        // Латиница и цифры не склоняются
+        if (preg_match('/[A-Za-z0-9]/u', $word)) {
+            return preg_quote($word, '/');
+        }
+
+        $len = mb_strlen($word);
+        if ($len >= 6) {
+            $stem = mb_substr($word, 0, $len - 2);
+        } elseif ($len >= 4) {
+            $stem = mb_substr($word, 0, $len - 1);
+        } else {
+            return preg_quote($word, '/');
+        }
+
+        return preg_quote($stem, '/') . '\\p{Cyrillic}{0,3}';
+    }
+
     public static function brand_forms($name) {
         $s = trim((string) $name);
         if (mb_strlen($s) < 3) {
