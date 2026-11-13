@@ -725,6 +725,7 @@ class LEM_Importer {
     public function fetch_all($log_callback = null) {
         $log     = $log_callback ?: function ($msg) {};
         $errors  = [];
+        $diagnostics = [];
         $domains = 0;
 
         // Всё, что появится в реестре после этой отметки, считается новичком
@@ -754,23 +755,25 @@ class LEM_Importer {
                 continue;
             }
 
-            $log("  ERROR: {$result['error']}");
+            $log("  Официальный источник недоступен: {$result['error']}");
 
             // Цепочка запасных источников от свежего к старому. Причину отказа
             // каждого звена сохраняем: администратор должен видеть, что именно
             // не ответило, а не последнюю ошибку в цепочке
-            $reasons = [$result['error']];
+            $diagnostics[$type] = [$result['error']];
 
             // Канал: срез раз в сутки, свежее любой копии
             $channel = $this->fetch_from_channel($type, $log);
             if (!isset($channel['error'])) {
                 $domains += (int) ($channel['domains'] ?? 0);
                 $sources[$type] = 'channel';
-                $errors[] = "$label: " . implode('; ', $reasons) . '. Данные взяты из канала реестров';
+                // Канал - рабочий источник. Причина переключения остаётся
+                // в диагностике, но успешное обновление не требует предупреждения.
+                $log('  Данные взяты из канала реестров');
                 continue;
             }
             if ($channel['error'] !== '') {
-                $reasons[] = $channel['error'];
+                $diagnostics[$type][] = $channel['error'];
             }
 
             // Зеркало в репозитории плагина обновляется с выпусками
@@ -780,10 +783,10 @@ class LEM_Importer {
                     $domains += (int) ($mirror['domains'] ?? 0);
                     $sources[$type] = 'mirror';
                     $log("  Зеркало: added={$mirror['added']}, updated={$mirror['updated']}");
-                    $errors[] = "$label: " . implode('; ', $reasons) . '. Перечень взят из зеркала';
+                    $errors[] = "$label: " . implode('; ', $diagnostics[$type]) . '. Перечень взят из зеркала';
                     continue;
                 }
-                $reasons[] = $mirror['error'];
+                $diagnostics[$type][] = $mirror['error'];
             }
 
             $fallback_files = [
@@ -801,12 +804,12 @@ class LEM_Importer {
                 $domains  += (int) ($fb_result['domains'] ?? 0);
                 $sources[$type] = 'bundled';
                 $log("  Fallback: added={$fb_result['added']}, updated={$fb_result['updated']}");
-                $errors[] = "$label: " . implode('; ', $reasons) . '. Применён встроенный перечень, '
+                $errors[] = "$label: " . implode('; ', $diagnostics[$type]) . '. Применён встроенный перечень, '
                     . 'сайт работает по нему';
             } else {
                 $log("  No fallback file found: $fallback");
                 $sources[$type] = 'none';
-                $errors[] = "$label: " . implode('; ', $reasons) . '. Встроенного перечня нет';
+                $errors[] = "$label: " . implode('; ', $diagnostics[$type]) . '. Встроенного перечня нет';
             }
         }
 
@@ -842,6 +845,11 @@ class LEM_Importer {
         update_option('lem_last_fetch_time', current_time('mysql'));
         // Откуда пришли данные в этот раз: видно в админке
         update_option('lem_last_fetch_sources', $sources, false);
+        if (!empty($diagnostics)) {
+            update_option('lem_last_fetch_diagnostics', $diagnostics, false);
+        } else {
+            delete_option('lem_last_fetch_diagnostics');
+        }
         if (!empty($errors)) {
             update_option('lem_last_fetch_error', implode('; ', $errors));
         } else {

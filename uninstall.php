@@ -50,7 +50,7 @@ foreach (['_lem_matches', '_lem_banned_links', '_lem_overrides'] as $meta_key) {
 foreach ([
     'lem_db_version', 'lem_banned_sites_db_version', 'lem_settings',
     'lem_list_version', 'lem_last_fetch_time', 'lem_last_fetch_error',
-    'lem_last_fetch_sources', 'lem_brand_version', 'lem_upgrade_version',
+    'lem_last_fetch_sources', 'lem_last_fetch_diagnostics', 'lem_brand_version', 'lem_upgrade_version',
     'lem_brand_rules', 'lem_installed_at', 'lem_rescan_state',
     'lem_last_update_report', 'lem_update_notice_seen', 'lem_first_fetch_done',
     'lem_bundled_data_version', 'lem_cron_last_run', 'lem_install_id',

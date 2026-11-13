@@ -228,6 +228,21 @@
                     <?php endif; ?>
                 </li>
                 <?php endif; ?>
+                <?php
+                $diagnostics = (array) get_option('lem_last_fetch_diagnostics', []);
+                if (!empty($diagnostics)) : ?>
+                <li>
+                    <details>
+                        <summary>Диагностика источников</summary>
+                        <?php foreach ($diagnostics as $type => $reasons) : ?>
+                        <p>
+                            <strong><?php echo esc_html(LEM_Importer::REGISTRY_LABELS[$type] ?? $type); ?>:</strong>
+                            <?php echo esc_html(implode('; ', (array) $reasons)); ?>
+                        </p>
+                        <?php endforeach; ?>
+                    </details>
+                </li>
+                <?php endif; ?>
                 <?php if ($error) : ?>
                 <li class="lem-error">
                     <span class="lem-label">Последнее обновление прошло не полностью:</span>
@@ -323,9 +338,9 @@
                      + '<td style="color:#666">' + s.detail + '</td></tr>';
             }).join('');
             box.innerHTML = '<table class="widefat striped"><tbody>' + rows + '</tbody></table>'
-                + '<p class="description">Если источник недоступен, плагин работает по '
-                + 'встроенному перечню. Причина обычно на стороне хостинга: '
-                + 'закрытые исходящие соединения или блокировка адреса.</p>';
+                + '<p class="description">При недоступности официального источника плагин '
+                + 'пробует канал реестров, затем зеркало (если оно есть) и встроенный перечень. '
+                + 'Источник последней загрузки указан в блоке «Статус».</p>';
             box.style.display = '';
         })
         .catch(function() { st.textContent = 'Ошибка'; btn.disabled = false; });
