@@ -29,10 +29,10 @@ class LEM_Link_Scanner {
         if (preg_match_all($pattern, $html, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER)) {
             foreach ($matches as $m) {
                 $url      = $m[1][0];
-                $anchor   = strip_tags($m[2][0]);
+                $anchor   = wp_strip_all_tags($m[2][0]);
                 $full_tag = $m[0][0];
                 $offset   = $m[0][1];
-                $parsed   = parse_url($url);
+                $parsed   = wp_parse_url($url);
                 $host     = $parsed['host'] ?? '';
                 if (empty($host)) {
                     continue;
@@ -99,7 +99,7 @@ class LEM_Link_Scanner {
         $pattern = '/<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)<\/a>/si';
         return preg_replace_callback($pattern, function ($m) use ($banned_domains, $accounts) {
             $url    = $m[1];
-            $parsed = parse_url($url);
+            $parsed = wp_parse_url($url);
             $host   = $parsed['host'] ?? '';
             if (empty($host)) {
                 return $m[0];
@@ -129,11 +129,13 @@ class LEM_Link_Scanner {
      */
     public static function posts_with_removable() {
         global $wpdb;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT post_id, meta_value FROM {$wpdb->postmeta}
              WHERE meta_key = %s AND meta_value != '' LIMIT 5000",
             LEM_BANNED_LINKS_META_KEY
-        ));
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
 
         $out = [];
         foreach ($rows as $r) {
@@ -157,11 +159,9 @@ class LEM_Link_Scanner {
      * определяем по текущему списку ресурсов.
      */
     public static function link_is_removable(array $link) {
-        if (array_key_exists('removable', $link)) {
-            return !empty($link['removable']);
-        }
-        $type = lem()->banned_sites->type_of($link['matched_domain'] ?? '');
-        return lem()->banned_sites->is_removable($type);
+        $index = lem()->banned_sites->get_index();
+        $key = $link['matched_domain'] ?? '';
+        return array_key_exists($key, $index) && lem()->banned_sites->is_removable($index[$key]);
     }
 
     /**
@@ -189,9 +189,10 @@ class LEM_Link_Scanner {
             return 0;
         }
 
-        global $wpdb;
-        $wpdb->update($wpdb->posts, ['post_content' => $cleaned], ['ID' => $post_id]);
-        clean_post_cache($post_id);
+        $updated = wp_update_post(wp_slash(['ID' => $post_id, 'post_content' => $cleaned]), true);
+        if (is_wp_error($updated)) {
+            return 0;
+        }
 
         // Пересобираем мету по очищенному тексту: часть ссылок остаётся
         // (ресурсы иноагентов), и отчёт должен их видеть
@@ -225,13 +226,15 @@ class LEM_Link_Scanner {
 
         global $wpdb;
         $settings     = lem()->get_settings();
-        $post_types   = $settings['post_types'];
+        $post_types   = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $total = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type IN ($placeholders) AND post_status = 'publish'",
             ...$post_types
-        ));
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare */
 
         $state = [
             'status'           => 'running',
@@ -259,7 +262,7 @@ class LEM_Link_Scanner {
 
         global $wpdb;
         $settings     = lem()->get_settings();
-        $post_types   = $settings['post_types'];
+        $post_types   = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
         $banned       = lem()->banned_sites->get_all_domains();
 
@@ -270,12 +273,14 @@ class LEM_Link_Scanner {
         $params[] = $batch_size;
         $params[] = $offset;
 
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $posts = $wpdb->get_results($wpdb->prepare(
             "SELECT ID, post_content FROM {$wpdb->posts}
              WHERE post_type IN ($placeholders) AND post_status = 'publish'
              ORDER BY ID ASC LIMIT %d OFFSET %d",
             ...$params
-        ));
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber */
 
         $now = current_time('mysql');
 
@@ -294,26 +299,11 @@ class LEM_Link_Scanner {
                         'scanned_at' => $now,
                     ], JSON_UNESCAPED_UNICODE);
 
-                    $existing = $wpdb->get_var($wpdb->prepare(
-                        "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s LIMIT 1",
-                        $post->ID, LEM_BANNED_LINKS_META_KEY
-                    ));
-                    if ($existing) {
-                        $wpdb->update($wpdb->postmeta, ['meta_value' => $meta_json], ['meta_id' => $existing]);
-                    } else {
-                        $wpdb->insert($wpdb->postmeta, [
-                            'post_id'    => $post->ID,
-                            'meta_key'   => LEM_BANNED_LINKS_META_KEY,
-                            'meta_value' => $meta_json,
-                        ]);
-                    }
+                    update_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY, wp_slash($meta_json));
                     $state['posts_with_links']++;
                     $state['total_links'] += count($found);
                 } else {
-                    $wpdb->delete($wpdb->postmeta, [
-                        'post_id'  => $post->ID,
-                        'meta_key' => LEM_BANNED_LINKS_META_KEY,
-                    ]);
+                    delete_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY);
                 }
 
                 $processed++;
@@ -436,7 +426,7 @@ class LEM_Link_Scanner {
             wp_send_json_error('Нет доступа');
         }
 
-        $post_id = (int) ($_POST['post_id'] ?? 0);
+        $post_id = absint(wp_unslash($_POST['post_id'] ?? 0));
         if ($post_id <= 0) {
             wp_send_json_error('Неверный ID статьи');
         }
@@ -454,7 +444,7 @@ class LEM_Link_Scanner {
         global $wpdb;
 
         $settings     = lem()->get_settings();
-        $post_types   = $settings['post_types'];
+        $post_types   = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
         $batch_size = (int) ($args['batch'] ?? 500);
@@ -486,9 +476,11 @@ class LEM_Link_Scanner {
         $where  = "p.post_type IN ($placeholders) AND p.post_status = 'publish'";
         $params = $post_types;
 
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $total = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->posts} p WHERE $where", ...$params
-        ));
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare */
         $log("Статей для сканирования: $total (батч: $batch_size)");
 
         if ($total === 0) {
@@ -504,10 +496,12 @@ class LEM_Link_Scanner {
 
         while ($offset < $total) {
             $batch_params = array_merge($params, [$batch_size, $offset]);
+            /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
             $posts = $wpdb->get_results($wpdb->prepare(
                 "SELECT p.ID, p.post_content FROM {$wpdb->posts} p WHERE $where ORDER BY p.ID ASC LIMIT %d OFFSET %d",
                 ...$batch_params
-            ));
+            )) ;
+            /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber */
             if (empty($posts)) {
                 break;
             }
@@ -518,26 +512,11 @@ class LEM_Link_Scanner {
                     $meta_json = wp_json_encode([
                         'links' => $found, 'scanned_at' => $now,
                     ], JSON_UNESCAPED_UNICODE);
-                    $existing = $wpdb->get_var($wpdb->prepare(
-                        "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s LIMIT 1",
-                        $post->ID, LEM_BANNED_LINKS_META_KEY
-                    ));
-                    if ($existing) {
-                        $wpdb->update($wpdb->postmeta, ['meta_value' => $meta_json], ['meta_id' => $existing]);
-                    } else {
-                        $wpdb->insert($wpdb->postmeta, [
-                            'post_id'    => $post->ID,
-                            'meta_key'   => LEM_BANNED_LINKS_META_KEY,
-                            'meta_value' => $meta_json,
-                        ]);
-                    }
+                    update_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY, wp_slash($meta_json));
                     $posts_with_links++;
                     $total_links += count($found);
                 } else {
-                    $wpdb->delete($wpdb->postmeta, [
-                        'post_id'  => $post->ID,
-                        'meta_key' => LEM_BANNED_LINKS_META_KEY,
-                    ]);
+                    delete_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY);
                 }
             }
 

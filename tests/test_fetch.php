@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/wp-stubs.php';
 /**
  * Результат обновления: канал считается успехом, копии требуют предупреждения.
  * Сеть и база заменены тестовыми объектами, цепочка fetch_all остаётся настоящей.
@@ -21,7 +22,7 @@ class FetchTestChannel extends LEM_Channel {
     public function is_enabled() { return $this->enabled; }
     public function fetch($type) {
         return $this->error !== '' ? ['error' => $this->error]
-            : ['entries' => [['name' => 'Тестовая запись']], 'count' => 1];
+            : ['entries' => [['name' => 'Тестовая запись']], 'count' => 1, 'meta' => []];
     }
     public function health() { return ['ok' => true, 'last_snapshot' => '2026-11-13', 'error' => '']; }
 }
@@ -41,6 +42,7 @@ class FetchTestImporter extends LEM_Importer {
         return $this->mirror_error ? ['error' => 'TEST mirror timeout']
             : ['body' => json_encode([['name' => 'Тестовая копия']])];
     }
+    public function import_snapshot(array $data, $type, array $meta) { return $this->import_entries($data, $type); }
     public function import_entries(array $data, $type_override = null, $trusted = true) {
         $this->imports[] = [$type_override, $trusted];
         return ['added' => 0, 'updated' => count($data), 'total' => count($data)];
@@ -55,6 +57,7 @@ function scenario(array $failed, $channel_error = '', $enabled = true, $mirror_e
     $GLOBALS['opts'] = ['lem_last_fetch_error' => 'old error', 'lem_last_fetch_diagnostics' => ['old']];
     $GLOBALS['wpdb'] = new class {
         public $prefix = 'wp_';
+        public function prepare($sql, ...$args) { return $sql; }
         public function get_var($sql) { return 1; }
     };
     $channel = new FetchTestChannel();

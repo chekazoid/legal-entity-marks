@@ -75,9 +75,12 @@ class LEM_Banned_Sites {
         }
 
         global $wpdb;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Cached in the surrounding transient. */
         $domains = $wpdb->get_col(
-            "SELECT domain FROM {$this->table()} WHERE account = '' ORDER BY domain"
-        );
+            "SELECT s.domain FROM {$this->table()} s LEFT JOIN {$wpdb->prefix}lem_entities e ON e.id = s.entity_id
+             WHERE s.account = '' AND (s.entity_id IS NULL OR s.entity_id = 0 OR e.is_active = 1) ORDER BY s.domain"
+        ) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         set_transient(self::TRANSIENT_KEY, $domains, self::TRANSIENT_TTL);
         return $domains;
     }
@@ -94,10 +97,13 @@ class LEM_Banned_Sites {
         }
 
         global $wpdb;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Cached in the surrounding transient. */
         $rows = $wpdb->get_results(
-            "SELECT domain, account FROM {$this->table()} WHERE account != '' ORDER BY domain",
+            "SELECT s.domain, s.account FROM {$this->table()} s LEFT JOIN {$wpdb->prefix}lem_entities e ON e.id = s.entity_id
+             WHERE s.account != '' AND (s.entity_id IS NULL OR s.entity_id = 0 OR e.is_active = 1) ORDER BY s.domain",
             ARRAY_A
-        );
+        ) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         set_transient(self::ACCOUNTS_KEY, $rows, self::TRANSIENT_TTL);
         return $rows;
     }
@@ -107,14 +113,18 @@ class LEM_Banned_Sites {
      */
     public function get_all() {
         global $wpdb;
-        return $wpdb->get_results("SELECT * FROM {$this->table()} ORDER BY domain", ARRAY_A);
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        return $wpdb->get_results("SELECT * FROM {$this->table()} ORDER BY domain", ARRAY_A) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
     }
 
     public function get_by_id($id) {
         global $wpdb;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         return $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$this->table()} WHERE id = %d", $id
-        ), ARRAY_A);
+        ), ARRAY_A) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
     }
 
     public function insert($data) {
@@ -128,21 +138,25 @@ class LEM_Banned_Sites {
             return false;
         }
 
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $existing = $wpdb->get_var($wpdb->prepare(
             "SELECT id FROM {$this->table()} WHERE domain = %s AND account = %s LIMIT 1",
             $domain, $account
-        ));
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         if ($existing) {
             return false;
         }
 
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. */
         $result = $wpdb->insert($this->table(), [
             'domain'    => $domain,
             'account'   => $account,
             'label'     => $data['label'] ?? '',
             'registry'  => self::clean_registry($data['registry'] ?? ''),
             'entity_id' => !empty($data['entity_id']) ? (int) $data['entity_id'] : null,
-        ]);
+        ]) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery */
 
         if ($result) {
             $this->flush_cache();
@@ -173,7 +187,9 @@ class LEM_Banned_Sites {
             $update['entity_id'] = !empty($data['entity_id']) ? (int) $data['entity_id'] : null;
         }
 
-        $result = $wpdb->update($this->table(), $update, ['id' => $id]);
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
+        $result = $wpdb->update($this->table(), $update, ['id' => $id]) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
         if ($result !== false) {
             $this->flush_cache();
         }
@@ -182,7 +198,9 @@ class LEM_Banned_Sites {
 
     public function delete($id) {
         global $wpdb;
-        $result = $wpdb->delete($this->table(), ['id' => $id]);
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
+        $result = $wpdb->delete($this->table(), ['id' => $id]) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
         if ($result) {
             $this->flush_cache();
         }
@@ -191,7 +209,9 @@ class LEM_Banned_Sites {
 
     public function count() {
         global $wpdb;
-        return (int) $wpdb->get_var("SELECT COUNT(*) FROM {$this->table()}");
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        return (int) $wpdb->get_var("SELECT COUNT(*) FROM {$this->table()}") ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
     }
 
     /**
@@ -201,34 +221,25 @@ class LEM_Banned_Sites {
         global $wpdb;
         $table = $this->table();
 
-        $where  = [];
-        $params = [];
-
-        if (!empty($args['search'])) {
-            $like     = '%' . $wpdb->esc_like($args['search']) . '%';
-            $where[]  = '(domain LIKE %s OR account LIKE %s OR label LIKE %s)';
-            $params[] = $like;
-            $params[] = $like;
-            $params[] = $like;
-        }
-
-        $where_sql = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-        $limit     = (int) ($args['limit'] ?? 50);
-        $offset    = (int) ($args['offset'] ?? 0);
-
-        $sql = "SELECT * FROM $table $where_sql ORDER BY domain ASC LIMIT %d OFFSET %d";
-        $params[] = $limit;
-        $params[] = $offset;
-
-        $rows = $wpdb->get_results($wpdb->prepare($sql, ...$params), ARRAY_A);
-
-        $count_sql = "SELECT COUNT(*) FROM $table $where_sql";
-        if (!empty($where)) {
-            $count_params = array_slice($params, 0, -2);
-            $total = (int) $wpdb->get_var($wpdb->prepare($count_sql, ...$count_params));
-        } else {
-            $total = (int) $wpdb->get_var($count_sql);
-        }
+        $search = (string) ($args['search'] ?? '');
+        $like = '%' . $wpdb->esc_like($search) . '%';
+        $limit = max(1, (int) ($args['limit'] ?? 50));
+        $offset = max(0, (int) ($args['offset'] ?? 0));
+        /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM $table
+             WHERE (%s = '' OR domain LIKE %s OR account LIKE %s OR label LIKE %s)
+             ORDER BY domain ASC LIMIT %d OFFSET %d",
+            $search, $like, $like, $like, $limit, $offset
+        ), ARRAY_A) ;
+        /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
+        /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        $total = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table
+             WHERE (%s = '' OR domain LIKE %s OR account LIKE %s OR label LIKE %s)",
+            $search, $like, $like, $like
+        )) ;
+        /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
         return ['items' => $rows, 'total' => $total];
     }
@@ -262,10 +273,13 @@ class LEM_Banned_Sites {
         global $wpdb;
         $ents  = $wpdb->prefix . LEM_TABLE;
         $index = [];
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         foreach ($wpdb->get_results(
             "SELECT s.domain, s.account, s.registry, e.type
-             FROM {$this->table()} s LEFT JOIN $ents e ON e.id = s.entity_id"
+             FROM {$this->table()} s LEFT JOIN $ents e ON e.id = s.entity_id
+             WHERE s.entity_id IS NULL OR s.entity_id = 0 OR e.is_active = 1"
         ) as $row) {
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
             $key = $row->account !== '' ? $row->domain . '/' . $row->account : $row->domain;
             // Комплектные домены реестра не связаны с записью, но свой тип знают
             $index[$key] = $row->type ?: ($row->registry ?: '');
@@ -318,7 +332,7 @@ class LEM_Banned_Sites {
             return '';
         }
         if (preg_match('#^https?://#i', $input)) {
-            $parsed = parse_url($input);
+            $parsed = wp_parse_url($input);
             $input  = $parsed['host'] ?? $input;
         }
         $input = preg_replace('/^www\./i', '', $input);
@@ -359,7 +373,7 @@ class LEM_Banned_Sites {
             $input = 'https://' . ltrim($input, '/');
         }
 
-        $parsed = parse_url($input);
+        $parsed = wp_parse_url($input);
         $domain = self::normalize_domain($parsed['host'] ?? '');
         if ($domain === '' || strpos($domain, '.') === false) {
             return ['domain' => '', 'account' => ''];
@@ -419,7 +433,7 @@ class LEM_Banned_Sites {
             return null;
         }
         $host   = mb_strtolower(preg_replace('/^www\./i', '', $url_host));
-        $handle = self::extract_handle($host, (string) parse_url($url, PHP_URL_PATH));
+        $handle = self::extract_handle($host, (string) wp_parse_url($url, PHP_URL_PATH));
         if ($handle === '') {
             return null;
         }

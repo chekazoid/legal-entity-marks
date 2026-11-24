@@ -35,7 +35,7 @@ class LEM_Channel {
      *
      * Нужен, чтобы отличить сто сайтов, обновляющих реестры раз в неделю,
      * от одного, делающего это сто раз. По нему нельзя узнать ни домен,
-     * ни владельца, а при переустановке плагина он меняется.
+     * ни владельца, он сохраняется вместе с настройками плагина.
      */
     public function install_id() {
         $id = get_option('lem_install_id', '');
@@ -112,7 +112,7 @@ class LEM_Channel {
      */
     public function fetch($type) {
         if (!self::supports($type)) {
-            return ['error' => 'канал такой реестр не ведёт'];
+            return ['error' => __('канал такой реестр не ведёт', 'legal-entity-marks')];
         }
 
         // Заголовок отправляем, только если токен задан: выгрузки открыты,
@@ -128,7 +128,7 @@ class LEM_Channel {
             'headers'    => $headers,
         ];
 
-        $url      = $this->base_url() . self::REGISTRY_MAP[$type] . '/export/lem';
+        $url      = $this->base_url() . self::REGISTRY_MAP[$type] . '/export/lem?format=snapshot';
         $response = LEM_Http::get($url, $args);
 
         // Ограничение частоты на стороне канала: обновление берёт четыре реестра
@@ -140,7 +140,7 @@ class LEM_Channel {
         }
 
         if (is_wp_error($response)) {
-            return ['error' => 'соединение не удалось: ' . $response->get_error_message()];
+            return ['error' => __('соединение не удалось: ', 'legal-entity-marks') . $response->get_error_message()];
         }
 
         $code = wp_remote_retrieve_response_code($response);
@@ -150,16 +150,27 @@ class LEM_Channel {
 
         $data = json_decode(wp_remote_retrieve_body($response), true);
         if (!is_array($data) || empty($data)) {
-            return ['error' => 'канал вернул неожиданный ответ'];
+            return ['error' => __('канал вернул неожиданный ответ', 'legal-entity-marks')];
         }
 
-        return ['entries' => $data, 'count' => count($data)];
+        if (($data['registry'] ?? '') !== $type || ($data['complete'] ?? false) !== true
+            || !is_array($data['entries'] ?? null) || !is_int($data['count'] ?? null)
+            || $data['count'] !== count($data['entries']) || !$data['entries']
+            || !is_string($data['version'] ?? null) || $data['version'] === ''
+            || !is_string($data['fetched_at'] ?? null) || !strtotime($data['fetched_at'])) {
+            return ['error' => __('канал не подтвердил полноту и версию списка', 'legal-entity-marks')];
+        }
+        return ['entries' => $data['entries'], 'count' => $data['count'], 'meta' => [
+            'source' => 'channel', 'complete' => true, 'count' => $data['count'],
+            'version' => $data['version'], 'fetched_at' => $data['fetched_at'],
+            'source_modified' => $data['source_modified'] ?? '',
+        ]];
     }
 
     /** Физлица загружаются отдельно: только по выбору пользователя и с токеном. */
     public function fetch_people_page($offset, $version = '') {
         if (!$this->is_enabled() || !$this->has_token()) {
-            return ['error' => 'Для физических лиц нужен включённый канал и его токен.'];
+            return ['error' => __('Для физических лиц нужен включённый канал и его токен.', 'legal-entity-marks')];
         }
         $url = add_query_arg(['limit' => 500, 'offset' => (int) $offset, 'version' => $version],
             $this->base_url() . 'fedsfm/people');
@@ -169,7 +180,7 @@ class LEM_Channel {
             'headers' => array_merge($this->stats_headers(), ['Authorization' => 'Bearer ' . $this->token()]),
         ]);
         if (is_wp_error($response)) {
-            return ['error' => 'Канал физических лиц недоступен: ' . $response->get_error_message(), 'retry' => true];
+            return ['error' => __('Канал физических лиц недоступен: ', 'legal-entity-marks') . $response->get_error_message(), 'retry' => true];
         }
         $code = wp_remote_retrieve_response_code($response);
         if ($code !== 200) {
@@ -181,7 +192,7 @@ class LEM_Channel {
             || !is_int($data['offset'] ?? null) || !is_int($data['total'] ?? null)
             || !is_string($data['version'] ?? null) || $data['version'] === ''
             || !is_string($data['fetched_at'] ?? null)) {
-            return ['error' => 'Канал вернул неподходящий формат перечня физических лиц.'];
+            return ['error' => __('Канал вернул неподходящий формат перечня физических лиц.', 'legal-entity-marks')];
         }
         return $data;
     }
@@ -199,13 +210,13 @@ class LEM_Channel {
 
         switch ((int) $code) {
             case 401:
-                return 'канал требует токен для этого реестра: укажите его в настройках' . $detail;
+                return __('канал требует токен для этого реестра: укажите его в настройках', 'legal-entity-marks') . $detail;
             case 403:
-                return 'токен не признан или отозван: нужен новый' . $detail;
+                return __('токен не признан или отозван: нужен новый', 'legal-entity-marks') . $detail;
             case 404:
-                return 'в канале нет такого реестра' . $detail;
+                return __('в канале нет такого реестра', 'legal-entity-marks') . $detail;
             case 429:
-                return 'слишком частые запросы к каналу, попробуйте позже' . $detail;
+                return __('слишком частые запросы к каналу, попробуйте позже', 'legal-entity-marks') . $detail;
             default:
                 return "канал ответил HTTP $code" . $detail;
         }
@@ -245,19 +256,19 @@ class LEM_Channel {
         ]);
 
         if (is_wp_error($response)) {
-            return ['ok' => false, 'message' => 'соединение не удалось: ' . $response->get_error_message()];
+            return ['ok' => false, 'message' => __('соединение не удалось: ', 'legal-entity-marks') . $response->get_error_message()];
         }
 
         $code = wp_remote_retrieve_response_code($response);
         if ($code === 404) {
-            return ['ok' => false, 'message' => 'сервер пока не принимает регистрации, попробуйте позже'];
+            return ['ok' => false, 'message' => __('сервер пока не принимает регистрации, попробуйте позже', 'legal-entity-marks')];
         }
         if ($code < 200 || $code >= 300) {
             return ['ok' => false, 'message' => self::explain_code($code, wp_remote_retrieve_body($response))];
         }
 
         update_option('lem_registered_at', current_time('mysql'), false);
-        return ['ok' => true, 'message' => 'сайт зарегистрирован'];
+        return ['ok' => true, 'message' => __('сайт зарегистрирован', 'legal-entity-marks')];
     }
 
     /**

@@ -28,10 +28,10 @@ class LEM_Postlist {
 
     private function options() {
         return [
-            'marked'  => 'С маркировкой',
-            'tracked' => 'С отслеживаемыми упоминаниями',
-            'links'   => 'Со ссылками на ресурсы из реестров',
-            'none'    => 'Без находок',
+            'marked'  => __('С маркировкой', 'legal-entity-marks'),
+            'tracked' => __('С отслеживаемыми упоминаниями', 'legal-entity-marks'),
+            'links'   => __('Со ссылками на ресурсы из реестров', 'legal-entity-marks'),
+            'none'    => __('Без находок', 'legal-entity-marks'),
         ];
     }
 
@@ -39,9 +39,10 @@ class LEM_Postlist {
         if (!in_array($post_type, lem()->get_settings()['post_types'], true)) {
             return;
         }
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin search/filter; sanitized input, no state changes.
         $current = sanitize_text_field(wp_unslash($_GET[self::QUERY_VAR] ?? ''));
         echo '<select name="' . esc_attr(self::QUERY_VAR) . '">';
-        echo '<option value="">Маркировка: любая</option>';
+        echo '<option value="">' . esc_html__('Маркировка: любая', 'legal-entity-marks') . '</option>';
         foreach ($this->options() as $key => $label) {
             printf('<option value="%s"%s>%s</option>',
                 esc_attr($key), selected($current, $key, false), esc_html($label));
@@ -53,6 +54,7 @@ class LEM_Postlist {
         if (!is_admin() || !$query->is_main_query()) {
             return;
         }
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin search/filter; sanitized input, no state changes.
         $filter = sanitize_text_field(wp_unslash($_GET[self::QUERY_VAR] ?? ''));
         if ($filter === '' || !isset($this->options()[$filter])) {
             return;
@@ -93,7 +95,7 @@ class LEM_Postlist {
     }
 
     public function add_column($columns) {
-        $columns['lem_marks'] = 'Маркировка';
+        $columns['lem_marks'] = __('Маркировка', 'legal-entity-marks');
         return $columns;
     }
 
@@ -108,7 +110,10 @@ class LEM_Postlist {
 
         $links_raw = get_post_meta($post_id, LEM_BANNED_LINKS_META_KEY, true);
         $links     = $links_raw ? json_decode($links_raw, true) : [];
-        $links_n   = count($links['links'] ?? []);
+        $index = lem()->banned_sites->get_index();
+        $links_n = count(array_filter($links['links'] ?? [], static function ($link) use ($index) {
+            return array_key_exists($link['matched_domain'] ?? '', $index);
+        }));
 
         if (empty($ents) && !$links_n) {
             echo '<span style="color:#999">-</span>';
@@ -118,7 +123,13 @@ class LEM_Postlist {
         $settings  = lem()->get_settings();
         $overrides = LEM_Frontend::get_overrides($post_id);
         $marked = $tracked = 0;
+        $current = [];
+        foreach (lem()->entities->get_for_marking_ids(array_column($ents, 'id'), true) as $entity) {
+            $current[(int) $entity['id']] = $entity;
+        }
         foreach ($ents as $m) {
+            if (!isset($current[(int) ($m['id'] ?? 0)])) { continue; }
+            $m = array_merge($m, $current[(int) $m['id']]);
             $type = $m['type'] ?? '';
             if (!in_array($type, $settings['track_registries'], true)) {
                 continue;
@@ -133,14 +144,14 @@ class LEM_Postlist {
 
         $out = [];
         if ($marked) {
-            $out[] = 'меток: ' . $marked;
+            $out[] = __('меток: ', 'legal-entity-marks') . $marked;
         }
         if ($tracked) {
-            $out[] = '<span style="color:#996800">без меток: ' . $tracked . '</span>';
+            $out[] = __('<span style="color:#996800">без меток: ', 'legal-entity-marks') . $tracked . '</span>';
         }
         if ($links_n) {
-            $out[] = '<span style="color:#b32d2e">ссылок: ' . $links_n . '</span>';
+            $out[] = __('<span style="color:#b32d2e">ссылок: ', 'legal-entity-marks') . $links_n . '</span>';
         }
-        echo $out ? implode('<br>', $out) : '<span style="color:#999">-</span>';
+        echo wp_kses_post($out ? implode('<br>', $out) : '<span style="color:#999">-</span>');
     }
 }

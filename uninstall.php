@@ -39,16 +39,18 @@ if (empty($settings['delete_data_on_uninstall'])) {
 }
 
 $table = $wpdb->prefix . 'lem_entities';
-$wpdb->query("DROP TABLE IF EXISTS $table");
+/* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. Version-gated custom-table migration or explicitly requested uninstall cleanup. */
+$wpdb->query("DROP TABLE IF EXISTS $table") ;
+/* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
 $banned_table = $wpdb->prefix . 'lem_banned_sites';
-$wpdb->query("DROP TABLE IF EXISTS $banned_table");
+/* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. Version-gated custom-table migration or explicitly requested uninstall cleanup. */
+$wpdb->query("DROP TABLE IF EXISTS $banned_table") ;
+/* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
 foreach (['_lem_matches', '_lem_banned_links', '_lem_overrides'] as $meta_key) {
-    $wpdb->query($wpdb->prepare(
-        "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s",
-        $meta_key
-    ));
+    // WordPress also invalidates persistent metadata caches for affected posts.
+    delete_post_meta_by_key($meta_key);
 }
 
 foreach ([

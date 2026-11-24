@@ -1,0 +1,115 @@
+{
+  "initial_full_channel_update": {
+    "official_sources": "simulated_unavailable",
+    "channel_calls": 4,
+    "errors": 0,
+    "warning": false,
+    "stats_headers": false,
+    "people_mode": "off",
+    "categories": {
+      "inoagent": {
+        "source": "channel",
+        "before_active": 1077,
+        "after_active": 1040,
+        "received": 1304,
+        "accepted": 1299,
+        "retired": 41,
+        "active_outside_snapshot": 0,
+        "max_name_length": 212
+      },
+      "extremist": {
+        "source": "channel",
+        "before_active": 1184,
+        "after_active": 625,
+        "received": 628,
+        "accepted": 625,
+        "retired": 566,
+        "active_outside_snapshot": 0,
+        "max_name_length": 1147
+      },
+      "terrorist": {
+        "source": "channel",
+        "before_active": 78,
+        "after_active": 72,
+        "received": 72,
+        "accepted": 72,
+        "retired": 7,
+        "active_outside_snapshot": 0,
+        "max_name_length": 8689
+      },
+      "undesirable": {
+        "source": "channel",
+        "before_active": 442,
+        "after_active": 442,
+        "received": 442,
+        "accepted": 442,
+        "retired": 0,
+        "active_outside_snapshot": 0,
+        "max_name_length": 336
+      }
+    }
+  },
+  "repeat_full_channel_update": {
+    "official_sources": "simulated_unavailable",
+    "channel_calls": 4,
+    "errors": 0,
+    "warning": false,
+    "stats_headers": false,
+    "people_mode": "off",
+    "categories": {
+      "inoagent": {
+        "source": "channel",
+        "before_active": 1040,
+        "after_active": 1040,
+        "received": 1304,
+        "accepted": 1299,
+        "retired": 0,
+        "active_outside_snapshot": 0,
+        "max_name_length": 212
+      },
+      "extremist": {
+        "source": "channel",
+        "before_active": 625,
+        "after_active": 625,
+        "received": 628,
+        "accepted": 625,
+        "retired": 0,
+        "active_outside_snapshot": 0,
+        "max_name_length": 1147
+      },
+      "terrorist": {
+        "source": "channel",
+        "before_active": 72,
+        "after_active": 72,
+        "received": 72,
+        "accepted": 72,
+        "retired": 0,
+        "active_outside_snapshot": 0,
+        "max_name_length": 8689
+      },
+      "undesirable": {
+        "source": "channel",
+        "before_active": 442,
+        "after_active": 442,
+        "received": 442,
+        "accepted": 442,
+        "retired": 0,
+        "active_outside_snapshot": 0,
+        "max_name_length": 336
+      }
+    }
+  },
+  "all_sources_unavailable": {
+    "all_sources": "simulated_unavailable",
+    "warnings": 4,
+    "statuses_preserved": true,
+    "snapshot_metadata_preserved": true,
+    "sources": {
+      "inoagent": "retained",
+      "extremist": "retained",
+      "terrorist": "retained",
+      "undesirable": "retained"
+    },
+    "passed": true
+  }
+}

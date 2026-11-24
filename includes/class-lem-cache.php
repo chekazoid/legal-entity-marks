@@ -42,22 +42,22 @@ class LEM_Cache {
 
     public function purge_all_marked() {
         global $wpdb;
-        $post_ids = $wpdb->get_col(
-            "SELECT post_id FROM {$wpdb->postmeta}
-             WHERE meta_key = '" . LEM_META_KEY . "'
-             AND meta_value != '' AND meta_value IS NOT NULL
-             LIMIT 5000"
-        );
-
-        if (empty($post_ids)) {
-            return 0;
-        }
-
+        $cursor = 0;
         $purged = 0;
-        foreach ($post_ids as $pid) {
-            $this->purge_post($pid);
-            $purged++;
-        }
+        do {
+            /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Read batches of current WordPress metadata; the cursor avoids silently leaving pages beyond a fixed total limit cached. */
+            $rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT meta_id, post_id FROM {$wpdb->postmeta}
+                 WHERE meta_key = %s AND meta_value != '' AND meta_value IS NOT NULL
+                   AND meta_id > %d ORDER BY meta_id LIMIT 500", LEM_META_KEY, $cursor
+            ));
+            /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
+            foreach ($rows as $row) {
+                $this->purge_post((int) $row->post_id);
+                $cursor = (int) $row->meta_id;
+                $purged++;
+            }
+        } while (count($rows) === 500);
 
         do_action('lem_purge_all_cache', $purged);
         return $purged;

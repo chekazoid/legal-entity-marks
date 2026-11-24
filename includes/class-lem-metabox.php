@@ -39,7 +39,7 @@ class LEM_Metabox {
         foreach (lem()->get_settings()['post_types'] as $post_type) {
             add_meta_box(
                 'lem-overrides',
-                'Маркировка',
+                __('Маркировка', 'legal-entity-marks'),
                 [$this, 'render'],
                 $post_type,
                 'side',
@@ -59,9 +59,9 @@ class LEM_Metabox {
         echo '<input type="hidden" name="lem_overrides_present" value="1">';
 
         if (empty($entities)) {
-            echo '<p>Упоминаний из реестров не найдено.</p>';
+            echo '<p>' . esc_html__('Упоминаний из реестров не найдено.', 'legal-entity-marks') . '</p>';
             if (empty($raw)) {
-                echo '<p class="description">Статья ещё не сканировалась. Она будет проверена при сохранении.</p>';
+                echo '<p class="description">' . esc_html__('Статья ещё не сканировалась. Она будет проверена при сохранении.', 'legal-entity-marks') . '</p>';
             }
             return;
         }
@@ -71,15 +71,15 @@ class LEM_Metabox {
         $entities_db  = lem()->entities->get_all_active();
         $active_ids   = [];
         foreach ($entities_db as $e) {
-            $active_ids[(int) $e['id']] = true;
+            $active_ids[(int) $e['id']] = $e;
         }
 
         $labels = [
-            'inoagent'    => 'иноагент',
-            'extremist'   => 'экстремистская',
-            'terrorist'   => 'террористическая',
-            'undesirable' => 'нежелательная',
-            'fedsfm_person' => 'Физлица: Росфинмониторинг',
+            'inoagent'    => __('иноагент', 'legal-entity-marks'),
+            'extremist'   => __('экстремистская', 'legal-entity-marks'),
+            'terrorist'   => __('террористическая', 'legal-entity-marks'),
+            'undesirable' => __('нежелательная', 'legal-entity-marks'),
+            'fedsfm_person' => __('Физлица: Росфинмониторинг', 'legal-entity-marks'),
         ];
 
         // Пустые переопределения: чтобы узнать, что дало бы чистое «Автоматически»
@@ -91,6 +91,7 @@ class LEM_Metabox {
             if (!isset($active_ids[$id])) {
                 continue; // сущность исключена из реестра, маркировка не ставится
             }
+            $match = array_merge($match, $active_ids[$id]);
             if (!in_array($match['type'], $settings['track_registries'], true)) {
                 continue; // реестр не маркируется и не отслеживается
             }
@@ -104,8 +105,8 @@ class LEM_Metabox {
 
             $auto_marks = LEM_Frontend::should_mark($match, $settings, $no_overrides);
             $auto_hint  = $auto_marks
-                ? 'Автоматически (сейчас помечается)'
-                : 'Автоматически (сейчас не помечается: ' . self::skip_reason($match, $settings) . ')';
+                ? __('Автоматически (сейчас помечается)', 'legal-entity-marks')
+                : __('Автоматически (сейчас не помечается: ', 'legal-entity-marks') . self::skip_reason($match, $settings) . ')';
 
             $shown++;
             printf(
@@ -113,11 +114,12 @@ class LEM_Metabox {
                 esc_html($match['name']),
                 esc_html($labels[$match['type']] ?? $match['type'])
             );
-            printf('<select name="lem_override[%d]" style="width:100%%;margin-bottom:12px">', $id);
+            printf('<select name="lem_override[%d]" style="width:100%%;margin-bottom:12px">', (int) $id);
             foreach ([
                 'auto'    => $auto_hint,
-                'force'   => 'Всегда помечать',
-                'exclude' => 'Не помечать',
+                'force'   => __('Всегда помечать', 'legal-entity-marks'),
+// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- Editor override option named exclude; this is not a WP_Query argument.
+                'exclude' => __('Не помечать', 'legal-entity-marks'),
             ] as $value => $label) {
                 printf(
                     '<option value="%s"%s>%s</option>',
@@ -130,16 +132,14 @@ class LEM_Metabox {
         }
 
         if ($shown === 0) {
-            echo '<p>Упоминаний из реестров не найдено.</p>';
+            echo '<p>' . esc_html__('Упоминаний из реестров не найдено.', 'legal-entity-marks') . '</p>';
             return;
         }
 
-        echo '<p class="description">«Автоматически» подчиняется общим правилам плагина. '
-            . 'Два других положения действуют только для этой статьи.</p>';
+        echo '<p class="description">' . esc_html__('«Автоматически» подчиняется общим правилам плагина. Два других положения действуют только для этой статьи.', 'legal-entity-marks') . '</p>';
 
         if (!empty($settings['inoagent_context_only'])) {
-            echo '<p class="description">Иноагенты маркируются только в цитатах, ссылках и встроенных постах '
-                . '(режим включён в настройках плагина).</p>';
+            echo '<p class="description">' . esc_html__('Иноагенты маркируются только в цитатах, ссылках и встроенных постах (режим включён в настройках плагина).', 'legal-entity-marks') . '</p>';
         }
     }
 
@@ -151,9 +151,9 @@ class LEM_Metabox {
             && !empty($settings['inoagent_context_only'])
             && array_key_exists('in_context', $match)
             && empty($match['in_context'])) {
-            return 'нет цитаты или ссылки';
+            return __('нет цитаты или ссылки', 'legal-entity-marks');
         }
-        return 'по правилам плагина';
+        return __('по правилам плагина', 'legal-entity-marks');
     }
 
     public function save($post_id, $post) {
@@ -167,7 +167,7 @@ class LEM_Metabox {
             return; // сохранение не из редактора с нашим блоком
         }
         if (!isset($_POST[self::NONCE_FIELD])
-            || !wp_verify_nonce($_POST[self::NONCE_FIELD], self::NONCE_ACTION)) {
+            || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST[self::NONCE_FIELD])), self::NONCE_ACTION)) {
             return;
         }
         if (!self::user_can_manage($post_id)) {
@@ -178,7 +178,7 @@ class LEM_Metabox {
         // auto (без переопределения) | force (всегда помечать) | exclude (не помечать)
         $excluded = [];
         $forced   = [];
-        foreach ((array) ($_POST['lem_override'] ?? []) as $id => $value) {
+        foreach (array_map('sanitize_text_field', (array) wp_unslash($_POST['lem_override'] ?? [])) as $id => $value) {
             $id = (int) $id;
             if ($id <= 0) {
                 continue;

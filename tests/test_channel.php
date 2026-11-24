@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/wp-stubs.php';
 /**
  * Канал реестров: соответствие типов и разбор отказов.
  *
@@ -95,6 +96,36 @@ $id = $channel->install_id();
 eq('выдан',                  $id !== '', true);
 eq('постоянен',              $channel->install_id(), $id);
 eq('в нём нет адреса сайта', mb_stripos($id, 'example') === false, true);
+
+// Complete snapshot envelope, using an in-memory HTTP response.
+class LEM_Http {
+    public static $payload = [];
+    public static $url = '';
+    public static $headers = [];
+    public static function get($url,$args) {
+        self::$url=$url; self::$headers=$args['headers'];
+        return ['body'=>json_encode(self::$payload),'response'=>['code'=>200]];
+    }
+}
+function lem() { static $plugin; if (!$plugin) { $plugin=new class { public function get_settings(){return ['stats_enabled'=>false,'channel_enabled'=>true];} }; } return $plugin; }
+function is_wp_error($response) { return false; }
+function wp_remote_retrieve_response_code($response) { return $response['response']['code']; }
+function wp_remote_retrieve_body($response) { return $response['body']; }
+$envelope=['registry'=>'inoagent','complete'=>true,'count'=>1,'version'=>'synthetic-v1','fetched_at'=>'2026-11-24T00:00:00Z','source_modified'=>'','entries'=>[['name'=>'Synthetic Alpha','type'=>'inoagent']]];
+LEM_Http::$payload=$envelope;
+$result=$channel->fetch('inoagent');
+eq('Полный ответ сохраняет метаданные сверки', !isset($result['error']) && $result['meta']['complete'] === true && $result['count'] === 1, true);
+eq('Запрашивается формат полного среза', strpos(LEM_Http::$url,'?format=snapshot') !== false, true);
+eq('Без согласия нет заголовков учёта', LEM_Http::$headers === [], true);
+foreach (['legacy','wrong-registry','wrong-count','incomplete','missing-version'] as $case) {
+    LEM_Http::$payload=$envelope;
+    if($case==='legacy')LEM_Http::$payload=$envelope['entries'];
+    if($case==='wrong-registry')LEM_Http::$payload['registry']='terrorist';
+    if($case==='wrong-count')LEM_Http::$payload['count']=2;
+    if($case==='incomplete')LEM_Http::$payload['complete']=false;
+    if($case==='missing-version')unset(LEM_Http::$payload['version']);
+    eq('Не подтверждает полноту: '.$case, isset($channel->fetch('inoagent')['error']), true);
+}
 
 echo $fail ? "\nПРОВАЛЕНО: $fail\n" : "\nВСЕ ПРОВЕРКИ ПРОЙДЕНЫ\n";
 exit($fail ? 1 : 0);

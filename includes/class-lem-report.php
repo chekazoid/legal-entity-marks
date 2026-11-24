@@ -49,6 +49,7 @@ class LEM_Report {
         // Мета пишется сканером и содержит всё найденное, независимо от того,
         // маркируется реестр или только отслеживается
         if ($this->rows_cache === null) {
+            /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
             $this->rows_cache = $wpdb->get_results($wpdb->prepare(
                 "SELECT p.ID, p.post_title, p.post_type, p.post_status, pm.meta_value
                  FROM {$wpdb->posts} p
@@ -56,9 +57,10 @@ class LEM_Report {
                  WHERE pm.meta_key = %s AND pm.meta_value != ''
                    AND p.post_status IN ('publish','draft','pending','private','future')
                  ORDER BY p.post_date DESC
-                 LIMIT " . $this->max_posts(),
-                LEM_META_KEY
-            ));
+                 LIMIT %d",
+                LEM_META_KEY, $this->max_posts()
+            )) ;
+            /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
         }
         $rows = $this->rows_cache;
 
@@ -78,6 +80,9 @@ class LEM_Report {
             $overrides = LEM_Frontend::get_overrides($row->ID);
 
             foreach ($meta['entities'] as $match) {
+                $eid = (int) ($match['id'] ?? 0);
+                if (!isset($entities[$eid])) { continue; }
+                $match = array_merge($match, $entities[$eid]);
                 $type = $match['type'] ?? '';
                 if (!in_array($type, $track, true)) {
                     continue; // реестр не отслеживается
@@ -172,12 +177,14 @@ class LEM_Report {
         }
 
         $in    = implode(',', array_map('intval', $ids));
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $posts = $wpdb->get_results(
             "SELECT ID, post_title, post_type, post_status FROM {$wpdb->posts}
              WHERE ID IN ($in)
                AND post_status IN ('publish','draft','pending','private','future')
              ORDER BY post_date DESC"
-        );
+        ) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
         $out = [];
         foreach ($posts as $p) {
@@ -241,21 +248,26 @@ class LEM_Report {
         }
 
         global $wpdb;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT post_id, meta_value FROM {$wpdb->postmeta}
-             WHERE meta_key = %s AND meta_value != '' LIMIT " . $this->max_posts(),
-            LEM_BANNED_LINKS_META_KEY
-        ));
+             WHERE meta_key = %s AND meta_value != '' LIMIT %d",
+            LEM_BANNED_LINKS_META_KEY, $this->max_posts()
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
 
         // Чей это ресурс: домены Минюст публикует вместе с записью реестра,
         // поэтому по ссылке видно организацию и её реестр
         $owners = [];
         $sites  = $wpdb->prefix . 'lem_banned_sites';
         $ents   = $wpdb->prefix . LEM_TABLE;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         foreach ($wpdb->get_results(
             "SELECT s.domain, s.account, s.label, e.name, e.type, e.first_seen, e.date_included
-             FROM $sites s LEFT JOIN $ents e ON e.id = s.entity_id"
+             FROM $sites s LEFT JOIN $ents e ON e.id = s.entity_id
+             WHERE s.entity_id IS NULL OR s.entity_id = 0 OR e.is_active = 1"
         ) as $s) {
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
             $key = $s->account !== '' ? $s->domain . '/' . $s->account : $s->domain;
             $owners[$key] = [
                 'org'           => $s->name ?: $s->label,
@@ -270,6 +282,7 @@ class LEM_Report {
             $meta = json_decode($r->meta_value, true);
             foreach (($meta['links'] ?? []) as $l) {
                 $domain = $l['matched_domain'] ?? '';
+                if (!isset($owners[$domain])) { continue; }
                 $out[(int) $r->post_id][] = [
                     'url'           => $l['url'] ?? '',
                     'anchor'        => $l['anchor'] ?? '',
@@ -353,6 +366,7 @@ class LEM_Report {
                 implode(' | ', $links),
             ], ';');
         }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- php://output is the CSV HTTP response, not a filesystem write.
         fclose($fh);
     }
 }

@@ -93,10 +93,12 @@ class LEM_Brands {
             return 0;
         }
         $table = $wpdb->prefix . LEM_TABLE;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         return (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM $table WHERE name LIKE %s",
             '%' . $wpdb->esc_like($match) . '%'
-        ));
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
     }
 
     private function normalize($rule) {

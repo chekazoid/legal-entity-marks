@@ -1,7 +1,10 @@
 <?php
 defined('ABSPATH') || exit;
+require_once __DIR__ . '/class-lem-registry-sync.php';
 
 class LEM_Importer {
+    private $verified_generation = '';
+    private $defer_activation = false;
 
     /** Итоги последнего обновления реестров: домены, собранные из данных Минюста. */
     public $last_fetch_domains = 0;
@@ -97,10 +100,12 @@ class LEM_Importer {
                 continue;
             }
 
+            /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
             $rows = $wpdb->get_results($wpdb->prepare(
                 "SELECT id, aliases, status_text FROM $table WHERE name LIKE %s",
                 '%' . $wpdb->esc_like($match) . '%'
-            ));
+            )) ;
+            /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
             // Правило, не нашедшее ни одной записи, раньше молча ничего не делало:
             // так брендовые алиасы «Вёрстки» не работали из-за кавычек в match
@@ -125,7 +130,9 @@ class LEM_Importer {
                 }
 
                 if (!empty($update)) {
-                    $wpdb->update($table, $update, ['id' => $row->id]);
+                    /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
+                    $wpdb->update($table, $update, ['id' => $row->id]) ;
+                    /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
                     $applied++;
                 }
             }
@@ -265,9 +272,11 @@ class LEM_Importer {
         $table = $wpdb->prefix . LEM_TABLE;
         $fixed = 0;
 
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $rows = $wpdb->get_results(
             "SELECT id, name, aliases FROM $table WHERE aliases != '' AND aliases != '[]'"
-        );
+        ) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
         foreach ($rows as $row) {
             $aliases = json_decode($row->aliases, true);
@@ -288,11 +297,13 @@ class LEM_Importer {
             }));
 
             if ($keep !== $aliases) {
+                /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
                 $wpdb->update(
                     $table,
                     ['aliases' => wp_json_encode($keep, JSON_UNESCAPED_UNICODE)],
                     ['id' => $row->id]
-                );
+                ) ;
+                /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
                 $fixed++;
             }
         }
@@ -431,23 +442,32 @@ class LEM_Importer {
                 continue;
             }
 
+            /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
             $existing = $wpdb->get_row($wpdb->prepare(
                 "SELECT id, entity_id FROM $table WHERE domain = %s AND account = %s LIMIT 1",
                 $domain, $account
-            ));
+            )) ;
+            /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
+            if ($this->verified_generation !== '' && $wpdb->last_error !== '') { throw new RuntimeException('snapshot resource read failed'); }
             if ($existing) {
                 // Ресурс мог быть добавлен вручную без связи с реестром
                 if (empty($existing->entity_id)) {
-                    $wpdb->update($table, ['entity_id' => $entity_id], ['id' => $existing->id]);
+                    /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
+                    $written = $wpdb->update($table, ['entity_id' => $entity_id], ['id' => $existing->id]);
+                    if ($written === false && $this->verified_generation !== '') { throw new RuntimeException('snapshot resource update failed'); }
+                    /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
                 }
                 continue;
             }
-            $wpdb->insert($table, [
+            /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. */
+            $written = $wpdb->insert($table, [
                 'domain'    => $domain,
                 'account'   => $account,
                 'label'     => mb_substr($label, 0, 500),
                 'entity_id' => $entity_id,
-            ]);
+            ]) ;
+            /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery */
+            if ($written === false && $this->verified_generation !== '') { throw new RuntimeException('snapshot resource insert failed'); }
             $added++;
         }
 
@@ -539,6 +559,24 @@ class LEM_Importer {
      *                      см. resolve_exclusion()
      */
     public function import_entries(array $data, $type_override = null, $trusted = true) {
+        return LEM_Registry_Sync::with_lock(function () use ($data, $type_override, $trusted) {
+            return $this->import_entries_locked($data, $type_override, $trusted);
+        });
+    }
+
+    public function import_verified_entries(array $data, $type, $generation, $defer_activation = false) {
+        $old = [$this->verified_generation, $this->defer_activation];
+        $this->verified_generation = $generation;
+        $this->defer_activation = $defer_activation;
+        try { return $this->import_entries($data, $type, true); }
+        finally { [$this->verified_generation, $this->defer_activation] = $old; }
+    }
+
+    public function import_snapshot(array $data, $type, array $meta) {
+        return LEM_Registry_Sync::apply($this, $data, $type, $meta);
+    }
+
+    private function import_entries_locked(array $data, $type_override, $trusted) {
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
 
@@ -571,31 +609,58 @@ class LEM_Importer {
             $date_in = $this->parse_date($entry['date_included'] ?? $entry['dateIn'] ?? null);
             $date_out = $this->parse_date($entry['date_excluded'] ?? $entry['dateOut'] ?? null);
 
+            /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
             $existing = $wpdb->get_row($wpdb->prepare(
-                "SELECT id, aliases, date_excluded FROM $table WHERE name = %s AND type = %s LIMIT 1",
+                "SELECT id, name, aliases, date_excluded, is_active, registry_present, is_manual FROM $table WHERE name = %s AND type = %s LIMIT 1",
                 $name, $type
-            ));
+            )) ;
+            /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
+            $verified = $this->verified_generation !== '';
+            if ($verified && $wpdb->last_error !== '') { throw new RuntimeException('snapshot row read failed'); }
+            // A file/partial import is not a complete snapshot, even if its caller
+            // used the old default trusted=true flag. Never roll back a verified set.
+            $copy_only = !$verified && LEM_Registry_Sync::has_snapshot($type);
+            if ($copy_only && !$existing) { $skipped++; continue; }
             if ($existing) {
-                $date_out = self::resolve_exclusion($existing->date_excluded, $date_out, $trusted);
+                $date_out = self::resolve_exclusion($existing->date_excluded, $date_out, $verified && $trusted);
             }
-            $is_active = empty($date_out) ? 1 : 0;
+            $is_active = empty($date_out) && (!array_key_exists('is_active', $entry) || !empty($entry['is_active'])) ? 1 : 0;
+            if ($existing && (!$verified || $this->defer_activation) && !(int) $existing->is_active) {
+                $is_active = 0;
+            }
+            if ($this->defer_activation && !$existing) { $is_active = 0; }
+            if ($copy_only) {
+                $is_active = (int) $existing->is_active;
+                $date_out = $existing->date_excluded;
+            }
 
             if ($existing) {
                 // Сливаем алиасы, а не перезаписываем: ручные/курированные не должны пропадать при обновлении
                 $old_aliases = json_decode($existing->aliases, true) ?: [];
                 $aliases     = array_values(array_unique(array_merge($old_aliases, $aliases)));
-                $wpdb->update($table, [
+                /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
+                $changes = [
                     'aliases'       => wp_json_encode($aliases, JSON_UNESCAPED_UNICODE),
                     'is_person'     => $is_person,
                     'date_included' => $date_in,
                     'date_excluded' => $date_out,
                     'is_active'     => $is_active,
-                ], ['id' => $existing->id]);
+                ];
+                if ($copy_only) { $changes = ['aliases' => $changes['aliases']]; }
+                else { $changes['name'] = $name; }
+                if ($verified) {
+                    $changes['sync_generation'] = $this->verified_generation;
+                    $changes['registry_present'] = 1;
+                }
+                $written = $wpdb->update($table, $changes, ['id' => $existing->id]);
+                if ($written === false && $verified) { throw new RuntimeException('snapshot row update failed'); }
+                /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
                 $entity_id = (int) $existing->id;
                 $updated++;
             } else {
-                $wpdb->insert($table, [
+                /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. */
+                $written = $wpdb->insert($table, [
                     'type'          => $type,
                     'name'          => $name,
                     'aliases'       => wp_json_encode($aliases, JSON_UNESCAPED_UNICODE),
@@ -603,16 +668,21 @@ class LEM_Importer {
                     'date_included' => $date_in,
                     'date_excluded' => $date_out,
                     'is_active'     => $is_active,
+                    'registry_present' => 1,
+                    'is_manual' => 0,
+                    'sync_generation' => $this->verified_generation,
                     // Когда запись появилась именно у нас: по ней считаются новички
                     'first_seen'    => current_time('mysql'),
-                ]);
+                ]) ;
+                if ($written === false && $verified) { throw new RuntimeException('snapshot row insert failed'); }
+                /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery */
                 $entity_id = (int) $wpdb->insert_id;
                 $added++;
             }
 
             // Официальные ресурсы организации из реестра: домены и аккаунты идут
             // в сканер ссылок и связываются с этой записью
-            if ($entity_id > 0) {
+            if ($entity_id > 0 && !$copy_only) {
                 $targets = [];
                 foreach ((array) ($entry['sites'] ?? []) as $site) {
                     $targets[] = ['domain' => $site, 'account' => ''];
@@ -630,7 +700,8 @@ class LEM_Importer {
 
         lem()->entities->flush_cache();
         return ['added' => $added, 'updated' => $updated, 'skipped' => $skipped,
-                'domains' => $domains, 'total' => count($data)];
+                'domains' => $domains, 'total' => count($data),
+                'retained_verified_snapshot' => !$this->verified_generation && $type_override && LEM_Registry_Sync::has_snapshot($type_override)];
     }
 
     /**
@@ -703,11 +774,13 @@ class LEM_Importer {
             // и такие домены выглядели как добавленные вручную
             if ($type !== '') {
                 $target = LEM_Banned_Sites::split_target($raw);
+                /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
                 $typed += (int) $wpdb->query($wpdb->prepare(
                     "UPDATE $table SET registry = %s
                      WHERE domain = %s AND account = %s AND registry = '' AND entity_id IS NULL",
                     $type, $target['domain'], $target['account']
-                ));
+                )) ;
+                /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
             }
         }
 
@@ -724,6 +797,13 @@ class LEM_Importer {
      * ------------------------------------------------------------------ */
 
     public function fetch_all($log_callback = null) {
+        $result = LEM_Registry_Sync::with_lock(function () use ($log_callback) {
+            return $this->fetch_all_locked($log_callback);
+        });
+        return isset($result['error']) ? [$result['error']] : $result;
+    }
+
+    private function fetch_all_locked($log_callback = null) {
         $log     = $log_callback ?: function ($msg) {};
         $errors  = [];
         $diagnostics = [];
@@ -733,9 +813,11 @@ class LEM_Importer {
         $started = current_time('mysql');
         $sources = [];
         global $wpdb;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $had_entities = (int) $wpdb->get_var(
-            "SELECT COUNT(*) FROM {$wpdb->prefix}" . LEM_TABLE
+            "SELECT COUNT(*) FROM {$wpdb->prefix}lem_entities"
         ) > 0;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
 
         $fetchers = [
             'inoagent'    => 'fetch_inoagents',
@@ -782,9 +864,10 @@ class LEM_Importer {
                 $mirror = $this->fetch_mirror(self::MIRRORS[$type], $type);
                 if (!isset($mirror['error'])) {
                     $domains += (int) ($mirror['domains'] ?? 0);
-                    $sources[$type] = 'mirror';
+                    $sources[$type] = !empty($mirror['retained_verified_snapshot']) ? 'retained' : 'mirror';
                     $log("  Зеркало: added={$mirror['added']}, updated={$mirror['updated']}");
-                    $errors[] = "$label: " . implode('; ', $diagnostics[$type]) . '. Перечень взят из зеркала';
+                    $errors[] = "$label: " . implode('; ', $diagnostics[$type]) . (!empty($mirror['retained_verified_snapshot'])
+                        ? '. Сохранён прежний подтверждённый список' : '. Перечень взят из зеркала');
                     continue;
                 }
                 $diagnostics[$type][] = $mirror['error'];
@@ -803,10 +886,10 @@ class LEM_Importer {
             if (file_exists($fallback)) {
                 $fb_result = $this->import_json($fallback, $type, false);
                 $domains  += (int) ($fb_result['domains'] ?? 0);
-                $sources[$type] = 'bundled';
+                $sources[$type] = !empty($fb_result['retained_verified_snapshot']) ? 'retained' : 'bundled';
                 $log("  Fallback: added={$fb_result['added']}, updated={$fb_result['updated']}");
-                $errors[] = "$label: " . implode('; ', $diagnostics[$type]) . '. Применён встроенный перечень, '
-                    . 'сайт работает по нему';
+                $errors[] = "$label: " . implode('; ', $diagnostics[$type]) . (!empty($fb_result['retained_verified_snapshot'])
+                    ? '. Сохранён прежний подтверждённый список' : '. Применён встроенный перечень, сайт работает по нему');
             } else {
                 $log("  No fallback file found: $fallback");
                 $sources[$type] = 'none';
@@ -859,6 +942,7 @@ class LEM_Importer {
 
         lem()->entities->flush_cache();
         $this->last_fetch_domains = $domains;
+        if (isset(lem()->cache)) { lem()->cache->purge_all_marked(); }
 
         // Реестр обновился - значит, в старых публикациях могли появиться
         // упоминания и ссылки, которых вчера ещё не было. Проверяем архив.
@@ -881,6 +965,7 @@ class LEM_Importer {
 
     /** Гриды реестров на reestrs.minjust.gov.ru. */
     const INOAGENT_GRID    = '39b95df9-9a68-6b6d-e1e3-e6388507067e';
+    const EXTREMIST_GRID   = '59961ebb-9f0e-d885-7ebc-b90399923b03';
     const UNDESIRABLE_GRID = 'c2d1692e-a9f6-5a79-13ee-5da5b42980df';
 
     /** Копии перечней в репозитории плагина, см. fetch_mirror(). */
@@ -898,50 +983,73 @@ class LEM_Importer {
      *
      * @return array{values: array}|array{error: string}
      */
+    private function minjust_revision($grid) {
+        $response = LEM_Http::get('https://reestrs.minjust.gov.ru/rest/registry/' . $grid . '/info', ['timeout' => 30]);
+        if (is_wp_error($response)) { return ['error' => 'реестр Минюста не ответил: ' . $response->get_error_message()]; }
+        if (wp_remote_retrieve_response_code($response) !== 200) { return ['error' => __('реестр Минюста не подтвердил версию списка', 'legal-entity-marks')]; }
+        $info = json_decode(wp_remote_retrieve_body($response), true);
+        $revision = $info['lastModified'] ?? null;
+        if ((!is_int($revision) && !is_string($revision)) || !ctype_digit((string) $revision) || (int) $revision <= 0) {
+            return ['error' => __('реестр Минюста вернул неподходящую версию списка', 'legal-entity-marks')];
+        }
+        return ['revision' => (string) $revision];
+    }
+
     private function fetch_minjust_values($grid) {
-        $url    = 'https://reestrs.minjust.gov.ru/rest/registry/' . $grid . '/values';
+        $before = $this->minjust_revision($grid);
+        if (isset($before['error'])) { return $before; }
+        $url = 'https://reestrs.minjust.gov.ru/rest/registry/' . $grid . '/values';
         $values = [];
-        $offset = 0;
-        $limit  = 500;
-
-        while (true) {
-            // LEM_Http, а не wp_remote_post: чужой фильтр может срезать таймаут
-            // до 10 секунд, а реестр отдаёт страницу дольше
+        $total = null;
+        $seen = [];
+        $limit = 500;
+        do {
+            $offset = count($values);
             $response = LEM_Http::post($url, [
-                'timeout'   => 30,
-                'sslverify' => false,
-                'headers'   => ['Content-Type' => 'application/json'],
-                'body'      => wp_json_encode(['offset' => $offset, 'limit' => $limit, 'search' => '']),
+                'timeout' => 30, 'headers' => ['Content-Type' => 'application/json'],
+                'body' => wp_json_encode(['offset' => $offset, 'limit' => $limit, 'search' => '']),
             ]);
-            $where = $offset > 0 ? ' на записи ' . ($offset + 1) : '';
-
-            if (is_wp_error($response)) {
-                return ['error' => 'реестр Минюста не ответил' . $where . ': ' . $response->get_error_message()];
-            }
-            $code = wp_remote_retrieve_response_code($response);
-            if ($code !== 200) {
-                return ['error' => "реестр Минюста ответил HTTP $code" . $where];
-            }
+            if (is_wp_error($response)) { return ['error' => 'реестр Минюста не ответил: ' . $response->get_error_message()]; }
+            if (wp_remote_retrieve_response_code($response) !== 200) { return ['error' => __('реестр Минюста не отдал весь список', 'legal-entity-marks')]; }
             $data = json_decode(wp_remote_retrieve_body($response), true);
-            if (!is_array($data) || !isset($data['values']) || !is_array($data['values'])) {
-                return ['error' => 'реестр Минюста вернул неожиданный ответ' . $where];
+            if (!is_array($data) || !is_array($data['values'] ?? null)
+                || !is_int($data['size'] ?? null) || $data['size'] <= 0 || $data['size'] > 100000
+                || ($total !== null && $total !== $data['size'])) {
+                return ['error' => __('полнота списка Минюста не подтверждена', 'legal-entity-marks')];
             }
-
-            $values = array_merge($values, $data['values']);
-            if (count($data['values']) < $limit || $offset + $limit >= ($data['size'] ?? 0)) {
-                break;
+            $total = $data['size'];
+            if (count($data['values']) !== min($limit, $total - $offset)) {
+                return ['error' => __('реестр Минюста вернул неполную страницу', 'legal-entity-marks')];
             }
-            $offset += $limit;
-        }
-
-        if (empty($values)) {
-            return ['error' => 'реестр Минюста вернул пустой список'];
-        }
-        return ['values' => $values];
+            foreach ($data['values'] as $row) {
+                if (!is_array($row)) { return ['error' => __('реестр Минюста вернул повреждённую строку', 'legal-entity-marks')]; }
+                foreach ($row as $field => $value) {
+                    if (substr((string) $field, -2) === '_s' && $value !== null && !is_string($value)) {
+                        return ['error' => __('реестр Минюста вернул повреждённое поле', 'legal-entity-marks')];
+                    }
+                }
+                $key = hash('sha256', wp_json_encode($row));
+                if (isset($seen[$key])) { return ['error' => __('страницы реестра Минюста пересекаются', 'legal-entity-marks')]; }
+                $seen[$key] = true;
+                $values[] = $row;
+            }
+        } while (count($values) < $total);
+        $after = $this->minjust_revision($grid);
+        if (isset($after['error'])) { return $after; }
+        if ($before['revision'] !== $after['revision']) { return ['error' => __('реестр Минюста изменился во время загрузки', 'legal-entity-marks')]; }
+        return ['values' => $values, 'meta' => [
+            'source' => 'official', 'complete' => true, 'count' => count($values),
+            'version' => $grid . ':' . $before['revision'], 'fetched_at' => gmdate('c'),
+            'source_modified' => gmdate('c', (int) floor((int) $before['revision'] / 1000)),
+        ]];
     }
 
     /** Иноагенты: REST API reestrs.minjust.gov.ru. */
     public function fetch_inoagents() {
+        return LEM_Registry_Sync::with_lock(function () { return $this->fetch_inoagents_locked(); });
+    }
+
+    private function fetch_inoagents_locked() {
         $result = $this->fetch_minjust_values(self::INOAGENT_GRID);
         if (isset($result['error'])) {
             return $result;
@@ -951,7 +1059,7 @@ class LEM_Importer {
         foreach ($result['values'] as $item) {
             $name = trim($item['field_2_s'] ?? '');
             if (mb_strlen($name) < 3) {
-                continue;
+                return ['error' => __('реестр Минюста содержит строку без наименования', 'legal-entity-marks')];
             }
             // Убираем декоративные кавычки только у имён, обёрнутых в кавычки целиком,
             // иначе ломаются имена с псевдонимом на конце: Иванов Иван "Псевдоним"
@@ -1011,9 +1119,9 @@ class LEM_Importer {
         }
 
         if (empty($entries)) {
-            return ['error' => 'реестр Минюста ответил, но записей не разобрано'];
+            return ['error' => __('реестр Минюста ответил, но записей не разобрано', 'legal-entity-marks')];
         }
-        return $this->import_entries($entries, 'inoagent');
+        return $this->import_snapshot($entries, 'inoagent', $result['meta']);
     }
 
     /** Страница Минюста с перечнем экстремистских организаций. */
@@ -1025,24 +1133,23 @@ class LEM_Importer {
      * Используется после официальной страницы и канала реестров.
      * Зеркало обновляется с выпусками и остаётся перед снимком из поставки.
      */
+    // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Documented JSON registry data mirror; never enqueued or executed.
     const EXTREMIST_MIRROR_URL = 'https://raw.githubusercontent.com/chekazoid/legal-entity-marks/main/data/extremist-orgs.json';
 
     public function fetch_extremist_orgs() {
-        $result = $this->fetch_url(self::EXTREMIST_URL, 45);
-        if (isset($result['error'])) {
-            return ['error' => 'minjust.gov.ru не открылся (' . $result['error'] . ')'];
-        }
+        return LEM_Registry_Sync::with_lock(function () { return $this->fetch_extremist_orgs_locked(); });
+    }
 
-        $entries = $this->parse_minjust_list($result['body']);
-        if (empty($entries)) {
-            return ['error' => 'minjust.gov.ru ответил, но список не разобран (получено '
-                . strlen($result['body']) . ' байт)'];
+    private function fetch_extremist_orgs_locked() {
+        $result = $this->fetch_minjust_values(self::EXTREMIST_GRID);
+        if (isset($result['error'])) { return $result; }
+        $entries = [];
+        foreach ($result['values'] as $item) {
+            $name = trim($item['field_2_s'] ?? '') ?: trim($item['field_3_s'] ?? '');
+            $entries[] = ['name' => $name, 'type' => 'extremist', 'is_person' => 0,
+                'aliases' => [], 'date_included' => $item['field_6_s'] ?? null];
         }
-        foreach ($entries as &$e) {
-            $e['type'] = 'extremist';
-        }
-        unset($e);
-        return $this->import_entries($entries, 'extremist');
+        return $this->import_snapshot($entries, 'extremist', $result['meta']);
     }
 
     /**
@@ -1061,14 +1168,14 @@ class LEM_Importer {
 
         $data = json_decode($mirror['body'], true);
         if (!is_array($data) || empty($data)) {
-            return ['error' => 'зеркало вернуло неожиданный ответ'];
+            return ['error' => __('зеркало вернуло неожиданный ответ', 'legal-entity-marks')];
         }
 
         return $this->import_entries($data, $type, false);
     }
 
-    /** Единый перечень ФСБ. Работает только по http: на 443 порту сайт не отвечает. */
-    const TERROR_URL = 'http://www.fsb.ru/fsb/npd/terror.htm';
+    /** Единый перечень ФСБ; при недоступности HTTPS используется канал. */
+    const TERROR_URL = 'https://www.fsb.ru/fsb/npd/terror.htm';
 
     /**
      * Запасной источник - копия перечня в репозитории плагина.
@@ -1076,9 +1183,14 @@ class LEM_Importer {
      * страница отдавала 200, разбор давал ноль записей, и наружу вылезала
      * ошибка парсера вместо настоящей причины.
      */
+    // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Documented JSON registry data mirror; never enqueued or executed.
     const TERROR_MIRROR_URL = 'https://raw.githubusercontent.com/chekazoid/legal-entity-marks/main/data/terrorist-orgs.json';
 
     public function fetch_terrorist_orgs() {
+        return LEM_Registry_Sync::with_lock(function () { return $this->fetch_terrorist_orgs_locked(); });
+    }
+
+    private function fetch_terrorist_orgs_locked() {
         $result = $this->fetch_url(self::TERROR_URL, 45);
         if (isset($result['error'])) {
             return ['error' => 'fsb.ru не открылся (' . $result['error'] . ')'];
@@ -1093,7 +1205,11 @@ class LEM_Importer {
             $e['type'] = 'terrorist';
         }
         unset($e);
-        return $this->import_entries($entries, 'terrorist');
+        return $this->import_snapshot($entries, 'terrorist', [
+            'source' => 'official', 'complete' => true, 'count' => count($entries),
+            'version' => hash('sha256', $result['body']), 'fetched_at' => gmdate('c'),
+            'source_modified' => $result['source_modified'] ?? '',
+        ]);
     }
 
     /**
@@ -1104,6 +1220,10 @@ class LEM_Importer {
      * API не ответил, и вместо настоящей причины показывал этот 404.
      */
     public function fetch_undesirable_orgs() {
+        return LEM_Registry_Sync::with_lock(function () { return $this->fetch_undesirable_orgs_locked(); });
+    }
+
+    private function fetch_undesirable_orgs_locked() {
         $result = $this->fetch_minjust_values(self::UNDESIRABLE_GRID);
         if (isset($result['error'])) {
             return $result;
@@ -1112,8 +1232,8 @@ class LEM_Importer {
         $entries = [];
         foreach ($result['values'] as $item) {
             $name = trim($item['field_5_s'] ?? '');
-            if (mb_strlen($name) < 5 || mb_strlen($name) > 500) {
-                continue;
+            if (mb_strlen($name) < 3) {
+                return ['error' => __('реестр Минюста содержит строку без наименования', 'legal-entity-marks')];
             }
             $entry = [
                 'name'      => $name,
@@ -1123,7 +1243,8 @@ class LEM_Importer {
             ];
             $status = $item['field_10_s'] ?? '';
             if ($status === 'Исключена') {
-                $entry['date_excluded'] = $item['field_8_s'] ?? gmdate('d.m.Y');
+                $entry['date_excluded'] = $item['field_7_s'] ?? null;
+                $entry['is_active'] = 0;
             }
             if (!empty($item['field_2_s'])) {
                 $entry['dateIn'] = $item['field_2_s'];
@@ -1132,9 +1253,9 @@ class LEM_Importer {
         }
 
         if (empty($entries)) {
-            return ['error' => 'реестр Минюста ответил, но записей не разобрано'];
+            return ['error' => __('реестр Минюста ответил, но записей не разобрано', 'legal-entity-marks')];
         }
-        return $this->import_entries($entries, 'undesirable');
+        return $this->import_snapshot($entries, 'undesirable', $result['meta']);
     }
 
     /* ------------------------------------------------------------------
@@ -1154,7 +1275,7 @@ class LEM_Importer {
         }
         if (!lem()->channel->is_enabled()) {
             $log('  Канал реестров выключен в настройках');
-            return ['error' => 'канал реестров выключен в настройках'];
+            return ['error' => __('канал реестров выключен в настройках', 'legal-entity-marks')];
         }
 
         $log('  Пробуем канал реестров...');
@@ -1164,7 +1285,8 @@ class LEM_Importer {
             return ['error' => 'канал реестров: ' . $channel['error']];
         }
 
-        $imported = $this->import_entries($channel['entries'], $type);
+        $imported = $this->import_snapshot($channel['entries'], $type, $channel['meta']);
+        if (isset($imported['error'])) { return $imported; }
         $log("  Канал: получено {$channel['count']}, добавлено {$imported['added']}, "
             . "обновлено {$imported['updated']}");
         return $imported;
@@ -1191,7 +1313,6 @@ class LEM_Importer {
             $url      = 'https://reestrs.minjust.gov.ru/rest/registry/' . $grid . '/values';
             $response = LEM_Http::post($url, [
                 'timeout'   => 20,
-                'sslverify' => false,
                 'headers'   => ['Content-Type' => 'application/json'],
                 'body'      => wp_json_encode(['offset' => 0, 'limit' => 1, 'search' => '']),
             ]);
@@ -1280,7 +1401,6 @@ class LEM_Importer {
         $response = LEM_Http::get($url, [
             'timeout'    => $timeout,
             'user-agent' => 'Mozilla/5.0 (compatible; LegalEntityMarksBot/1.0)',
-            'sslverify'  => false,
         ]);
         if (is_wp_error($response)) {
             return ['error' => $response->get_error_message()];
@@ -1338,34 +1458,38 @@ class LEM_Importer {
     }
 
     private function parse_generic_list($html) {
-        libxml_use_internal_errors(true);
+        // A recovered/truncated DOM is insufficient evidence for removing rows.
+        if (!preg_match('~</html>\s*$~i', trim($html)) || !preg_match('~</body>~i', $html)
+            || substr_count(strtolower($html), '<table') !== substr_count(strtolower($html), '</table>')) {
+            return [];
+        }
+        $previous_errors = libxml_use_internal_errors(true);
         $doc = new DOMDocument();
         $doc->loadHTML('<?xml encoding="UTF-8">' . $html);
         libxml_clear_errors();
-
-        $xpath   = new DOMXPath($doc);
-        // FSB таблица: td[1]=№, td[2]=название, td[3]=суд. Берём td[2].
-        $nodes   = $xpath->query('//ol/li | //table//tr/td[2] | //div[contains(@class,"content")]//p');
-        $entries = [];
-
-        foreach ($nodes as $node) {
-            // Нормализуем пробелы (в т.ч. &nbsp;), иначе появляются дубли сущностей
-            $text = trim(preg_replace('/[\x{00A0}\s]+/u', ' ', $node->textContent));
-            $text = preg_replace('/^\d+[\.\)]\s*/', '', $text);
-            if (mb_strlen($text) < 5) {
-                continue;
+        libxml_use_internal_errors($previous_errors);
+        $xpath = new DOMXPath($doc);
+        $best = [];
+        foreach ($xpath->query('//table') as $table) {
+            $numbered = [];
+            foreach ($xpath->query('./tr | ./tbody/tr | ./thead/tr', $table) as $row) {
+                $cells = $xpath->query('./td | ./th', $row);
+                if ($cells->length < 2) { continue; }
+                $number = trim($cells->item(0)->textContent);
+                if (!preg_match('/^(\d{1,5})\.?$/', $number, $m)) { continue; }
+                // A layout cell containing another table is not an organisation.
+                if ($xpath->query('.//table', $cells->item(1))->length) { return []; }
+                $name = trim(preg_replace('/[\x{00A0}\s]+/u', ' ', $cells->item(1)->textContent));
+                $n = (int) $m[1];
+                if (isset($numbered[$n]) || mb_strlen($name) < 3 || mb_strlen($name) > 16384) { return []; }
+                $numbered[$n] = ['name' => $name, 'type' => 'terrorist', 'aliases' => [], 'is_person' => 0];
             }
-            // Пропускаем заголовок таблицы
-            if (preg_match('/^Наименование\s+организации/ui', $text)) {
-                continue;
-            }
-            $name = preg_split('/\s*[-–—]\s*(?:решени|призна|Верх|на основании)/ui', $text)[0];
-            $name = preg_replace('/\s*\((?:решени|призна).*$/ui', '', $name);
-            $name = trim($name);
-            if (mb_strlen($name) >= 5 && mb_strlen($name) < 300) {
-                $entries[] = ['name' => $name, 'aliases' => [], 'is_person' => false];
+            if (count($numbered) > count($best)) {
+                ksort($numbered, SORT_NUMERIC);
+                if (array_keys($numbered) !== range(1, count($numbered))) { return []; }
+                $best = $numbered;
             }
         }
-        return $entries;
+        return array_values($best);
     }
 }

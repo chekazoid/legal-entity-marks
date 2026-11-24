@@ -1,5 +1,6 @@
 <?php
 defined('ABSPATH') || exit;
+require_once __DIR__ . '/class-lem-registry-sync.php';
 
 /** Добровольная загрузка ФИО порциями, без комплектной копии перечня. */
 class LEM_People {
@@ -46,7 +47,7 @@ class LEM_People {
         ];
         if (!lem()->channel->is_enabled() || !lem()->channel->has_token()) {
             $state['running'] = false;
-            $state['error'] = 'Для загрузки физических лиц включите канал и укажите его токен.';
+            $state['error'] = __('Для загрузки физических лиц включите канал и укажите его токен.', 'legal-entity-marks');
         }
         update_option(self::STATE, $state, false);
         if ($state['running']) {
@@ -61,6 +62,11 @@ class LEM_People {
     }
 
     public function run_import() {
+        $result = LEM_Registry_Sync::with_lock(function () { $this->run_import_locked(); return []; });
+        if (!empty($result['busy'])) { $this->schedule(); }
+    }
+
+    private function run_import_locked() {
         if (!self::enabled(lem()->get_settings())) {
             $this->cancel();
             return;
@@ -111,17 +117,19 @@ class LEM_People {
                 || $state['offset'] + count($entries) > $page['total']
                 || ($state['version'] !== '' && ($state['version'] !== $page['version']
                     || $state['total'] !== $page['total']))) {
-                $this->fail($state, 'Канал вернул несогласованные страницы перечня. Прежние данные сохранены.');
+                $this->fail($state, __('Канал вернул несогласованные страницы перечня. Прежние данные сохранены.', 'legal-entity-marks'));
                 return;
             }
             global $wpdb;
             $table = $wpdb->prefix . LEM_TABLE;
             $last = (array) get_option(self::SUCCESS, []);
             if ($state['offset'] === 0 && ($last['version'] ?? '') === $page['version']
-                && ($last['total'] ?? 0) === $page['total']
+                && ($last['total'] ?? 0) === $page['total'] && !empty($last['generation'])
+                /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
                 && (int) $wpdb->get_var($wpdb->prepare(
-                    "SELECT COUNT(*) FROM $table WHERE type = %s AND is_active = 1", self::TYPE
+                    "SELECT COUNT(*) FROM $table WHERE type = %s AND is_active = 1 AND sync_generation = %s", self::TYPE, $last['generation']
                 )) === $page['total']) {
+                /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
                 $last['synced_at'] = current_time('mysql');
                 update_option(self::SUCCESS, $last, false);
                 $state['running'] = false;
@@ -135,7 +143,7 @@ class LEM_People {
                 if (!is_array($entry) || !is_string($entry['name'] ?? null)
                     || mb_strlen(trim($entry['name'])) < 3 || mb_strlen($entry['name']) > 500
                     || ($entry['type'] ?? '') !== self::TYPE || empty($entry['is_person'])) {
-                    $this->fail($state, 'Канал вернул неподходящую запись физических лиц. Прежние данные сохранены.');
+                    $this->fail($state, __('Канал вернул неподходящую запись физических лиц. Прежние данные сохранены.', 'legal-entity-marks'));
                     return;
                 }
                 $entry = ['name' => trim($entry['name']), 'type' => self::TYPE,
@@ -144,22 +152,32 @@ class LEM_People {
             }
             unset($entry);
             if (count(array_unique($names)) !== count($names)) {
-                $this->fail($state, 'В странице перечня повторяются ФИО. Загрузите перечень заново.');
+                $this->fail($state, __('В странице перечня повторяются ФИО. Загрузите перечень заново.', 'legal-entity-marks'));
                 return;
             }
-            lem()->importer->import_entries($entries, self::TYPE);
+            try {
+                $imported = lem()->importer->import_verified_entries($entries, self::TYPE, $state['generation'], true);
+                if (isset($imported['error'])) { throw new RuntimeException('people page write failed'); }
+            } catch (Throwable $error) {
+                $this->fail($state, __('Не удалось сохранить порцию перечня. Прежние статусы сохранены.', 'legal-entity-marks'));
+                return;
+            }
             $in = implode(',', array_fill(0, count($names), '%s'));
             // Отметка поколения: исключать отсутствующих можно лишь после всех страниц.
             $args = array_merge([$state['generation'], self::TYPE], $names);
+            /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
             $saved = $wpdb->query($wpdb->prepare(
                 "UPDATE $table SET sync_generation = %s WHERE type = %s AND name IN ($in)", ...$args
-            ));
+            )) ;
+            /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber */
+            /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
             $present = (int) $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) FROM $table WHERE type = %s AND is_active = 1 AND name IN ($in)",
-                ...array_merge([self::TYPE], $names)
-            ));
+                "SELECT COUNT(*) FROM $table WHERE type = %s AND sync_generation = %s AND name IN ($in)",
+                ...array_merge([self::TYPE, $state['generation']], $names)
+            )) ;
+            /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber */
             if ($saved === false || $present !== count($names)) {
-                $this->fail($state, 'Не удалось сохранить порцию перечня. Исключение прежних записей не выполнялось.');
+                $this->fail($state, __('Не удалось сохранить порцию перечня. Исключение прежних записей не выполнялось.', 'legal-entity-marks'));
                 return;
             }
             $fresh = get_option(self::STATE, []);
@@ -176,21 +194,11 @@ class LEM_People {
                 $this->schedule();
                 return;
             }
-            $removed = $wpdb->query($wpdb->prepare(
-                "UPDATE $table SET is_active = 0 WHERE type = %s AND is_active = 1 AND sync_generation <> %s",
-                self::TYPE, $state['generation']
-            ));
-            if ($removed === false) {
-                $this->fail($state, 'Не удалось завершить сверку перечня. Повторите обновление.');
+            $completed = $this->finish_snapshot($state, $page);
+            if (isset($completed['error'])) {
+                $this->fail($state, $completed['error']);
                 return;
             }
-            update_option(self::SUCCESS, [
-                'synced_at' => current_time('mysql'), 'fetched_at' => $page['fetched_at'],
-                'total' => $state['total'], 'version' => $state['version'],
-            ], false);
-            $state['running'] = false;
-            $state['error'] = '';
-            update_option(self::STATE, $state, false);
             lem()->entities->flush_cache();
             lem()->cache->purge_all_marked();
             lem()->rescan->enqueue('registry-update', $state['started_at']);
@@ -200,4 +208,51 @@ class LEM_People {
             }
         }
     }
+    /** Publish statuses and successful-generation metadata together. */
+    private function finish_snapshot($state, $page) {
+        global $wpdb;
+        $table = $wpdb->prefix . LEM_TABLE;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Transactional publication of a custom registry table and its generation metadata; identifiers come from WordPress/plugin constants and values are prepared. Live engine/count checks cannot use cached state. Caches are invalidated after commit or rollback. */
+        foreach ([$table, $wpdb->options] as $target) {
+            $engine = $wpdb->get_var($wpdb->prepare(
+                'SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s', $target
+            ));
+            if (strtolower((string) $engine) !== 'innodb') {
+                return ['error' => __('Для безопасной сверки таблицы плагина и настроек должны использовать InnoDB. Данные сохранены.', 'legal-entity-marks')];
+            }
+        }
+        $quiet = $wpdb->suppress_errors(true);
+        try {
+            if ($wpdb->query('START TRANSACTION') === false) { throw new RuntimeException('people transaction failed'); }
+            $complete = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM $table WHERE type = %s AND sync_generation = %s",
+                self::TYPE, $state['generation']
+            ));
+            if ($complete !== $state['total']) { throw new RuntimeException('people pages overlap or are incomplete'); }
+            $saved = $wpdb->query($wpdb->prepare(
+                "UPDATE $table SET is_active = IF(sync_generation = %s, 1, 0),
+                    registry_present = IF(sync_generation = %s, 1, 0)
+                 WHERE type = %s AND (is_manual = 0 OR sync_generation = %s)",
+                $state['generation'], $state['generation'], self::TYPE, $state['generation']
+            ));
+            if ($saved === false) { throw new RuntimeException('people publication failed'); }
+            if (update_option(self::SUCCESS, [
+                'synced_at' => current_time('mysql'), 'fetched_at' => $page['fetched_at'],
+                'total' => $state['total'], 'version' => $state['version'], 'generation' => $state['generation'],
+            ], false) === false) { throw new RuntimeException('people snapshot state write failed'); }
+            $state['running'] = false;
+            $state['error'] = '';
+            if (update_option(self::STATE, $state, false) === false) { throw new RuntimeException('people worker state write failed'); }
+            if ($wpdb->query('COMMIT') === false) { throw new RuntimeException('people commit failed'); }
+            return [];
+        } catch (Throwable $error) {
+            $wpdb->query('ROLLBACK');
+            foreach ([self::SUCCESS, self::STATE, 'alloptions', 'notoptions'] as $key) { wp_cache_delete($key, 'options'); }
+            return ['error' => __('Не удалось завершить полную сверку физических лиц. Прежние статусы сохранены.', 'legal-entity-marks')];
+        } finally {
+            $wpdb->suppress_errors($quiet);
+        }
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
+    }
+
 }

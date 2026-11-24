@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/wp-stubs.php';
 /**
  * Проверка контекстного правила на реальной вёрстке Gutenberg.
  * Запуск: php test_context.php

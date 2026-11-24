@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/wp-stubs.php';
 /** Добровольное подключение физлиц и защита от неполных совпадений ФИО. */
 define('ABSPATH', '/tmp/');
 function add_action() {} function add_filter() {}

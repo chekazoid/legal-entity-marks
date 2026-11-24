@@ -676,7 +676,7 @@ class LEM_Scanner {
             $p = trim($p);
             // Служебные куски без видимого текста (комментарии блоков и т.п.) пропускаем,
             // иначе они сбивают счёт соседей у цитат
-            if ($p === '' || trim(strip_tags($p)) === '') {
+            if ($p === '' || trim(wp_strip_all_tags($p)) === '') {
                 continue;
             }
             $out[] = $p;
@@ -727,7 +727,7 @@ class LEM_Scanner {
             // ошибочно считался цитатой и любой иноагент в нём получал метку.
             // Требуем фрагмент, похожий на фразу: длинный и из нескольких слов.
             if (!$ok && !empty($triggers['quotes'])
-                && preg_match_all('/[«"„“]\s*([^«»"„“]{25,})\s*[»"”“]/u', strip_tags($b['html']), $qm)) {
+                && preg_match_all('/[«"„“]\s*([^«»"„“]{25,})\s*[»"”“]/u', wp_strip_all_tags($b['html']), $qm)) {
                 foreach ($qm[1] as $quoted) {
                     if (preg_match_all('/\pL+/u', $quoted) >= 4) {
                         $ok = true;
@@ -756,7 +756,7 @@ class LEM_Scanner {
                 $chunks[] = $b['html'];
             }
         }
-        $text = strip_tags(implode("\n\n", $chunks));
+        $text = wp_strip_all_tags(implode("\n\n", $chunks));
 
         // Адреса ссылок: название может стоять в самом URL (bellingcat.com)
         if (!empty($triggers['link'])
@@ -772,7 +772,7 @@ class LEM_Scanner {
         if ($entities === null) {
             $entities = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
         }
-        $plain    = strip_tags($text);
+        $plain    = wp_strip_all_tags($text);
         $context  = null;
         $found    = [];
 
@@ -924,17 +924,19 @@ class LEM_Scanner {
         }
         $placeholders = implode(',', array_fill(0, count($types), '%s'));
 
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT pm.meta_key, pm.meta_value
              FROM {$wpdb->postmeta} pm
              INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
              WHERE p.post_type IN ($placeholders)
                AND p.post_status = 'publish'
-               AND pm.meta_key NOT LIKE '\\_%'
+               AND pm.meta_key NOT LIKE %s
                AND pm.meta_value != ''
              LIMIT 3000",
-            ...$types
-        ));
+            ...array_merge($types, [$wpdb->esc_like('_') . '%'])
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
         $out = [];
         foreach ($rows as $r) {
@@ -1017,7 +1019,7 @@ class LEM_Scanner {
         }
 
         $settings   = lem()->get_settings();
-        $post_types = $settings['post_types'];
+        $post_types = $settings['post_types'] ?: [''];
         if (!in_array($post->post_type, $post_types, true)) {
             return [];
         }
@@ -1060,11 +1062,6 @@ class LEM_Scanner {
      */
     public static function time_budget() {
         $max = (int) ini_get('max_execution_time');
-        // Пытаемся приподнять лимит, если хостинг разрешает
-        if ($max > 0 && $max < 60) {
-            @set_time_limit(60);
-            $max = (int) ini_get('max_execution_time');
-        }
         // Системный cron через WP-CLI: обрывать нечему, и растягивать проход
         // архива на часы незачем. Веб-запрос при этом остаётся коротким
         if (defined('WP_CLI') && WP_CLI && $max <= 0) {
@@ -1087,7 +1084,7 @@ class LEM_Scanner {
 
         global $wpdb;
         $settings   = lem()->get_settings();
-        $post_types = $settings['post_types'];
+        $post_types = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
         $mode = sanitize_text_field(wp_unslash($_POST['mode'] ?? 'all'));
@@ -1099,10 +1096,12 @@ class LEM_Scanner {
             $where   .= ' AND post_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)';
         }
 
+        /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $total = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->posts} WHERE $where",
             ...$params
-        ));
+        )) ;
+        /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare */
 
         $state = [
             'status'              => 'running',
@@ -1131,7 +1130,7 @@ class LEM_Scanner {
 
         global $wpdb;
         $settings     = lem()->get_settings();
-        $post_types   = $settings['post_types'];
+        $post_types   = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
         // Выборка из БД ограничена сверху; сколько реально обработаем,
@@ -1149,10 +1148,12 @@ class LEM_Scanner {
         $params[] = $batch_size;
         $params[] = $offset;
 
+        /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $posts = $wpdb->get_results($wpdb->prepare(
             "SELECT ID, post_title, post_content FROM {$wpdb->posts} WHERE $where ORDER BY ID ASC LIMIT %d OFFSET %d",
             ...$params
-        ));
+        )) ;
+        /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber */
 
         $entities = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
         $now      = current_time('mysql');
@@ -1230,7 +1231,7 @@ class LEM_Scanner {
         global $wpdb;
 
         $settings     = lem()->get_settings();
-        $post_types   = $settings['post_types'];
+        $post_types   = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
         $batch_size = (int) ($args['batch'] ?? 500);
@@ -1249,10 +1250,12 @@ class LEM_Scanner {
             $where .= ' AND p.post_date >= DATE_SUB(NOW(), INTERVAL ' . (int) $args['recent'] . ' DAY)';
         }
 
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $total = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->posts} p WHERE $where",
             ...$params
-        ));
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare */
         $log("Posts to scan: $total (batch size: $batch_size)");
 
         if ($total === 0) {
@@ -1269,10 +1272,12 @@ class LEM_Scanner {
 
         while ($offset < $total) {
             $batch_params = array_merge($params, [$batch_size, $offset]);
+            /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
             $posts = $wpdb->get_results($wpdb->prepare(
                 "SELECT p.ID, p.post_title, p.post_content FROM {$wpdb->posts} p WHERE $where ORDER BY p.ID ASC LIMIT %d OFFSET %d",
                 ...$batch_params
-            ));
+            )) ;
+            /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber */
             if (empty($posts)) {
                 break;
             }
@@ -1287,10 +1292,7 @@ class LEM_Scanner {
                     $total_mentions += count($found);
                 } else {
                     if (!$dry_run) {
-                        $wpdb->delete($wpdb->postmeta, [
-                            'post_id'  => $post->ID,
-                            'meta_key' => LEM_META_KEY,
-                        ]);
+                        delete_post_meta($post->ID, LEM_META_KEY);
                     }
                 }
             }

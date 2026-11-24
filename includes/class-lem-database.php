@@ -3,7 +3,7 @@ defined('ABSPATH') || exit;
 
 class LEM_Database {
 
-    const DB_VERSION = '1.2.0';
+    const DB_VERSION = '1.3.0';
 
     public function __construct() {
         // Не admin_init: плагин может обновиться автообновлением, и тогда
@@ -20,7 +20,7 @@ class LEM_Database {
         $sql = "CREATE TABLE $table (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             type VARCHAR(20) NOT NULL,
-            name VARCHAR(500) NOT NULL,
+            name MEDIUMTEXT NOT NULL,
             aliases TEXT,
             is_person TINYINT(1) DEFAULT 0,
             status_text TEXT,
@@ -28,6 +28,8 @@ class LEM_Database {
             date_included DATE DEFAULT NULL,
             date_excluded DATE DEFAULT NULL,
             is_active TINYINT(1) DEFAULT 1,
+            registry_present TINYINT(1) NOT NULL DEFAULT 1,
+            is_manual TINYINT(1) NOT NULL DEFAULT 0,
             first_seen DATETIME DEFAULT NULL,
             sync_generation VARCHAR(32) NOT NULL DEFAULT '',
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -42,8 +44,10 @@ class LEM_Database {
 
         // У записей, заведённых до появления колонки, новичками считаться нечего:
         // проставляем дату включения в реестр, иначе всё разом станет «свежим»
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
         $wpdb->query("UPDATE $table SET first_seen = COALESCE(date_included, '2000-01-01')
-                      WHERE first_seen IS NULL");
+                      WHERE first_seen IS NULL") ;
+                      /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
         update_option('lem_db_version', self::DB_VERSION);
     }
@@ -75,9 +79,13 @@ class LEM_Database {
 
         // Старый ключ разрешал один домен на всю таблицу, а у t.me аккаунтов много.
         // dbDelta чужие индексы не трогает, поэтому убираем вручную
-        $old = $wpdb->get_results("SHOW INDEX FROM $table WHERE Key_name = 'idx_domain'");
+        /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        $old = $wpdb->get_results("SHOW INDEX FROM $table WHERE Key_name = 'idx_domain'") ;
+        /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         if (!empty($old)) {
-            $wpdb->query("ALTER TABLE $table DROP INDEX idx_domain");
+            /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. Version-gated custom-table migration or explicitly requested uninstall cleanup. */
+            $wpdb->query("ALTER TABLE $table DROP INDEX idx_domain") ;
+            /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         }
 
         update_option('lem_banned_sites_db_version', self::BANNED_SITES_DB_VERSION);
@@ -95,6 +103,8 @@ class LEM_Database {
     public function table_exists() {
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
-        return $wpdb->get_var("SHOW TABLES LIKE '$table'") === $table;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        return $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))) === $table;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
     }
 }

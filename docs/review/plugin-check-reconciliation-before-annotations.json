@@ -1,0 +1,191 @@
+[
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 20,
+    "column": 28,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 20,
+    "column": 28,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 26,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 26,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 34,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 34,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 142,
+    "column": 27,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 142,
+    "column": 27,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 151,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 151,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 158,
+    "column": 34,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 158,
+    "column": 34,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 159,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT COUNT(*) FROM $table WHERE type = %s AND sync_generation = %s&quot;",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 163,
+    "column": 28,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 163,
+    "column": 28,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 164,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;UPDATE $table SET is_active = 0, registry_present = 0\\n",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 174,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 174,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 179,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-registry-sync.php",
+    "line": 179,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": ""
+  },
+  {
+    "file": "includes/class-lem-people.php",
+    "line": 174,
+    "column": 45,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber",
+    "message": "Incorrect number of replacements passed to $wpdb-&gt;prepare(). Found 1 replacement parameters, expected 2.",
+    "docs": ""
+  }
+]

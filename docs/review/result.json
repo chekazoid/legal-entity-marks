@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-24",
+  "version": "1.15.1",
+  "branch": "codex/wporg-preparation",
+  "wordpress": "7.1.5",
+  "php": "8.3.33",
+  "plugin_check": "2.2.0",
+  "mode": "new",
+  "static": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "runtime": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "cli_excluded_checks": [],
+  "cli_ignored_codes": [],
+  "reviewed_warnings_before_annotations": 238,
+  "scoped_database_annotations": 71,
+  "php_suites": 17,
+  "wordpress_integration_checks": 20,
+  "php_74_syntax": "passed",
+  "browser": {
+    "admin_pages": 4,
+    "js_errors": 0,
+    "statistics_unchecked": true,
+    "people_mode": "off",
+    "resource_pagination": true,
+    "empty_resource_search": true,
+    "screenshots": 4
+  },
+  "registry_failover": {
+    "official_sources": "simulated_unavailable",
+    "sources": {
+      "inoagent": "channel",
+      "extremist": "channel",
+      "terrorist": "channel",
+      "undesirable": "channel"
+    },
+    "update_warning": false,
+    "statistics": false,
+    "people_mode": "off",
+    "active_outside_snapshot": {
+      "inoagent": 0,
+      "extremist": 0,
+      "terrorist": 0,
+      "undesirable": 0
+    },
+    "repeat_update": "passed",
+    "all_sources_unavailable": "verified_statuses_and_snapshot_metadata_preserved"
+  },
+  "package": {
+    "files": 42,
+    "bytes": 266972,
+    "sha256": "20dcae19200e05d75538f55da6ac6c5b9725223c708908c304db6c58cede95b7"
+  },
+  "assets": {
+    "images": 8,
+    "bytes": 473045,
+    "sha256": "4502764206829963dc226b47f8345ff8c90c4c8563a6e44816823af2ba9c347f"
+  },
+  "directory_checks_passed": true,
+  "public_release_recommended": true,
+  "connection_and_transaction_annotations": 7,
+  "registry_integration_checks": 82,
+  "observer_api_tests": 20,
+  "php_74_runtime_files": 31,
+  "reviewed_reconciliation_warnings_before_annotations": 21,
+  "plugin_release_published": false,
+  "wordpress_submission_sent": false,
+  "source_publication_required_before_submission": true,
+  "reconciliation": {
+    "status": "fixed_and_verified",
+    "categories": [
+      "inoagent",
+      "extremist",
+      "terrorist",
+      "undesirable",
+      "fedsfm_person"
+    ],
+    "core_snapshots": "InnoDB transaction, source count/version validation, advisory lock and rollback",
+    "people_snapshots": "deferred activation until complete generation, transactional final publication",
+    "absent_entries": "retained_inactive_without_invented_exclusion_date",
+    "partial_imports": "cannot_replace_verified_statuses_or_add_old_missing_names",
+    "linked_resources": "inactive_owners_ineligible_even_in_saved_scan_metadata",
+    "legacy_manual_origin": "Older versions did not record origin. Unknown-origin legacy rows are managed by full snapshots; stored data remain available.",
+    "local_archive_rescan": {
+      "done": true,
+      "posts": 1,
+      "runs": 1
+    },
+    "observer": {
+      "commit": "69daf95",
+      "deployed_api_sha256": "7b181a1b7f94ebf241f4b142d6b3d0374c8fd65e103afdf6710baddf82f53622",
+      "health_http": 200,
+      "tokens_unchanged": true,
+      "panel_unchanged": true
+    }
+  }
+}

@@ -13,7 +13,7 @@ class LEM_Cron {
         if (!isset($schedules['weekly'])) {
             $schedules['weekly'] = [
                 'interval' => WEEK_IN_SECONDS,
-                'display'  => 'Раз в неделю',
+                'display'  => __('Раз в неделю', 'legal-entity-marks'),
             ];
         }
         return $schedules;
@@ -75,7 +75,8 @@ class LEM_Cron {
     public function run_fetch() {
         update_option('lem_cron_last_run', time(), false);
         lem()->importer->fetch_all(function ($msg) {
-            if (function_exists('error_log')) {
+            if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- WordPress debug logging is explicitly enabled by the site administrator.
                 error_log('[LEM] ' . $msg);
             }
         });

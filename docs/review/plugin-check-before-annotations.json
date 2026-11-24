@@ -1,0 +1,2144 @@
+[
+  {
+    "line": 42,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 42,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 42,
+    "column": 8,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $table used in $wpdb-&gt;query()\\n$table assigned unsafely at line 41.",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 42,
+    "column": 14,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;DROP TABLE IF EXISTS $table&quot;",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 42,
+    "column": 14,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.SchemaChange",
+    "message": "Attempting a database schema change is discouraged.",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 45,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 45,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 45,
+    "column": 8,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $banned_table used in $wpdb-&gt;query()\\n$banned_table assigned unsafely at line 44.",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 45,
+    "column": 14,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $banned_table at &quot;DROP TABLE IF EXISTS $banned_table&quot;",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 45,
+    "column": 14,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.SchemaChange",
+    "message": "Attempting a database schema change is discouraged.",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 48,
+    "column": 5,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 48,
+    "column": 5,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "uninstall.php"
+  },
+  {
+    "line": 190,
+    "column": 28,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "admin/class-lem-admin.php"
+  },
+  {
+    "line": 190,
+    "column": 28,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "admin/class-lem-admin.php"
+  },
+  {
+    "line": 190,
+    "column": 43,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT COUNT(*) FROM $table WHERE is_active = 1&quot;",
+    "docs": "",
+    "file": "admin/class-lem-admin.php"
+  },
+  {
+    "line": 4,
+    "column": 44,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "admin/views/report.php"
+  },
+  {
+    "line": 5,
+    "column": 44,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "admin/views/report.php"
+  },
+  {
+    "line": 6,
+    "column": 44,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "admin/views/report.php"
+  },
+  {
+    "line": 7,
+    "column": 44,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "admin/views/report.php"
+  },
+  {
+    "line": 8,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "admin/views/report.php"
+  },
+  {
+    "line": 19,
+    "column": 38,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "admin/views/report.php"
+  },
+  {
+    "line": 3,
+    "column": 47,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "admin/views/entities.php"
+  },
+  {
+    "line": 4,
+    "column": 47,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "admin/views/entities.php"
+  },
+  {
+    "line": 5,
+    "column": 41,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "admin/views/entities.php"
+  },
+  {
+    "line": 3,
+    "column": 42,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "admin/views/banned-links.php"
+  },
+  {
+    "line": 4,
+    "column": 35,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "admin/views/banned-links.php"
+  },
+  {
+    "line": 22,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "admin/views/banned-links.php"
+  },
+  {
+    "line": 22,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "admin/views/banned-links.php"
+  },
+  {
+    "line": 122,
+    "column": 26,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 122,
+    "column": 26,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 123,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT COUNT(*) FROM $table WHERE type = %s AND is_active = 1&quot;",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 154,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 154,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 154,
+    "column": 35,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber",
+    "message": "Incorrect number of replacements passed to $wpdb-&gt;prepare(). Found 1 replacement parameters, expected 2.",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 155,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;UPDATE $table SET sync_generation = %s WHERE type = %s AND name IN ($in)&quot;",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 155,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $in at &quot;UPDATE $table SET sync_generation = %s WHERE type = %s AND name IN ($in)&quot;",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 157,
+    "column": 30,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 157,
+    "column": 30,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 158,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT COUNT(*) FROM $table WHERE type = %s AND is_active = 1 AND name IN ($in)&quot;",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 158,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $in at &quot;SELECT COUNT(*) FROM $table WHERE type = %s AND is_active = 1 AND name IN ($in)&quot;",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 179,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 179,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 180,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;UPDATE $table SET is_active = 0 WHERE type = %s AND is_active = 1 AND sync_generation &lt;&gt; %s&quot;",
+    "docs": "",
+    "file": "includes/class-lem-people.php"
+  },
+  {
+    "line": 78,
+    "column": 20,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 78,
+    "column": 20,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 79,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable {$this-&gt;table()} at &quot;SELECT domain FROM {$this-&gt;table()} WHERE account = &#039;&#039; ORDER BY domain&quot;",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 97,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 97,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 98,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable {$this-&gt;table()} at &quot;SELECT domain, account FROM {$this-&gt;table()} WHERE account != &#039;&#039; ORDER BY domain&quot;",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 110,
+    "column": 16,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 110,
+    "column": 16,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 110,
+    "column": 35,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable {$this-&gt;table()} at &quot;SELECT * FROM {$this-&gt;table()} ORDER BY domain&quot;",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 115,
+    "column": 16,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 115,
+    "column": 16,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 116,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable {$this-&gt;table()} at &quot;SELECT * FROM {$this-&gt;table()} WHERE id = %d&quot;",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 131,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 131,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 132,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable {$this-&gt;table()} at &quot;SELECT id FROM {$this-&gt;table()} WHERE domain = %s AND account = %s LIMIT 1&quot;",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 139,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 176,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 176,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 185,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 185,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 194,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 194,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 194,
+    "column": 37,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable {$this-&gt;table()} at &quot;SELECT COUNT(*) FROM {$this-&gt;table()}&quot;",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 208,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 208,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 208,
+    "column": 24,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $table used in $wpdb-&gt;get_results()\\n$table assigned unsafely at line 202.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 209,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT * FROM $table\\n",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 214,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 214,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 214,
+    "column": 31,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $table used in $wpdb-&gt;get_var()\\n$table assigned unsafely at line 202.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 215,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT COUNT(*) FROM $table\\n",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 252,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 252,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 254,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable {$this-&gt;table()} at              FROM {$this-&gt;table()} s LEFT JOIN $ents e ON e.id = s.entity_id&quot;",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 254,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $ents at              FROM {$this-&gt;table()} s LEFT JOIN $ents e ON e.id = s.entity_id&quot;",
+    "docs": "",
+    "file": "includes/class-lem-banned-sites.php"
+  },
+  {
+    "line": 42,
+    "column": 51,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "includes/class-lem-postlist.php"
+  },
+  {
+    "line": 56,
+    "column": 50,
+    "type": "WARNING",
+    "code": "WordPress.Security.NonceVerification.Recommended",
+    "message": "Processing form data without nonce verification.",
+    "docs": "",
+    "file": "includes/class-lem-postlist.php"
+  },
+  {
+    "line": 132,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 132,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 232,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 232,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 233,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $placeholders at &quot;SELECT COUNT(*) FROM {$wpdb-&gt;posts} WHERE post_type IN ($placeholders) AND post_status = &#039;publish&#039;&quot;",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 233,
+    "column": 113,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare",
+    "message": "Replacement variables found, but no valid placeholders found in the query.",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 274,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 274,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 274,
+    "column": 37,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber",
+    "message": "Incorrect number of replacements passed to $wpdb-&gt;prepare(). Found 1 replacement parameters, expected 2.",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 276,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $placeholders at              WHERE post_type IN ($placeholders) AND post_status = &#039;publish&#039;\\n",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 475,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 475,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 476,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $where at &quot;SELECT COUNT(*) FROM {$wpdb-&gt;posts} p WHERE $where&quot;",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 476,
+    "column": 65,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare",
+    "message": "Replacement variables found, but no valid placeholders found in the query.",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 493,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 493,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 493,
+    "column": 41,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber",
+    "message": "Incorrect number of replacements passed to $wpdb-&gt;prepare(). Found 1 replacement parameters, expected 2.",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 494,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $where at &quot;SELECT p.ID, p.post_content FROM {$wpdb-&gt;posts} p WHERE $where ORDER BY p.ID ASC LIMIT %d OFFSET %d&quot;",
+    "docs": "",
+    "file": "includes/class-lem-link-scanner.php"
+  },
+  {
+    "line": 45,
+    "column": 9,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 45,
+    "column": 9,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 45,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;UPDATE $table SET first_seen = COALESCE(date_included, &#039;2000-01-01&#039;)\\n",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 78,
+    "column": 16,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 78,
+    "column": 16,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 78,
+    "column": 23,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $table used in $wpdb-&gt;get_results()",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 78,
+    "column": 35,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SHOW INDEX FROM $table WHERE Key_name = &#039;idx_domain&#039;&quot;",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 80,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 80,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 80,
+    "column": 20,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $table used in $wpdb-&gt;query()",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 80,
+    "column": 26,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;ALTER TABLE $table DROP INDEX idx_domain&quot;",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 80,
+    "column": 26,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.SchemaChange",
+    "message": "Attempting a database schema change is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 98,
+    "column": 16,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 98,
+    "column": 16,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-database.php"
+  },
+  {
+    "line": 96,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-brands.php"
+  },
+  {
+    "line": 96,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-brands.php"
+  },
+  {
+    "line": 97,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT COUNT(*) FROM $table WHERE name LIKE %s&quot;",
+    "docs": "",
+    "file": "includes/class-lem-brands.php"
+  },
+  {
+    "line": 41,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 41,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 41,
+    "column": 25,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $where used in $wpdb-&gt;get_results()\\n$where assigned unsafely at line 38.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 44,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at              FROM $table WHERE $where&quot;",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 44,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $where at              FROM $table WHERE $where&quot;",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 79,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 79,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 79,
+    "column": 24,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $where used in $wpdb-&gt;get_results()\\n$where assigned unsafely at line 76.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 82,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at              FROM $table WHERE $where AND id IN ($in)&quot;",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 82,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $where at              FROM $table WHERE $where AND id IN ($in)&quot;",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 82,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $in at              FROM $table WHERE $where AND id IN ($in)&quot;",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 82,
+    "column": 55,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare",
+    "message": "Replacement variables found, but no valid placeholders found in the query.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 104,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 104,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 104,
+    "column": 48,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT * FROM $table WHERE id = %d&quot;",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 115,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 147,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 147,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 157,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 157,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 167,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 167,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 168,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT type, is_active, COUNT(*) as cnt FROM $table GROUP BY type, is_active ORDER BY type&quot;",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 194,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 194,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 194,
+    "column": 24,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $orderby used in $wpdb-&gt;get_results()\\n$orderby assigned unsafely at line 191.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 195,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT * FROM $table\\n",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 199,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $orderby at              ORDER BY $orderby $order LIMIT %d OFFSET %d&quot;",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 199,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $order at              ORDER BY $orderby $order LIMIT %d OFFSET %d&quot;",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 206,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 206,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 207,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT COUNT(*) FROM $table\\n",
+    "docs": "",
+    "file": "includes/class-lem-entities.php"
+  },
+  {
+    "line": 86,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-rescan.php"
+  },
+  {
+    "line": 86,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-rescan.php"
+  },
+  {
+    "line": 88,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $placeholders at              WHERE post_type IN ($placeholders) AND post_status IN (&#039;publish&#039;,&#039;private&#039;,&#039;future&#039;)&quot;",
+    "docs": "",
+    "file": "includes/class-lem-rescan.php"
+  },
+  {
+    "line": 88,
+    "column": 99,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare",
+    "message": "Replacement variables found, but no valid placeholders found in the query.",
+    "docs": "",
+    "file": "includes/class-lem-rescan.php"
+  },
+  {
+    "line": 187,
+    "column": 27,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-rescan.php"
+  },
+  {
+    "line": 187,
+    "column": 27,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-rescan.php"
+  },
+  {
+    "line": 187,
+    "column": 46,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber",
+    "message": "Incorrect number of replacements passed to $wpdb-&gt;prepare(). Found 1 replacement parameters, expected 2.",
+    "docs": "",
+    "file": "includes/class-lem-rescan.php"
+  },
+  {
+    "line": 189,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $placeholders at                      WHERE post_type IN ($placeholders)\\n",
+    "docs": "",
+    "file": "includes/class-lem-rescan.php"
+  },
+  {
+    "line": 267,
+    "column": 41,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-rescan.php"
+  },
+  {
+    "line": 267,
+    "column": 41,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-rescan.php"
+  },
+  {
+    "line": 268,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT id, name, type, date_included FROM $table\\n",
+    "docs": "",
+    "file": "includes/class-lem-rescan.php"
+  },
+  {
+    "line": 927,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 927,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 931,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $placeholders at              WHERE p.post_type IN ($placeholders)\\n",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1097,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1097,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1097,
+    "column": 31,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $where used in $wpdb-&gt;get_var()",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1098,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $where at &quot;SELECT COUNT(*) FROM {$wpdb-&gt;posts} WHERE $where&quot;",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1098,
+    "column": 63,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare",
+    "message": "Replacement variables found, but no valid placeholders found in the query.",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1147,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1147,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1147,
+    "column": 25,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $where used in $wpdb-&gt;get_results()",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1147,
+    "column": 37,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber",
+    "message": "Incorrect number of replacements passed to $wpdb-&gt;prepare(). Found 1 replacement parameters, expected 2.",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1148,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $where at &quot;SELECT ID, post_title, post_content FROM {$wpdb-&gt;posts} WHERE $where ORDER BY ID ASC LIMIT %d OFFSET %d&quot;",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1247,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1247,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1248,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $where at &quot;SELECT COUNT(*) FROM {$wpdb-&gt;posts} p WHERE $where&quot;",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1248,
+    "column": 65,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare",
+    "message": "Replacement variables found, but no valid placeholders found in the query.",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1267,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1267,
+    "column": 22,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1267,
+    "column": 41,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber",
+    "message": "Incorrect number of replacements passed to $wpdb-&gt;prepare(). Found 1 replacement parameters, expected 2.",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 1268,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $where at &quot;SELECT p.ID, p.post_title, p.post_content FROM {$wpdb-&gt;posts} p WHERE $where ORDER BY p.ID ASC LIMIT %d OFFSET %d&quot;",
+    "docs": "",
+    "file": "includes/class-lem-scanner.php"
+  },
+  {
+    "line": 139,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-plugin.php"
+  },
+  {
+    "line": 139,
+    "column": 19,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-plugin.php"
+  },
+  {
+    "line": 139,
+    "column": 34,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT COUNT(*) FROM $table&quot;",
+    "docs": "",
+    "file": "includes/class-lem-plugin.php"
+  },
+  {
+    "line": 153,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-plugin.php"
+  },
+  {
+    "line": 153,
+    "column": 24,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-plugin.php"
+  },
+  {
+    "line": 153,
+    "column": 39,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT COUNT(*) FROM $table&quot;",
+    "docs": "",
+    "file": "includes/class-lem-plugin.php"
+  },
+  {
+    "line": 160,
+    "column": 31,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-plugin.php"
+  },
+  {
+    "line": 160,
+    "column": 31,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-plugin.php"
+  },
+  {
+    "line": 160,
+    "column": 38,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $banned_table used in $wpdb-&gt;get_var()",
+    "docs": "",
+    "file": "includes/class-lem-plugin.php"
+  },
+  {
+    "line": 160,
+    "column": 46,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $banned_table at &quot;SELECT COUNT(*) FROM $banned_table&quot;",
+    "docs": "",
+    "file": "includes/class-lem-plugin.php"
+  },
+  {
+    "line": 100,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 100,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 101,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT id, aliases, status_text FROM $table WHERE name LIKE %s&quot;",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 128,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 128,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 268,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 268,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 269,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT id, name, aliases FROM $table WHERE aliases != &#039;&#039; AND aliases != &#039;[]&#039;&quot;",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 291,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 291,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 434,
+    "column": 25,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 434,
+    "column": 25,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 434,
+    "column": 32,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $table used in $wpdb-&gt;get_row()",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 435,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT id, entity_id FROM $table WHERE domain = %s AND account = %s LIMIT 1&quot;",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 441,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 441,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 445,
+    "column": 13,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 574,
+    "column": 25,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 574,
+    "column": 25,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 575,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;SELECT id, aliases, date_excluded FROM $table WHERE name = %s AND type = %s LIMIT 1&quot;",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 588,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 588,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 598,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 706,
+    "column": 33,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 706,
+    "column": 33,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 706,
+    "column": 40,
+    "type": "WARNING",
+    "code": "PluginCheck.Security.DirectDB.UnescapedDBParameter",
+    "message": "Unescaped parameter $table used in $wpdb-&gt;query()",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 707,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $table at &quot;UPDATE $table SET registry = %s\\n",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 736,
+    "column": 31,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 736,
+    "column": 31,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-importer.php"
+  },
+  {
+    "line": 52,
+    "column": 33,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-report.php"
+  },
+  {
+    "line": 52,
+    "column": 33,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-report.php"
+  },
+  {
+    "line": 175,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-report.php"
+  },
+  {
+    "line": 175,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-report.php"
+  },
+  {
+    "line": 177,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $in at              WHERE ID IN ($in)\\n",
+    "docs": "",
+    "file": "includes/class-lem-report.php"
+  },
+  {
+    "line": 244,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-report.php"
+  },
+  {
+    "line": 244,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-report.php"
+  },
+  {
+    "line": 255,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-report.php"
+  },
+  {
+    "line": 255,
+    "column": 18,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-report.php"
+  },
+  {
+    "line": 257,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $sites at              FROM $sites s LEFT JOIN $ents e ON e.id = s.entity_id&quot;",
+    "docs": "",
+    "file": "includes/class-lem-report.php"
+  },
+  {
+    "line": 257,
+    "column": 1,
+    "type": "WARNING",
+    "code": "WordPress.DB.PreparedSQL.InterpolatedNotPrepared",
+    "message": "Use placeholders and $wpdb-&gt;prepare(); found interpolated variable $ents at              FROM $sites s LEFT JOIN $ents e ON e.id = s.entity_id&quot;",
+    "docs": "",
+    "file": "includes/class-lem-report.php"
+  },
+  {
+    "line": 109,
+    "column": 31,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "admin/views/dashboard.php"
+  },
+  {
+    "line": 109,
+    "column": 31,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "admin/views/dashboard.php"
+  },
+  {
+    "line": 114,
+    "column": 37,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "admin/views/dashboard.php"
+  },
+  {
+    "line": 114,
+    "column": 37,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "admin/views/dashboard.php"
+  },
+  {
+    "line": 197,
+    "column": 25,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-cli.php"
+  },
+  {
+    "line": 197,
+    "column": 25,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-cli.php"
+  },
+  {
+    "line": 45,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.DirectQuery",
+    "message": "Use of a direct database call is discouraged.",
+    "docs": "",
+    "file": "includes/class-lem-cache.php"
+  },
+  {
+    "line": 45,
+    "column": 21,
+    "type": "WARNING",
+    "code": "WordPress.DB.DirectDatabaseQuery.NoCaching",
+    "message": "Direct database call without caching detected. Consider using wp_cache_get() / wp_cache_set() or wp_cache_delete().",
+    "docs": "",
+    "file": "includes/class-lem-cache.php"
+  },
+  {
+    "line": 120,
+    "column": 17,
+    "type": "WARNING",
+    "code": "WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude",
+    "message": "Using exclusionary parameters, like exclude, in calls to get_posts() should be done with caution, see https://docs.wpvip.com/databases/optimize-queries/using-post__not_in/ for more information.",
+    "docs": "",
+    "file": "includes/class-lem-metabox.php"
+  }
+]

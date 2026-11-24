@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/wp-stubs.php';
 /**
  * Ссылки на ресурсы из реестров: что находится и что удаляется из текста.
  *
@@ -27,6 +28,7 @@ class StubSites {
         't.me/inoagent_channel' => 'inoagent',
         't.me/banned_channel'   => 'undesirable',
     ];
+    public function get_index() { return $this->index; }
     public function type_of($key) { return $this->index[$key] ?? ''; }
     public function is_removable($type) {
         return $type === '' || in_array($type, ['extremist', 'terrorist', 'undesirable'], true);
@@ -82,6 +84,8 @@ ok('посторонняя ссылка не найдена', isset($by_key['exa
 echo "\n=== отбор удаляемых ===\n";
 ok('к удалению из шести', count(LEM_Link_Scanner::removable_only($found)), 4);
 
+ok('Старая мета не возвращает отсутствующий ресурс', LEM_Link_Scanner::link_is_removable(['matched_domain'=>'retired.example','removable'=>true]), false);
+ok('Текущий список меняет старый флаг меты', LEM_Link_Scanner::link_is_removable(['matched_domain'=>'primer-media.example','removable'=>true]), false);
 echo "\n=== чистка текста ===\n";
 $clean = $scanner->remove_banned_links($html, $domains, $accounts);
 ok('ссылка на иноагента цела',       strpos($clean, 'href="https://primer-media.example/news/1"') !== false, true);
@@ -99,9 +103,9 @@ $legacy_und  = ['url' => 'https://tihaya-gavan.example/x', 'matched_domain' => '
 $legacy_gone = ['url' => 'https://udalyon.example/x',      'matched_domain' => 'udalyon.example'];
 ok('старая ссылка на иноагента не удаляется',  LEM_Link_Scanner::link_is_removable($legacy_ino), false);
 ok('старая ссылка на нежелательную удаляется', LEM_Link_Scanner::link_is_removable($legacy_und), true);
-ok('домена уже нет в реестре: удаляется',      LEM_Link_Scanner::link_is_removable($legacy_gone), true);
-ok('явная отметка важнее реестра',
-    LEM_Link_Scanner::link_is_removable($legacy_ino + ['removable' => true]), true);
+ok('домена уже нет в реестре: не удаляется', LEM_Link_Scanner::link_is_removable($legacy_gone), false);
+ok('сохранённый флаг не меняет текущий реестр',
+    LEM_Link_Scanner::link_is_removable($legacy_ino + ['removable' => true]), false);
 
 echo "\n=== разбор ссылок из HTML ===\n";
 $links = $scanner->extract_links('<a href="https://a.example/x">раз</a> текст <a href=\'https://b.example\'>два</a>');

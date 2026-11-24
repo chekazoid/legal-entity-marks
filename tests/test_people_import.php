@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/wp-stubs.php';
 /** Очередь физлиц: отключение, границы порций, повтор и смена снимка. Без сети и базы. */
 define('ABSPATH','/tmp/');define('LEM_TABLE','lem_entities');
 function add_action() {}
@@ -14,10 +15,11 @@ function wp_clear_scheduled_hook($hook){unset($GLOBALS['scheduled'][$hook]);}
 function lem(){return $GLOBALS['plugin'];}
 require_once __DIR__.'/../includes/class-lem-people.php';
 class PeopleTestDB {
-    public $prefix='wp_';public $present=0;public $active_total=0;public $removals=0;public $broken=false;
+    public $prefix='wp_';public $options='wp_options';public $present=0;public $active_total=0;public $removals=0;public $broken=false;
     public function prepare($sql,...$args){return ['sql'=>$sql,'args'=>$args];}
-    public function query($query){if(strpos($query['sql'],'SET is_active = 0')!==false)$this->removals++;return $this->broken?false:1;}
-    public function get_var($query){return strpos($query['sql'],'name IN')!==false?$this->present:$this->active_total;}
+    public function suppress_errors($value){return false;}
+    public function query($query){if(is_string($query))return 1;if(strpos($query['sql'],'SET is_active = IF')!==false)$this->removals++;return $this->broken?false:1;}
+    public function get_var($query){if(strpos($query['sql'],'SELECT ENGINE')!==false)return 'InnoDB';if(strpos($query['sql'],'LOCK(')!==false)return 1;return strpos($query['sql'],'name IN')!==false?$this->present:$this->active_total;}
 }
 class PeopleTestChannel {
     public $calls=0;public $token=true;public $total=501;public $response=null;public $cancel=false;
@@ -39,7 +41,7 @@ function setup_people($mode='mark'){
     };
     lem()->settings['fedsfm_people_mode']=$mode;
     lem()->channel=new PeopleTestChannel();
-    lem()->importer=new class {public $calls=0;public function import_entries($entries,$type){$this->calls++;$GLOBALS['wpdb']->present=count($entries);}};
+    lem()->importer=new class {public $calls=0;public $deferred=false;public function import_verified_entries($entries,$type,$generation,$defer=false){$this->calls++;$this->deferred=$defer;$GLOBALS['wpdb']->present=count($entries);$GLOBALS['wpdb']->active_total+=count($entries);return [];}};
     lem()->entities=new class {public function flush_cache(){}};
     lem()->cache=new class {public function purge_all_marked(){}};
     lem()->rescan=new class {public $calls=0;public function enqueue($reason,$started){$this->calls++;}};
@@ -56,12 +58,13 @@ setup_people();lem()->people->queue();
 check_people('Включение лишь планирует первый запрос',lem()->channel->calls===0&&wp_next_scheduled(LEM_People::HOOK));
 tick_people();$state=get_option(LEM_People::STATE);
 check_people('Один запуск берёт одну порцию',lem()->channel->calls===1&&$state['offset']===500&&$state['running']);
+check_people('Новые записи до завершения не активируются',lem()->importer->deferred);
 check_people('Неполный импорт не исключает прежних', $GLOBALS['wpdb']->removals===0&&lem()->rescan->calls===0);
 lem()->channel->response=['error'=>'429','retry'=>true];tick_people();
 check_people('429 не сдвигает порцию',get_option(LEM_People::STATE)['offset']===500&&get_option(LEM_People::STATE)['retries']===1);
 lem()->channel->response=['error'=>'409','restart'=>true];tick_people();
 check_people('Смена снимка начинает заново',get_option(LEM_People::STATE)['offset']===0&&get_option(LEM_People::STATE)['restarts']===1&&$GLOBALS['wpdb']->removals===0);
-lem()->channel->response=null;tick_people();tick_people();
+lem()->channel->response=null;$GLOBALS['wpdb']->active_total=0;tick_people();tick_people();
 check_people('После всех страниц выполняется сверка',!get_option(LEM_People::STATE)['running']&&get_option(LEM_People::SUCCESS)['total']===501&&$GLOBALS['wpdb']->removals===1&&lem()->rescan->calls===1);
 $GLOBALS['wpdb']->active_total=501;$calls=lem()->channel->calls;lem()->people->queue(true);tick_people();
 check_people('Неизменившийся снимок сверяется одним запросом',lem()->channel->calls===$calls+1&&!get_option(LEM_People::STATE)['running']&&$GLOBALS['wpdb']->removals===1);

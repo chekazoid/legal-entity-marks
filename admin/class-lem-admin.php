@@ -25,8 +25,8 @@ class LEM_Admin {
 
     public function register_menu() {
         add_menu_page(
-            'Маркировка',
-            'Маркировка',
+            __('Маркировка', 'legal-entity-marks'),
+            __('Маркировка', 'legal-entity-marks'),
             'manage_options',
             'lem-dashboard',
             [$this, 'page_dashboard'],
@@ -34,13 +34,13 @@ class LEM_Admin {
             80
         );
 
-        add_submenu_page('lem-dashboard', 'Обзор', 'Обзор', 'manage_options', 'lem-dashboard', [$this, 'page_dashboard']);
-        add_submenu_page('lem-dashboard', 'Реестр', 'Реестр', 'manage_options', 'lem-entities', [$this, 'page_entities']);
-        add_submenu_page('lem-dashboard', 'Сканер', 'Сканер', 'manage_options', 'lem-scanner', [$this, 'page_scanner']);
-        add_submenu_page('lem-dashboard', 'Ссылки', 'Ссылки', 'manage_options', 'lem-banned-links', [$this, 'page_banned_links']);
-        add_submenu_page('lem-dashboard', 'Упоминания', 'Упоминания', 'manage_options', 'lem-report', [$this, 'page_report']);
-        add_submenu_page('lem-dashboard', 'Бренды СМИ', 'Бренды СМИ', 'manage_options', 'lem-brands', [$this, 'page_brands']);
-        add_submenu_page('lem-dashboard', 'Настройки', 'Настройки', 'manage_options', 'lem-settings', [$this, 'page_settings']);
+        add_submenu_page('lem-dashboard', __('Обзор', 'legal-entity-marks'), __('Обзор', 'legal-entity-marks'), 'manage_options', 'lem-dashboard', [$this, 'page_dashboard']);
+        add_submenu_page('lem-dashboard', __('Реестр', 'legal-entity-marks'), __('Реестр', 'legal-entity-marks'), 'manage_options', 'lem-entities', [$this, 'page_entities']);
+        add_submenu_page('lem-dashboard', __('Сканер', 'legal-entity-marks'), __('Сканер', 'legal-entity-marks'), 'manage_options', 'lem-scanner', [$this, 'page_scanner']);
+        add_submenu_page('lem-dashboard', __('Ссылки', 'legal-entity-marks'), __('Ссылки', 'legal-entity-marks'), 'manage_options', 'lem-banned-links', [$this, 'page_banned_links']);
+        add_submenu_page('lem-dashboard', __('Упоминания', 'legal-entity-marks'), __('Упоминания', 'legal-entity-marks'), 'manage_options', 'lem-report', [$this, 'page_report']);
+        add_submenu_page('lem-dashboard', __('Бренды СМИ', 'legal-entity-marks'), __('Бренды СМИ', 'legal-entity-marks'), 'manage_options', 'lem-brands', [$this, 'page_brands']);
+        add_submenu_page('lem-dashboard', __('Настройки', 'legal-entity-marks'), __('Настройки', 'legal-entity-marks'), 'manage_options', 'lem-settings', [$this, 'page_settings']);
     }
 
     public function enqueue_assets($hook) {
@@ -92,7 +92,7 @@ class LEM_Admin {
      * Выгрузка отчёта «Упоминания» в CSV.
      */
     private function handle_report_export() {
-        if (($_GET['lem_export'] ?? '') !== 'csv' || !current_user_can('manage_options')) {
+        if (sanitize_key(wp_unslash($_GET['lem_export'] ?? '')) !== 'csv' || !current_user_can('manage_options')) {
             return;
         }
         check_admin_referer('lem_export_csv');
@@ -127,26 +127,29 @@ class LEM_Admin {
      */
     private function handle_brand_actions() {
         if (!isset($_POST['lem_brands_nonce'])
-            || !wp_verify_nonce($_POST['lem_brands_nonce'], 'lem_save_brands')
+            || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['lem_brands_nonce'])), 'lem_save_brands')
             || !current_user_can('manage_options')) {
             return;
         }
 
         $rules = [];
-        foreach ((array) ($_POST['lem_brand'] ?? []) as $row) {
-            $match = sanitize_text_field(wp_unslash($row['match'] ?? ''));
+        foreach ((array) map_deep(wp_unslash($_POST['lem_brand'] ?? []), 'sanitize_text_field') as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $match = $row['match'] ?? '';
             if ($match === '' || !empty($row['delete'])) {
                 continue;
             }
             $split = static function ($raw) {
-                return array_filter(array_map('trim', explode(',', sanitize_text_field(wp_unslash($raw)))));
+                return array_filter(array_map('trim', explode(',', sanitize_text_field($raw))));
             };
             $rules[] = [
                 'match'   => $match,
                 'aliases' => $split($row['aliases'] ?? ''),
                 'quoted'  => $split($row['quoted'] ?? ''),
-                'note'    => sanitize_text_field(wp_unslash($row['note'] ?? '')),
-                'status'  => sanitize_text_field(wp_unslash($row['status'] ?? '')),
+                'note'    => ($row['note'] ?? ''),
+                'status'  => ($row['status'] ?? ''),
                 'enabled' => !empty($row['enabled']),
             ];
         }
@@ -157,12 +160,12 @@ class LEM_Admin {
         $result = lem()->importer->apply_brand_aliases();
 
         add_settings_error('lem_brands', 'saved',
-            'Правила сохранены. Алиасов применено: ' . (int) $result['applied']
-            . '. Не забудьте пересканировать статьи.', 'success');
+            __('Правила сохранены. Алиасов применено: ', 'legal-entity-marks') . (int) $result['applied']
+            . __('. Не забудьте пересканировать статьи.', 'legal-entity-marks'), 'success');
 
         if (!empty($result['unmatched'])) {
             add_settings_error('lem_brands', 'unmatched',
-                'Не нашли ни одной записи в реестре (проверьте текст в «Искать в названии»): '
+                __('Не нашли ни одной записи в реестре (проверьте текст в «Искать в названии»): ', 'legal-entity-marks')
                 . implode('; ', array_map('esc_html', $result['unmatched'])), 'warning');
         }
     }
@@ -175,8 +178,8 @@ class LEM_Admin {
         $error = get_option('lem_last_fetch_error', '');
         if (!empty($error)) {
             $last = get_option('lem_last_fetch_time', '');
-            echo '<div class="notice notice-warning"><p><strong>Маркировка:</strong> '
-                . 'Реестры обновились не полностью. ' . esc_html($error)
+            echo '<div class="notice notice-warning"><p><strong>' . esc_html__('Маркировка:', 'legal-entity-marks') . '</strong> '
+                . esc_html__('Реестры обновились не полностью. ', 'legal-entity-marks') . esc_html($error)
                 . ($last ? ' (' . esc_html($last) . ')' : '')
                 . '</p></div>';
         }
@@ -184,10 +187,12 @@ class LEM_Admin {
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
         if (lem()->database->table_exists()) {
-            $count = (int) $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE is_active = 1");
+            /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+            $count = (int) $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE is_active = 1") ;
+            /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
             if ($count === 0) {
-                echo '<div class="notice notice-error"><p><strong>Маркировка:</strong> '
-                    . 'Реестр сущностей пуст! Перейдите в Маркировка &rarr; Обзор для импорта данных.'
+                echo '<div class="notice notice-error"><p><strong>' . esc_html__('Маркировка:', 'legal-entity-marks') . '</strong> '
+                    . esc_html__('Реестр сущностей пуст! Перейдите в Маркировка > Обзор для импорта данных.', 'legal-entity-marks')
                     . '</p></div>';
             }
         }
@@ -218,16 +223,14 @@ class LEM_Admin {
             'lem_hide_update'
         );
 
+        echo '<div class="notice notice-warning"><p><strong>' . esc_html__('Маркировка:', 'legal-entity-marks') . '</strong> ';
         printf(
-            '<div class="notice notice-warning"><p><strong>Маркировка:</strong> '
-            . 'после обновления реестров в материалах сайта нашлись новые организации: '
-            . '<strong>%d</strong> в %d публикациях. '
-            . '<a href="%s">Посмотреть список</a> · <a href="%s">Скрыть</a></p></div>',
-            (int) $report['mentioned'],
-            (int) $report['mentioned_in'],
-            esc_url($report_url),
-            esc_url($hide_url)
+            /* translators: 1: newly mentioned registry entries, 2: number of articles. */
+            esc_html__('После обновления реестров в материалах сайта нашлись новые организации: %1$d в %2$d публикациях.', 'legal-entity-marks'),
+            (int) $report['mentioned'], (int) $report['mentioned_in']
         );
+        echo ' <a href="' . esc_url($report_url) . '">' . esc_html__('Посмотреть список', 'legal-entity-marks') . '</a> · '
+            . '<a href="' . esc_url($hide_url) . '">' . esc_html__('Скрыть', 'legal-entity-marks') . '</a></p></div>';
     }
 
     /**
@@ -250,15 +253,15 @@ class LEM_Admin {
             $installed = get_option('lem_installed_at', '');
             $since     = $installed ? strtotime($installed) : 0;
             if ($since && ($now - $since) > 2 * DAY_IN_SECONDS) {
-                $message = 'Реестры ни разу не обновлялись из источников, а плагин установлен '
+                $message = __('Реестры ни разу не обновлялись из источников, а плагин установлен ', 'legal-entity-marks')
                     . human_time_diff($since, $now)
-                    . ' назад. Скорее всего не работает WP-Cron, и списки останутся на дате сборки плагина.';
+                    . __(' назад. Скорее всего не работает WP-Cron, и списки останутся на дате сборки плагина.', 'legal-entity-marks');
             }
         } else {
             $ts = strtotime($last);
             if ($ts && ($now - $ts) > $stale_days * DAY_IN_SECONDS) {
-                $message = 'Реестры не обновлялись ' . human_time_diff($ts, $now)
-                    . '. Обычно это значит, что не работает WP-Cron.';
+                $message = __('Реестры не обновлялись ', 'legal-entity-marks') . human_time_diff($ts, $now)
+                    . __('. Обычно это значит, что не работает WP-Cron.', 'legal-entity-marks');
             }
         }
 
@@ -266,12 +269,9 @@ class LEM_Admin {
             return;
         }
 
-        printf(
-            '<div class="notice notice-warning"><p><strong>Маркировка:</strong> %s '
-            . '<a href="%s">Обновить сейчас</a> или запустите <code>wp lem fetch --source=all</code>.</p></div>',
-            esc_html($message),
-            esc_url($dashboard)
-        );
+        echo '<div class="notice notice-warning"><p><strong>' . esc_html__('Маркировка:', 'legal-entity-marks') . '</strong> '
+            . esc_html($message) . ' <a href="' . esc_url($dashboard) . '">' . esc_html__('Обновить сейчас', 'legal-entity-marks')
+            . '</a> ' . esc_html__('или запустите', 'legal-entity-marks') . ' <code>wp lem fetch --source=all</code>.</p></div>';
     }
 
     public function handle_actions() {
@@ -287,7 +287,7 @@ class LEM_Admin {
         if (!isset($_POST['lem_settings_nonce'])) {
             return;
         }
-        if (!wp_verify_nonce($_POST['lem_settings_nonce'], 'lem_save_settings')) {
+        if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['lem_settings_nonce'])), 'lem_save_settings')) {
             return;
         }
         if (!current_user_can('manage_options')) {
@@ -297,19 +297,19 @@ class LEM_Admin {
         $settings = lem()->get_settings();
 
         if (isset($_POST['lem_post_types'])) {
-            $settings['post_types'] = array_map('sanitize_text_field', (array) $_POST['lem_post_types']);
+            $settings['post_types'] = array_map('sanitize_text_field', (array) wp_unslash($_POST['lem_post_types']));
         }
         if (isset($_POST['lem_filter_priority'])) {
-            $settings['filter_priority'] = (int) $_POST['lem_filter_priority'];
+            $settings['filter_priority'] = (int) sanitize_text_field(wp_unslash($_POST['lem_filter_priority']));
         }
         if (isset($_POST['lem_accent_color'])) {
-            $settings['accent_color'] = sanitize_hex_color($_POST['lem_accent_color']) ?: '#f88c00';
+            $settings['accent_color'] = sanitize_hex_color(wp_unslash($_POST['lem_accent_color'])) ?: '#f88c00';
         }
         if (isset($_POST['lem_disclaimer_bg'])) {
-            $settings['disclaimer_bg'] = sanitize_hex_color($_POST['lem_disclaimer_bg']) ?: '#fff9f0';
+            $settings['disclaimer_bg'] = sanitize_hex_color(wp_unslash($_POST['lem_disclaimer_bg'])) ?: '#fff9f0';
         }
         if (isset($_POST['lem_disclaimer_border'])) {
-            $settings['disclaimer_border'] = sanitize_hex_color($_POST['lem_disclaimer_border']) ?: '#f88c00';
+            $settings['disclaimer_border'] = sanitize_hex_color(wp_unslash($_POST['lem_disclaimer_border'])) ?: '#f88c00';
         }
         if (isset($_POST['lem_cron_interval'])) {
             $settings['cron_interval'] = sanitize_text_field(wp_unslash($_POST['lem_cron_interval']));
@@ -353,14 +353,16 @@ class LEM_Admin {
         // Канал реестров. Токен не выводится на страницу, поэтому пустое поле
         // означает «оставить прежний», а не «стереть»: для стирания есть галочка
         $settings['channel_enabled'] = !empty($_POST['lem_channel_enabled']);
-        $settings['channel_url']     = esc_url_raw(trim((string) wp_unslash($_POST['lem_channel_url'] ?? '')));
+        $settings['channel_url']     = sanitize_url(wp_unslash($_POST['lem_channel_url'] ?? ''));
         if ($settings['channel_url'] === '') {
             $settings['channel_url'] = LEM_Channel::DEFAULT_URL;
         }
-        $settings['stats_enabled']            = !empty($_POST['lem_stats_enabled']);
+        $settings['stats_enabled'] = !empty($_POST['lem_stats_enabled']);
+        $settings['stats_consent_at'] = $settings['stats_enabled']
+            ? ($settings['stats_consent_at'] ?: current_time('mysql', true)) : '';
         $settings['delete_data_on_uninstall'] = !empty($_POST['lem_delete_data']);
 
-        $token_input = trim((string) wp_unslash($_POST['lem_channel_token'] ?? ''));
+        $token_input = sanitize_text_field(wp_unslash($_POST['lem_channel_token'] ?? ''));
         if (!empty($_POST['lem_channel_token_clear'])) {
             $settings['channel_token'] = '';
         } elseif ($token_input !== '') {
@@ -400,7 +402,7 @@ class LEM_Admin {
 
         // Контекстный режим для иноагентов
         $settings['inoagent_context_only'] = !empty($_POST['lem_inoagent_context_only']);
-        $posted_triggers = array_map('sanitize_text_field', (array) ($_POST['lem_context_triggers'] ?? []));
+        $posted_triggers = array_map('sanitize_text_field', (array) wp_unslash($_POST['lem_context_triggers'] ?? []));
         $old_triggers    = $settings['context_triggers'];
         $new_triggers    = [];
         foreach (LEM_Plugin::CONTEXT_TRIGGERS as $trigger) {
@@ -430,15 +432,15 @@ class LEM_Admin {
         // Кеш страниц держит старую разметку дисклеймеров
         lem()->cache->purge_all_marked();
 
-        add_settings_error('lem_settings', 'saved', 'Настройки сохранены.', 'success');
+        add_settings_error('lem_settings', 'saved', __('Настройки сохранены.', 'legal-entity-marks'), 'success');
 
         if ($morphology_changed
             || ($new_triggers !== $old_triggers && $settings['inoagent_context_only'])) {
             add_settings_error(
                 'lem_settings',
                 'rescan',
-                'Правила поиска изменились. Запустите пересканирование в разделе «Сканер», '
-                . 'иначе для ранее отсканированных статей останется прежний результат.',
+                __('Правила поиска изменились. Запустите пересканирование в разделе «Сканер», ', 'legal-entity-marks')
+                . __('иначе для ранее отсканированных статей останется прежний результат.', 'legal-entity-marks'),
                 'warning'
             );
         }
@@ -448,14 +450,14 @@ class LEM_Admin {
             add_settings_error(
                 'lem_settings',
                 'no_registries',
-                'Не выбран ни один реестр: плагин ничего не будет ни маркировать, ни отслеживать.',
+                __('Не выбран ни один реестр: плагин ничего не будет ни маркировать, ни отслеживать.', 'legal-entity-marks'),
                 'warning'
             );
         } elseif (empty($fresh['mark_registries'])) {
             add_settings_error(
                 'lem_settings',
                 'track_only',
-                'Маркировка отключена полностью. Упоминания будут видны только в разделе «Упоминания».',
+                __('Маркировка отключена полностью. Упоминания будут видны только в разделе «Упоминания».', 'legal-entity-marks'),
                 'info'
             );
         }
@@ -464,21 +466,21 @@ class LEM_Admin {
     public function ajax_save_entity() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Нет доступа');
+            wp_send_json_error(__('Нет доступа', 'legal-entity-marks'));
         }
 
-        $id   = (int) ($_POST['id'] ?? 0);
+        $id   = absint(wp_unslash($_POST['id'] ?? 0));
         $data = [
             'type'        => sanitize_text_field(wp_unslash($_POST['type'] ?? 'inoagent')),
             'name'        => sanitize_text_field(wp_unslash($_POST['name'] ?? '')),
             'aliases'     => array_filter(array_map('trim', explode("\n", sanitize_textarea_field(wp_unslash($_POST['aliases'] ?? ''))))),
-            'is_person'   => (int) ($_POST['is_person'] ?? 0),
+            'is_person'   => absint(wp_unslash($_POST['is_person'] ?? 0)),
             'status_text' => sanitize_text_field(wp_unslash($_POST['status_text'] ?? '')),
-            'is_active'   => (int) ($_POST['is_active'] ?? 1),
+            'is_active'   => absint(wp_unslash($_POST['is_active'] ?? 1)),
         ];
 
         if (empty($data['name'])) {
-            wp_send_json_error('Укажите название');
+            wp_send_json_error(__('Укажите название', 'legal-entity-marks'));
         }
 
         if ($id > 0) {
@@ -489,7 +491,7 @@ class LEM_Admin {
             if ($new_id) {
                 wp_send_json_success(['id' => $new_id, 'action' => 'created']);
             } else {
-                wp_send_json_error('Не удалось создать запись');
+                wp_send_json_error(__('Не удалось создать запись', 'legal-entity-marks'));
             }
         }
     }
@@ -497,44 +499,44 @@ class LEM_Admin {
     public function ajax_delete_entity() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Нет доступа');
+            wp_send_json_error(__('Нет доступа', 'legal-entity-marks'));
         }
 
-        $id = (int) ($_POST['id'] ?? 0);
+        $id = absint(wp_unslash($_POST['id'] ?? 0));
         if ($id > 0) {
             lem()->entities->delete($id);
             wp_send_json_success(['id' => $id]);
         } else {
-            wp_send_json_error('Неверный ID');
+            wp_send_json_error(__('Неверный ID', 'legal-entity-marks'));
         }
     }
 
     public function ajax_fetch_registries() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Нет доступа');
+            wp_send_json_error(__('Нет доступа', 'legal-entity-marks'));
         }
 
         $errors  = lem()->importer->fetch_all();
         $domains = (int) lem()->importer->last_fetch_domains;
         $extra   = $domains > 0
-            ? '. Из записей реестра добавлено доменов: ' . $domains
+            ? __('. Из записей реестра добавлено доменов: ', 'legal-entity-marks') . $domains
             : '';
 
-        $extra .= '. Проверка архива запущена в фоне';
-        $success_message = 'Все реестры обновлены';
+        $extra .= __('. Проверка архива запущена в фоне', 'legal-entity-marks');
+        $success_message = __('Все реестры обновлены', 'legal-entity-marks');
         if (LEM_People::enabled(lem()->get_settings())) {
-            $success_message = 'Основные реестры обновлены';
+            $success_message = __('Основные реестры обновлены', 'legal-entity-marks');
             $people_state = (array) get_option(LEM_People::STATE, []);
             $extra .= !empty($people_state['error'])
-                ? '. Физлица Росфинмониторинга не обновлены: ' . $people_state['error']
-                : '. Физлица Росфинмониторинга загружаются отдельно в фоне';
+                ? __('. Физлица Росфинмониторинга не обновлены: ', 'legal-entity-marks') . $people_state['error']
+                : __('. Физлица Росфинмониторинга загружаются отдельно в фоне', 'legal-entity-marks');
         }
 
         if (empty($errors)) {
             wp_send_json_success(['message' => $success_message . $extra]);
         } else {
-            wp_send_json_success(['message' => 'Завершено с ошибками' . $extra, 'errors' => $errors]);
+            wp_send_json_success(['message' => __('Завершено с ошибками', 'legal-entity-marks') . $extra, 'errors' => $errors]);
         }
     }
 
@@ -545,7 +547,7 @@ class LEM_Admin {
     public function ajax_check_sources() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Нет доступа');
+            wp_send_json_error(__('Нет доступа', 'legal-entity-marks'));
         }
         wp_send_json_success(['sources' => lem()->importer->check_sources()]);
     }
@@ -560,7 +562,7 @@ class LEM_Admin {
     public function ajax_rescan_step() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Нет доступа');
+            wp_send_json_error(__('Нет доступа', 'legal-entity-marks'));
         }
 
         if (!empty($_POST['start'])) {
@@ -585,7 +587,7 @@ class LEM_Admin {
     public function ajax_check_channel() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Нет доступа');
+            wp_send_json_error(__('Нет доступа', 'legal-entity-marks'));
         }
 
         $health = lem()->channel->health();
@@ -594,20 +596,20 @@ class LEM_Admin {
         if ($health['ok']) {
             $snapshot = $health['last_snapshot'] !== ''
                 ? date_i18n('d.m.Y H:i', strtotime($health['last_snapshot']))
-                : 'дата не указана';
-            $lines[] = 'Канал доступен, последний срез: ' . $snapshot;
+                : __('дата не указана', 'legal-entity-marks');
+            $lines[] = __('Канал доступен, последний срез: ', 'legal-entity-marks') . $snapshot;
         } else {
-            $lines[] = 'Канал недоступен: ' . $health['error'];
+            $lines[] = __('Канал недоступен: ', 'legal-entity-marks') . $health['error'];
         }
 
         // Пробуем самый маленький реестр: выгрузки открыты, токен для них не нужен
         $probe = lem()->channel->fetch('terrorist');
         $lines[] = isset($probe['error'])
-            ? 'Выгрузка не удалась: ' . $probe['error']
-            : 'Тестовая выгрузка: ' . (int) $probe['count'] . ' записей';
+            ? __('Выгрузка не удалась: ', 'legal-entity-marks') . $probe['error']
+            : __('Тестовая выгрузка: ', 'legal-entity-marks') . (int) $probe['count'] . __(' записей', 'legal-entity-marks');
 
         if (!lem()->channel->has_token()) {
-            $lines[] = 'Токен не задан, и для этих реестров он не нужен';
+            $lines[] = __('Токен не задан, и для этих реестров он не нужен', 'legal-entity-marks');
         }
 
         wp_send_json_success(['message' => implode('. ', $lines)]);
@@ -620,7 +622,7 @@ class LEM_Admin {
     public function ajax_register_site() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Нет доступа');
+            wp_send_json_error(__('Нет доступа', 'legal-entity-marks'));
         }
 
         $email  = sanitize_email(wp_unslash($_POST['email'] ?? ''));
@@ -635,7 +637,7 @@ class LEM_Admin {
     public function ajax_purge_cache() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Нет доступа');
+            wp_send_json_error(__('Нет доступа', 'legal-entity-marks'));
         }
 
         lem()->entities->flush_cache();
@@ -646,19 +648,19 @@ class LEM_Admin {
     public function ajax_save_banned_site() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Нет доступа');
+            wp_send_json_error(__('Нет доступа', 'legal-entity-marks'));
         }
 
-        $id   = (int) ($_POST['id'] ?? 0);
+        $id   = absint(wp_unslash($_POST['id'] ?? 0));
         $data = [
             'domain'    => sanitize_text_field(wp_unslash($_POST['domain'] ?? '')),
             'label'     => sanitize_text_field(wp_unslash($_POST['label'] ?? '')),
             'registry'  => sanitize_text_field(wp_unslash($_POST['registry'] ?? '')),
-            'entity_id' => (int) ($_POST['entity_id'] ?? 0) ?: null,
+            'entity_id' => absint(wp_unslash($_POST['entity_id'] ?? 0)) ?: null,
         ];
 
         if (empty($data['domain'])) {
-            wp_send_json_error('Укажите домен');
+            wp_send_json_error(__('Укажите домен', 'legal-entity-marks'));
         }
 
         if ($id > 0) {
@@ -669,7 +671,7 @@ class LEM_Admin {
             if ($new_id) {
                 wp_send_json_success(['id' => $new_id, 'action' => 'created']);
             } else {
-                wp_send_json_error('Не удалось создать запись (возможно, домен уже существует)');
+                wp_send_json_error(__('Не удалось создать запись (возможно, домен уже существует)', 'legal-entity-marks'));
             }
         }
     }
@@ -677,22 +679,22 @@ class LEM_Admin {
     public function ajax_delete_banned_site() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Нет доступа');
+            wp_send_json_error(__('Нет доступа', 'legal-entity-marks'));
         }
 
-        $id = (int) ($_POST['id'] ?? 0);
+        $id = absint(wp_unslash($_POST['id'] ?? 0));
         if ($id > 0) {
             lem()->banned_sites->delete($id);
             wp_send_json_success(['id' => $id]);
         } else {
-            wp_send_json_error('Неверный ID');
+            wp_send_json_error(__('Неверный ID', 'legal-entity-marks'));
         }
     }
 
     public function ajax_import_banned_sites() {
         check_ajax_referer('lem_crud_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Нет доступа');
+            wp_send_json_error(__('Нет доступа', 'legal-entity-marks'));
         }
 
         $raw   = sanitize_textarea_field(wp_unslash($_POST['domains'] ?? ''));

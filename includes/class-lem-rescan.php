@@ -83,11 +83,13 @@ class LEM_Rescan {
         }
 
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $total = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->posts}
              WHERE post_type IN ($placeholders) AND post_status IN ('publish','private','future')",
             ...$post_types
-        ));
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare */
 
         update_option(self::STATE_OPTION, [
             'trigger'    => $trigger,
@@ -184,13 +186,15 @@ class LEM_Rescan {
         try {
             while ($state['offset'] < $state['total']) {
                 $params = array_merge($post_types, [self::SLICE, $state['offset']]);
+                /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
                 $posts  = $wpdb->get_results($wpdb->prepare(
                     "SELECT ID, post_title, post_content, post_type FROM {$wpdb->posts}
                      WHERE post_type IN ($placeholders)
                        AND post_status IN ('publish','private','future')
                      ORDER BY ID ASC LIMIT %d OFFSET %d",
                     ...$params
-                ));
+                )) ;
+                /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber */
                 if (empty($posts)) {
                     break;
                 }
@@ -264,12 +268,14 @@ class LEM_Rescan {
         // Первичное наполнение: новичков нет, есть просто первая опись архива
         $initial = ($state['trigger'] ?? '') === 'initial';
 
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $new_entities = $initial ? [] : $wpdb->get_results($wpdb->prepare(
             "SELECT id, name, type, date_included FROM $table
              WHERE first_seen >= %s AND is_active = 1
              ORDER BY type, name",
             $since
-        ), ARRAY_A);
+        ), ARRAY_A) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         $new_entities = $new_entities ?: [];
 
         // Из новичков реестра важны те, что реально встретились в архиве

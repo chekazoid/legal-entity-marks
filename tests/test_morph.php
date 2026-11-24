@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/wp-stubs.php';
 define('ABSPATH', '/tmp/');
 require_once __DIR__ . '/../includes/class-lem-morphology.php';
 

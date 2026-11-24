@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/wp-stubs.php';
 /**
  * Разбор записей реестра: очистка названий, алиасы, домены из поля Минюста.
  * Запуск: php tests/test_import.php

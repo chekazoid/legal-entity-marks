@@ -136,7 +136,9 @@ class LEM_Plugin {
 
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         if ((int) $wpdb->get_var("SELECT COUNT(*) FROM $table") > 0) {
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
             $this->importer->apply_brand_aliases();
         }
 
@@ -150,14 +152,18 @@ class LEM_Plugin {
         // Import bundled data if table is empty
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
-        $count = (int) $wpdb->get_var("SELECT COUNT(*) FROM $table");
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        $count = (int) $wpdb->get_var("SELECT COUNT(*) FROM $table") ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         if ($count === 0) {
             $this->importer->import_all_bundled();
         }
 
         // Import bundled banned sites if table is empty
         $banned_table = $wpdb->prefix . 'lem_banned_sites';
-        $banned_count = (int) $wpdb->get_var("SELECT COUNT(*) FROM $banned_table");
+        /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        $banned_count = (int) $wpdb->get_var("SELECT COUNT(*) FROM $banned_table") ;
+        /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         if ($banned_count === 0) {
             $this->importer->import_banned_sites();
         }
@@ -232,6 +238,18 @@ class LEM_Plugin {
         ],
     ];
 
+    /** Translatable labels without function calls in class constants. */
+    public static function get_presets() {
+        $presets = self::PRESETS;
+        $presets['media']['label'] = __('СМИ', 'legal-entity-marks');
+        $presets['media']['hint'] = __('Маркируются все четыре реестра, как требует закон о СМИ.', 'legal-entity-marks');
+        $presets['nonmedia']['label'] = __('Не СМИ', 'legal-entity-marks');
+        $presets['nonmedia']['hint'] = __('Маркируются экстремистские и террористические. Нежелательные только отслеживаются: упоминания и ссылки видны в отчёте, но меток на сайте нет. Иноагенты не затрагиваются.', 'legal-entity-marks');
+        $presets['manual']['label'] = __('Вручную', 'legal-entity-marks');
+        $presets['manual']['hint'] = __('Отмечайте галочками сами.', 'legal-entity-marks');
+        return $presets;
+    }
+
     public function get_settings() {
         $defaults = [
             'post_types'            => ['post'],
@@ -243,7 +261,8 @@ class LEM_Plugin {
             'channel_url'           => LEM_Channel::DEFAULT_URL,
             'channel_token'         => '',
             // Анонимный счётчик установок: идентификатор и версия плагина
-            'stats_enabled'         => true,
+            'stats_enabled'         => false,
+            'stats_consent_at'      => '',
             // При удалении плагина данные по умолчанию остаются: обновление
             // через «удалить и поставить заново» иначе стирает всё нажитое
             'delete_data_on_uninstall' => false,
@@ -272,6 +291,10 @@ class LEM_Plugin {
         ];
         $saved    = get_option('lem_settings', []);
         $settings = wp_parse_args($saved, $defaults);
+
+        // Старые версии включали счётчик по умолчанию. Это не согласие.
+        $settings['stats_enabled'] = !empty($settings['stats_enabled'])
+            && !empty($settings['stats_consent_at']);
 
         // Совместимость: до 1.9.0 был один список registries, он управлял и
         // поиском, и маркировкой. Переносим его в «маркировать»

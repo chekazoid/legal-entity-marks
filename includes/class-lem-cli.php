@@ -194,9 +194,11 @@ class LEM_CLI {
         }
 
         global $wpdb;
-        $marked = (int) $wpdb->get_var(
-            "SELECT COUNT(DISTINCT post_id) FROM {$wpdb->postmeta} WHERE meta_key = '" . LEM_META_KEY . "' AND meta_value != ''"
-        );
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        $marked = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(DISTINCT post_id) FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value != ''", LEM_META_KEY
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
         WP_CLI::log("\nСтатей с маркировкой: $marked");
 
         $version = get_option('lem_list_version', 'не задана');
@@ -383,7 +385,11 @@ class LEM_CLI {
 
             if ($ext === 'csv') {
                 // CSV: auto-detect separator, find domain/label columns
+                // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- WP-CLI streams an explicitly supplied local CSV; no web filesystem writes.
                 $handle = fopen($file, 'r');
+                if ($handle === false) {
+                    WP_CLI::error('Не удалось прочитать CSV.');
+                }
                 $first_line = fgets($handle);
                 rewind($handle);
 
@@ -395,6 +401,7 @@ class LEM_CLI {
                 $label_col  = $this->find_csv_column($header, ['label', 'название', 'name', 'организация', 'org']);
 
                 if ($domain_col === false) {
+                    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Close the read-only WP-CLI CSV stream.
                     fclose($handle);
                     WP_CLI::error('Не найдена колонка с доменом (domain/домен/url/сайт).');
                 }
@@ -413,7 +420,8 @@ class LEM_CLI {
                         $skipped++;
                     }
                 }
-                fclose($handle);
+                // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Close the read-only WP-CLI CSV stream.
+                    fclose($handle);
             } else {
                 // TXT: domain | label (one per line)
                 $lines = array_filter(array_map('trim', file($file)));

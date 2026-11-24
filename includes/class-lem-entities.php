@@ -34,16 +34,19 @@ class LEM_Entities {
 
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
-        $where = $include_excluded ? '1=1' : 'is_active = 1';
+        $where = ($include_excluded ? '1=1' : 'is_active = 1')
+            . ' AND (registry_present = 1 OR date_excluded IS NOT NULL OR is_manual = 1)';
         $where .= $people
             ? " AND (type <> 'fedsfm_person' OR is_active = 1)"
             : " AND type <> 'fedsfm_person'";
+        /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Cached by the surrounding request/transient layer. */
         $rows  = $wpdb->get_results(
             "SELECT id, type, name, aliases, is_person, status_text, is_active,
-                    date_included, date_excluded, first_seen
+                    date_included, date_excluded, first_seen, registry_present, is_manual
              FROM $table WHERE $where",
             ARRAY_A
-        );
+        ) ;
+        /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
         $entities = [];
         foreach ($rows as $row) {
@@ -71,16 +74,19 @@ class LEM_Entities {
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
         $in = implode(',', array_fill(0, count($ids), '%d'));
-        $where = $include_excluded ? '1=1' : 'is_active = 1';
+        $where = ($include_excluded ? '1=1' : 'is_active = 1')
+            . ' AND (registry_present = 1 OR date_excluded IS NOT NULL OR is_manual = 1)';
         $people = in_array(lem()->get_settings()['fedsfm_people_mode'] ?? 'off', ['track', 'mark'], true);
         $where .= $people
             ? " AND (type <> 'fedsfm_person' OR is_active = 1)"
             : " AND type <> 'fedsfm_person'";
+        /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT id, type, name, aliases, is_person, status_text, is_active,
-                    date_included, date_excluded, first_seen
+                    date_included, date_excluded, first_seen, registry_present, is_manual
              FROM $table WHERE $where AND id IN ($in)", ...$ids
-        ), ARRAY_A);
+        ), ARRAY_A) ;
+        /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare */
         foreach ($rows as &$row) {
             $row['aliases'] = json_decode($row['aliases'], true) ?: [];
             $row['is_person'] = (int) $row['is_person'];
@@ -96,12 +102,15 @@ class LEM_Entities {
         delete_transient(self::TRANSIENT_KEY . '_all');
         delete_transient(self::TRANSIENT_KEY . '_people');
         delete_transient(self::TRANSIENT_KEY . '_all_people');
+        if (isset(lem()->banned_sites)) { lem()->banned_sites->flush_cache(); }
     }
 
     public function get_by_id($id) {
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
-        $row   = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $id), ARRAY_A);
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        $row   = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $id), ARRAY_A) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         if ($row) {
             $row['aliases'] = json_decode($row['aliases'], true) ?: [];
         }
@@ -112,6 +121,7 @@ class LEM_Entities {
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
 
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. */
         $result = $wpdb->insert($table, [
             'type'          => $data['type'],
             'name'          => $data['name'],
@@ -119,10 +129,13 @@ class LEM_Entities {
             'is_person'     => (int) ($data['is_person'] ?? 0),
             'status_text'   => $data['status_text'] ?? '',
             'source_url'    => $data['source_url'] ?? '',
+            'is_manual'     => 1,
+            'registry_present' => 1,
             'date_included' => $data['date_included'] ?? null,
             'date_excluded' => $data['date_excluded'] ?? null,
             'is_active'     => (int) ($data['is_active'] ?? 1),
-        ]);
+        ]) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery */
 
         if ($result) {
             $this->flush_cache();
@@ -144,7 +157,9 @@ class LEM_Entities {
             $update['aliases'] = wp_json_encode($data['aliases'], JSON_UNESCAPED_UNICODE);
         }
 
-        $result = $wpdb->update($table, $update, ['id' => $id]);
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
+        $result = $wpdb->update($table, $update, ['id' => $id]) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
         if ($result !== false) {
             $this->flush_cache();
         }
@@ -154,7 +169,9 @@ class LEM_Entities {
     public function delete($id) {
         global $wpdb;
         $table  = $wpdb->prefix . LEM_TABLE;
-        $result = $wpdb->delete($table, ['id' => $id]);
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
+        $result = $wpdb->delete($table, ['id' => $id]) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
         if ($result) {
             $this->flush_cache();
         }
@@ -164,10 +181,12 @@ class LEM_Entities {
     public function count_by_type() {
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $rows  = $wpdb->get_results(
             "SELECT type, is_active, COUNT(*) as cnt FROM $table GROUP BY type, is_active ORDER BY type",
             ARRAY_A
-        );
+        ) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         $result = [];
         foreach ($rows as $row) {
             $key = $row['type'] . ($row['is_active'] ? '' : '_removed');
@@ -180,48 +199,40 @@ class LEM_Entities {
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
 
-        $where  = [];
-        $params = [];
-
-        if (!empty($args['type'])) {
-            $where[]  = 'type = %s';
-            $params[] = $args['type'];
-        }
-        if (isset($args['is_active'])) {
-            $where[]  = 'is_active = %d';
-            $params[] = (int) $args['is_active'];
-        }
-        if (!empty($args['search'])) {
-            $where[]  = '(name LIKE %s OR aliases LIKE %s)';
-            $like     = '%' . $wpdb->esc_like($args['search']) . '%';
-            $params[] = $like;
-            $params[] = $like;
-        }
-
-        $where_sql = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-        $limit     = (int) ($args['limit'] ?? 50);
-        $offset    = (int) ($args['offset'] ?? 0);
-        $orderby   = in_array($args['orderby'] ?? '', ['name', 'type', 'date_included', 'id']) ? $args['orderby'] : 'id';
-        $order     = strtoupper($args['order'] ?? 'ASC') === 'DESC' ? 'DESC' : 'ASC';
-
-        $sql = "SELECT * FROM $table $where_sql ORDER BY $orderby $order LIMIT %d OFFSET %d";
-        $params[] = $limit;
-        $params[] = $offset;
-
-        $rows = $wpdb->get_results($wpdb->prepare($sql, ...$params), ARRAY_A);
+        $type = (string) ($args['type'] ?? '');
+        $has_active = isset($args['is_active']);
+        $active = (int) ($args['is_active'] ?? 0);
+        $search = (string) ($args['search'] ?? '');
+        $like = '%' . $wpdb->esc_like($search) . '%';
+        $limit = max(1, (int) ($args['limit'] ?? 50));
+        $offset = max(0, (int) ($args['offset'] ?? 0));
+        // SQL keywords are selected from this fixed allowlist, never from raw input.
+        $orderby = in_array($args['orderby'] ?? '', ['name', 'type', 'date_included', 'id'], true)
+            ? $args['orderby'] : 'id';
+        $order = strtoupper($args['order'] ?? 'ASC') === 'DESC' ? 'DESC' : 'ASC';
+        /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM $table
+             WHERE (%s = '' OR type = %s)
+               AND (%d = 0 OR is_active = %d)
+               AND (%s = '' OR name LIKE %s OR aliases LIKE %s)
+             ORDER BY $orderby $order LIMIT %d OFFSET %d",
+            $type, $type, (int) $has_active, $active, $search, $like, $like, $limit, $offset
+        ), ARRAY_A) ;
+        /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         foreach ($rows as &$row) {
             $row['aliases'] = json_decode($row['aliases'], true) ?: [];
         }
-
-        $count_sql = "SELECT COUNT(*) FROM $table $where_sql";
-        if (!empty($params)) {
-            $count_params = array_slice($params, 0, -2);
-            $total = !empty($count_params)
-                ? (int) $wpdb->get_var($wpdb->prepare($count_sql, ...$count_params))
-                : (int) $wpdb->get_var($count_sql);
-        } else {
-            $total = (int) $wpdb->get_var($count_sql);
-        }
+        unset($row);
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
+        $total = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table
+             WHERE (%s = '' OR type = %s)
+               AND (%d = 0 OR is_active = %d)
+               AND (%s = '' OR name LIKE %s OR aliases LIKE %s)",
+            $type, $type, (int) $has_active, $active, $search, $like, $like
+        )) ;
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
         return ['items' => $rows, 'total' => $total];
     }

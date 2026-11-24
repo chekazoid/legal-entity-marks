@@ -1,0 +1,2336 @@
+# Copyright (C) 2026 Алексей Шляпужников
+# This file is distributed under the GPL-2.0+.
+msgid ""
+msgstr ""
+"Project-Id-Version: Legal Entity Marks 1.15.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/legal-entity-marks\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-11-24T18:03:36+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: legal-entity-marks\n"
+
+#. Plugin Name of the plugin
+#: legal-entity-marks.php
+msgid "Legal Entity Marks"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: legal-entity-marks.php
+msgid "https://github.com/chekazoid/legal-entity-marks"
+msgstr ""
+
+#. Description of the plugin
+#: legal-entity-marks.php
+msgid "Маркировка и отслеживание упоминаний иноагентов, экстремистских, террористических и нежелательных организаций. Сноски и дисклеймеры для СМИ, отчёт по упоминаниям и ссылкам для остальных сайтов."
+msgstr ""
+
+#. Author of the plugin
+#: legal-entity-marks.php
+msgid "Алексей Шляпужников"
+msgstr ""
+
+#. Author URI of the plugin
+#: legal-entity-marks.php
+msgid "https://shliapuzhnikov.com"
+msgstr ""
+
+#: admin/class-lem-admin.php:28
+#: admin/class-lem-admin.php:29
+#: includes/class-lem-metabox.php:42
+#: includes/class-lem-postlist.php:98
+msgid "Маркировка"
+msgstr ""
+
+#: admin/class-lem-admin.php:37
+msgid "Обзор"
+msgstr ""
+
+#: admin/class-lem-admin.php:38
+#: admin/views/banned-links.php:110
+#: admin/views/banned-links.php:249
+#: admin/views/banned-links.php:313
+#: admin/views/report.php:136
+#: admin/views/settings.php:59
+msgid "Реестр"
+msgstr ""
+
+#: admin/class-lem-admin.php:39
+#: admin/views/scanner.php:6
+msgid "Сканер"
+msgstr ""
+
+#: admin/class-lem-admin.php:40
+msgid "Ссылки"
+msgstr ""
+
+#: admin/class-lem-admin.php:41
+#: admin/views/report.php:48
+msgid "Упоминания"
+msgstr ""
+
+#: admin/class-lem-admin.php:42
+#: admin/views/brands.php:7
+msgid "Бренды СМИ"
+msgstr ""
+
+#: admin/class-lem-admin.php:43
+msgid "Настройки"
+msgstr ""
+
+#: admin/class-lem-admin.php:163
+msgid "Правила сохранены. Алиасов применено: "
+msgstr ""
+
+#: admin/class-lem-admin.php:164
+msgid ". Не забудьте пересканировать статьи."
+msgstr ""
+
+#: admin/class-lem-admin.php:168
+msgid "Не нашли ни одной записи в реестре (проверьте текст в «Искать в названии»): "
+msgstr ""
+
+#: admin/class-lem-admin.php:181
+#: admin/class-lem-admin.php:194
+#: admin/class-lem-admin.php:226
+#: admin/class-lem-admin.php:272
+msgid "Маркировка:"
+msgstr ""
+
+#: admin/class-lem-admin.php:182
+msgid "Реестры обновились не полностью. "
+msgstr ""
+
+#: admin/class-lem-admin.php:195
+msgid "Реестр сущностей пуст! Перейдите в Маркировка > Обзор для импорта данных."
+msgstr ""
+
+#. translators: 1: newly mentioned registry entries, 2: number of articles.
+#: admin/class-lem-admin.php:229
+#, php-format
+msgid "После обновления реестров в материалах сайта нашлись новые организации: %1$d в %2$d публикациях."
+msgstr ""
+
+#: admin/class-lem-admin.php:232
+msgid "Посмотреть список"
+msgstr ""
+
+#: admin/class-lem-admin.php:233
+msgid "Скрыть"
+msgstr ""
+
+#: admin/class-lem-admin.php:256
+msgid "Реестры ни разу не обновлялись из источников, а плагин установлен "
+msgstr ""
+
+#: admin/class-lem-admin.php:258
+msgid " назад. Скорее всего не работает WP-Cron, и списки останутся на дате сборки плагина."
+msgstr ""
+
+#: admin/class-lem-admin.php:263
+msgid "Реестры не обновлялись "
+msgstr ""
+
+#: admin/class-lem-admin.php:264
+msgid ". Обычно это значит, что не работает WP-Cron."
+msgstr ""
+
+#: admin/class-lem-admin.php:273
+msgid "Обновить сейчас"
+msgstr ""
+
+#: admin/class-lem-admin.php:274
+msgid "или запустите"
+msgstr ""
+
+#: admin/class-lem-admin.php:435
+msgid "Настройки сохранены."
+msgstr ""
+
+#: admin/class-lem-admin.php:442
+msgid "Правила поиска изменились. Запустите пересканирование в разделе «Сканер», "
+msgstr ""
+
+#: admin/class-lem-admin.php:443
+msgid "иначе для ранее отсканированных статей останется прежний результат."
+msgstr ""
+
+#: admin/class-lem-admin.php:453
+msgid "Не выбран ни один реестр: плагин ничего не будет ни маркировать, ни отслеживать."
+msgstr ""
+
+#: admin/class-lem-admin.php:460
+msgid "Маркировка отключена полностью. Упоминания будут видны только в разделе «Упоминания»."
+msgstr ""
+
+#: admin/class-lem-admin.php:469
+#: admin/class-lem-admin.php:502
+#: admin/class-lem-admin.php:517
+#: admin/class-lem-admin.php:550
+#: admin/class-lem-admin.php:565
+#: admin/class-lem-admin.php:590
+#: admin/class-lem-admin.php:625
+#: admin/class-lem-admin.php:640
+#: admin/class-lem-admin.php:651
+#: admin/class-lem-admin.php:682
+#: admin/class-lem-admin.php:697
+msgid "Нет доступа"
+msgstr ""
+
+#: admin/class-lem-admin.php:483
+msgid "Укажите название"
+msgstr ""
+
+#: admin/class-lem-admin.php:494
+msgid "Не удалось создать запись"
+msgstr ""
+
+#: admin/class-lem-admin.php:510
+#: admin/class-lem-admin.php:690
+msgid "Неверный ID"
+msgstr ""
+
+#: admin/class-lem-admin.php:523
+msgid ". Из записей реестра добавлено доменов: "
+msgstr ""
+
+#: admin/class-lem-admin.php:526
+msgid ". Проверка архива запущена в фоне"
+msgstr ""
+
+#: admin/class-lem-admin.php:527
+msgid "Все реестры обновлены"
+msgstr ""
+
+#: admin/class-lem-admin.php:529
+msgid "Основные реестры обновлены"
+msgstr ""
+
+#: admin/class-lem-admin.php:532
+msgid ". Физлица Росфинмониторинга не обновлены: "
+msgstr ""
+
+#: admin/class-lem-admin.php:533
+msgid ". Физлица Росфинмониторинга загружаются отдельно в фоне"
+msgstr ""
+
+#: admin/class-lem-admin.php:539
+msgid "Завершено с ошибками"
+msgstr ""
+
+#: admin/class-lem-admin.php:599
+msgid "дата не указана"
+msgstr ""
+
+#: admin/class-lem-admin.php:600
+msgid "Канал доступен, последний срез: "
+msgstr ""
+
+#: admin/class-lem-admin.php:602
+msgid "Канал недоступен: "
+msgstr ""
+
+#: admin/class-lem-admin.php:608
+msgid "Выгрузка не удалась: "
+msgstr ""
+
+#: admin/class-lem-admin.php:609
+msgid "Тестовая выгрузка: "
+msgstr ""
+
+#: admin/class-lem-admin.php:609
+msgid " записей"
+msgstr ""
+
+#: admin/class-lem-admin.php:612
+msgid "Токен не задан, и для этих реестров он не нужен"
+msgstr ""
+
+#: admin/class-lem-admin.php:663
+msgid "Укажите домен"
+msgstr ""
+
+#: admin/class-lem-admin.php:674
+msgid "Не удалось создать запись (возможно, домен уже существует)"
+msgstr ""
+
+#: admin/views/banned-links.php:13
+#: admin/views/report.php:39
+#: includes/class-lem-metabox.php:78
+msgid "иноагент"
+msgstr ""
+
+#: admin/views/banned-links.php:14
+#: admin/views/report.php:40
+#: includes/class-lem-metabox.php:79
+msgid "экстремистская"
+msgstr ""
+
+#: admin/views/banned-links.php:15
+#: admin/views/report.php:41
+#: includes/class-lem-metabox.php:80
+msgid "террористическая"
+msgstr ""
+
+#: admin/views/banned-links.php:16
+#: admin/views/report.php:42
+#: includes/class-lem-metabox.php:81
+msgid "нежелательная"
+msgstr ""
+
+#: admin/views/banned-links.php:17
+msgid "добавлен вручную"
+msgstr ""
+
+#: admin/views/banned-links.php:63
+msgid "Ссылки на ресурсы из реестров"
+msgstr ""
+
+#: admin/views/banned-links.php:67
+msgid "Реестр ресурсов"
+msgstr ""
+
+#: admin/views/banned-links.php:69
+msgid ""
+"Ресурсы организаций из реестров. Часть приезжает автоматически: у записей\n"
+"            об иноагентах Минюст публикует ссылки на их сайты и аккаунты.\n"
+"            Для площадок, где у организации только аккаунт, указывайте ссылку целиком\n"
+"            ("
+msgstr ""
+
+#: admin/views/banned-links.php:72
+msgid ""
+"): помечен\n"
+"            будет этот аккаунт, а не весь телеграм или YouTube."
+msgstr ""
+
+#: admin/views/banned-links.php:76
+msgid "Удаляются из текста не все."
+msgstr ""
+
+#: admin/views/banned-links.php:76
+msgid ""
+"Ссылка на ресурс нежелательной\n"
+"            организации может толковаться как участие в её деятельности, её убирают.\n"
+"            Ссылка на сайт иноагента ничем не запрещена, ей достаточно маркировки,\n"
+"            и чистка её не трогает. Список удаляемых реестров задаётся в настройках."
+msgstr ""
+
+#: admin/views/banned-links.php:93
+msgid "Добавить ресурс"
+msgstr ""
+
+#: admin/views/banned-links.php:94
+msgid "Массовый импорт"
+msgstr ""
+
+#: admin/views/banned-links.php:95
+msgid "Всего ресурсов:"
+msgstr ""
+
+#: admin/views/banned-links.php:100
+#: admin/views/banned-links.php:102
+msgid "Найти ресурс"
+msgstr ""
+
+#: admin/views/banned-links.php:109
+msgid "Ресурс"
+msgstr ""
+
+#: admin/views/banned-links.php:111
+#: admin/views/banned-links.php:330
+msgid "Название организации"
+msgstr ""
+
+#: admin/views/banned-links.php:112
+msgid "Добавлен"
+msgstr ""
+
+#: admin/views/banned-links.php:113
+#: admin/views/entities.php:58
+msgid "Действия"
+msgstr ""
+
+#: admin/views/banned-links.php:128
+#: admin/views/banned-links.php:274
+msgid "не удаляется"
+msgstr ""
+
+#: admin/views/banned-links.php:135
+#: admin/views/entities.php:73
+msgid "Изменить"
+msgstr ""
+
+#: admin/views/banned-links.php:137
+#: admin/views/brands.php:47
+#: admin/views/entities.php:74
+msgid "Удалить"
+msgstr ""
+
+#: admin/views/banned-links.php:152
+msgid "Ресурсы не найдены. Измените поиск или добавьте записи вручную."
+msgstr ""
+
+#: admin/views/banned-links.php:158
+msgid "Сканер ссылок"
+msgstr ""
+
+#: admin/views/banned-links.php:160
+msgid "Сканирует все опубликованные статьи и отмечает ссылки на ресурсы организаций из реестров."
+msgstr ""
+
+#: admin/views/banned-links.php:166
+#: admin/views/scanner.php:17
+msgid "Сканировать все статьи"
+msgstr ""
+
+#: admin/views/banned-links.php:176
+#: admin/views/scanner.php:31
+msgid "Отменить"
+msgstr ""
+
+#. translators: 1: scan date, 2: articles with links, 3: total links.
+#: admin/views/banned-links.php:191
+#, php-format
+msgid "Последний скан: %1$s - %2$d статей со ссылками, %3$d ссылок всего"
+msgstr ""
+
+#: admin/views/banned-links.php:209
+msgid "Найденные ссылки на ресурсы из реестров"
+msgstr ""
+
+#: admin/views/banned-links.php:211
+msgid "Найдено"
+msgstr ""
+
+#: admin/views/banned-links.php:211
+msgid ""
+"ссылок\n"
+"            в"
+msgstr ""
+
+#: admin/views/banned-links.php:212
+msgid ""
+"статьях.\n"
+"            Из них подлежат удалению:"
+msgstr ""
+
+#: admin/views/banned-links.php:214
+#: admin/views/dashboard.php:68
+#: admin/views/dashboard.php:82
+#: admin/views/dashboard.php:94
+msgid "в"
+msgstr ""
+
+#: admin/views/banned-links.php:214
+msgid "статьях."
+msgstr ""
+
+#: admin/views/banned-links.php:216
+msgid ""
+"Остальные - ресурсы иноагентов, ссылаться на них не запрещено,\n"
+"                чистка их не тронет."
+msgstr ""
+
+#: admin/views/banned-links.php:224
+msgid "Удалить ссылки, подлежащие удалению ("
+msgstr ""
+
+#: admin/views/banned-links.php:245
+msgid "Статья"
+msgstr ""
+
+#: admin/views/banned-links.php:246
+msgid "URL ссылки"
+msgstr ""
+
+#: admin/views/banned-links.php:247
+msgid "Текст ссылки"
+msgstr ""
+
+#: admin/views/banned-links.php:248
+msgid "Совпавший ресурс"
+msgstr ""
+
+#: admin/views/banned-links.php:250
+msgid "Действие"
+msgstr ""
+
+#: admin/views/banned-links.php:280
+msgid "Удалить ссылки"
+msgstr ""
+
+#: admin/views/banned-links.php:290
+msgid "Результаты"
+msgstr ""
+
+#: admin/views/banned-links.php:291
+msgid "Ссылок на ресурсы из реестров не найдено."
+msgstr ""
+
+#: admin/views/banned-links.php:299
+#: admin/views/banned-links.php:367
+msgid "Добавить домен"
+msgstr ""
+
+#: admin/views/banned-links.php:303
+msgid "Домен или аккаунт"
+msgstr ""
+
+#: admin/views/banned-links.php:305
+msgid "example.org или t.me/doxajournal"
+msgstr ""
+
+#: admin/views/banned-links.php:307
+msgid ""
+"Можно указать URL целиком. Для обычного сайта помечается весь домен,\n"
+"                        для телеграма, YouTube и соцсетей - только указанный аккаунт."
+msgstr ""
+
+#: admin/views/banned-links.php:316
+msgid "Не указан"
+msgstr ""
+
+#: admin/views/banned-links.php:317
+#: admin/views/dashboard.php:139
+#: admin/views/settings.php:49
+msgid "Иностранные агенты"
+msgstr ""
+
+#: admin/views/banned-links.php:318
+#: admin/views/settings.php:50
+msgid "Экстремистские организации"
+msgstr ""
+
+#: admin/views/banned-links.php:319
+#: admin/views/settings.php:51
+msgid "Террористические организации"
+msgstr ""
+
+#: admin/views/banned-links.php:320
+#: admin/views/settings.php:52
+msgid "Нежелательные организации"
+msgstr ""
+
+#: admin/views/banned-links.php:323
+msgid ""
+"От реестра зависит, убирать ли такие ссылки из текста.\n"
+"                        Без указания ссылки на домен считаются подлежащими удалению: раз внесли руками,\n"
+"                        значит, ссылаться на него не собираетесь."
+msgstr ""
+
+#: admin/views/banned-links.php:335
+#: admin/views/entities.php:134
+msgid "Сохранить"
+msgstr ""
+
+#: admin/views/banned-links.php:336
+#: admin/views/banned-links.php:351
+#: admin/views/entities.php:135
+msgid "Отмена"
+msgstr ""
+
+#: admin/views/banned-links.php:345
+msgid "Массовый импорт доменов"
+msgstr ""
+
+#: admin/views/banned-links.php:346
+msgid "По одному домену на строку. Формат:"
+msgstr ""
+
+#: admin/views/banned-links.php:346
+msgid "домен | Название организации"
+msgstr ""
+
+#: admin/views/banned-links.php:346
+msgid "(название необязательно)."
+msgstr ""
+
+#: admin/views/banned-links.php:347
+msgid ""
+"example.org | Организация X\n"
+"another-site.com"
+msgstr ""
+
+#: admin/views/banned-links.php:350
+msgid "Импортировать"
+msgstr ""
+
+#: admin/views/banned-links.php:367
+#: admin/views/entities.php:147
+msgid "Редактирование"
+msgstr ""
+
+#: admin/views/banned-links.php:388
+#: admin/views/entities.php:170
+msgid "Сохранение..."
+msgstr ""
+
+#: admin/views/banned-links.php:403
+#: admin/views/banned-links.php:449
+#: admin/views/banned-links.php:495
+#: admin/views/banned-links.php:552
+#: admin/views/banned-links.php:555
+#: admin/views/banned-links.php:606
+#: admin/views/dashboard.php:334
+#: admin/views/dashboard.php:338
+#: admin/views/dashboard.php:355
+#: admin/views/dashboard.php:369
+#: admin/views/dashboard.php:389
+#: admin/views/dashboard.php:426
+#: admin/views/dashboard.php:429
+#: admin/views/entities.php:189
+#: admin/views/entities.php:191
+#: admin/views/scanner.php:102
+msgid "Ошибка"
+msgstr ""
+
+#: admin/views/banned-links.php:405
+#: admin/views/banned-links.php:452
+#: admin/views/dashboard.php:400
+#: admin/views/settings.php:562
+#: admin/views/settings.php:581
+msgid "Ошибка сети"
+msgstr ""
+
+#: admin/views/banned-links.php:410
+msgid "Удалить этот домен из реестра?"
+msgstr ""
+
+#: admin/views/banned-links.php:433
+msgid "Введите хотя бы один домен"
+msgstr ""
+
+#: admin/views/banned-links.php:435
+msgid "Импорт..."
+msgstr ""
+
+#: admin/views/banned-links.php:470
+#: admin/views/scanner.php:77
+msgid "Инициализация..."
+msgstr ""
+
+#: admin/views/banned-links.php:479
+#: admin/views/banned-links.php:482
+#: admin/views/banned-links.php:520
+#: admin/views/banned-links.php:590
+#: admin/views/banned-links.php:593
+#: admin/views/banned-links.php:624
+#: admin/views/scanner.php:86
+#: admin/views/scanner.php:89
+#: admin/views/scanner.php:126
+msgid "Ошибка: "
+msgstr ""
+
+#: admin/views/banned-links.php:479
+#: admin/views/banned-links.php:590
+#: admin/views/scanner.php:86
+msgid "Неизвестная"
+msgstr ""
+
+#: admin/views/banned-links.php:500
+#: admin/views/banned-links.php:611
+#: admin/views/scanner.php:107
+msgid " статей ("
+msgstr ""
+
+#: admin/views/banned-links.php:501
+msgid " со ссылками, "
+msgstr ""
+
+#: admin/views/banned-links.php:501
+#: admin/views/banned-links.php:509
+msgid " ссылок"
+msgstr ""
+
+#: admin/views/banned-links.php:508
+#: admin/views/scanner.php:115
+msgid "Сканирование завершено: "
+msgstr ""
+
+#: admin/views/banned-links.php:508
+msgid " статей со ссылками, "
+msgstr ""
+
+#: admin/views/banned-links.php:513
+#: admin/views/scanner.php:119
+msgid "Отменено."
+msgstr ""
+
+#: admin/views/banned-links.php:537
+msgid "Удалить из этой статьи ссылки, подлежащие удалению? Тег <a> будет заменён текстом ссылки. Ресурсы иноагентов останутся."
+msgstr ""
+
+#: admin/views/banned-links.php:550
+#: admin/views/dashboard.php:334
+msgid "Готово"
+msgstr ""
+
+#: admin/views/banned-links.php:564
+msgid "Будут удалены "
+msgstr ""
+
+#: admin/views/banned-links.php:564
+msgid " ссылок из "
+msgstr ""
+
+#: admin/views/banned-links.php:564
+msgid ""
+" статей.\n"
+"Тег <a> будет заменён текстом ссылки.\n"
+"Ссылки на ресурсы иноагентов не затрагиваются.\n"
+"\n"
+"Продолжить?"
+msgstr ""
+
+#: admin/views/banned-links.php:581
+msgid "Инициализация удаления..."
+msgstr ""
+
+#: admin/views/banned-links.php:611
+msgid "Очищено "
+msgstr ""
+
+#: admin/views/banned-links.php:617
+msgid "Удаление завершено: очищено "
+msgstr ""
+
+#: admin/views/banned-links.php:617
+msgid " статей."
+msgstr ""
+
+#: admin/views/brands.php:10
+msgid ""
+"В реестре Минюста издания записаны юридическими названиями («Интернет-издание \"Вёрстка Медиа\"»),\n"
+"        а в статьях их называют брендом («Вёрстки»). Здесь задаётся соответствие. Список предзаполнен\n"
+"        очевидными случаями, вы можете его дополнять и править под свою редакцию."
+msgstr ""
+
+#: admin/views/brands.php:18
+#: admin/views/brands.php:41
+msgid "Искать в названии"
+msgstr ""
+
+#: admin/views/brands.php:19
+msgid ""
+"Кусок официального названия из реестра, по которому находится запись.\n"
+"                    Если справа стоит"
+msgstr ""
+
+#: admin/views/brands.php:20
+msgid "0 записей"
+msgstr ""
+
+#: admin/views/brands.php:20
+msgid ", правило не работает: текст не совпадает с реестром."
+msgstr ""
+
+#: admin/views/brands.php:23
+#: admin/views/brands.php:42
+msgid "Обычные алиасы"
+msgstr ""
+
+#: admin/views/brands.php:24
+msgid "Ловятся и с кавычками, и без. Годятся для различимых имён: DOXA, Медуза, Радио Свобода."
+msgstr ""
+
+#: admin/views/brands.php:27
+#: admin/views/brands.php:43
+msgid "Только в кавычках"
+msgstr ""
+
+#: admin/views/brands.php:28
+msgid ""
+"Ловятся, только если написаны в кавычках. Для брендов-обычных слов:\n"
+"                    издание «Холод» пометится, «на улице холод» нет. Падежи внутри кавычек\n"
+"                    подхватываются сами: «Вёрстки», «Вёрстке»."
+msgstr ""
+
+#: admin/views/brands.php:44
+msgid "Заметка"
+msgstr ""
+
+#: admin/views/brands.php:45
+msgid "Записей"
+msgstr ""
+
+#: admin/views/brands.php:46
+msgid "Вкл."
+msgstr ""
+
+#: admin/views/brands.php:61
+#: admin/views/brands.php:66
+#: admin/views/brands.php:97
+#: admin/views/brands.php:98
+msgid "через запятую"
+msgstr ""
+
+#: admin/views/brands.php:74
+#: admin/views/brands.php:103
+msgid "своя формулировка сноски (необязательно)"
+msgstr ""
+
+#: admin/views/brands.php:78
+msgid "Правило ничего не находит в реестре"
+msgstr ""
+
+#: admin/views/brands.php:96
+msgid "кусок названия из реестра"
+msgstr ""
+
+#: admin/views/brands.php:113
+msgid "Сохранить и применить"
+msgstr ""
+
+#: admin/views/brands.php:115
+msgid ""
+"После сохранения запустите пересканирование в разделе «Сканер»: алиасы влияют на то,\n"
+"            что находит сканер."
+msgstr ""
+
+#: admin/views/dashboard.php:3
+msgid "Маркировка иноагентов и запрещённых организаций"
+msgstr ""
+
+#: admin/views/dashboard.php:20
+msgid "Идёт проверка архива после обновления реестров."
+msgstr ""
+
+#: admin/views/dashboard.php:21
+msgid "Просмотрено"
+msgstr ""
+
+#: admin/views/dashboard.php:22
+#: admin/views/dashboard.php:216
+#: admin/views/settings.php:131
+msgid "из"
+msgstr ""
+
+#: admin/views/dashboard.php:25
+msgid "Планировщик не подаёт признаков жизни"
+msgstr ""
+
+#: admin/views/dashboard.php:25
+msgid ""
+": задачи\n"
+"                    не выполнялись больше двух часов. Запустите проверку кнопкой ниже\n"
+"                    или настройте системный cron на выполнение задач WordPress."
+msgstr ""
+
+#: admin/views/dashboard.php:29
+msgid "Следующая порция:"
+msgstr ""
+
+#: admin/views/dashboard.php:29
+msgid ""
+".\n"
+"                    Работа идёт частями в фоне, страницу можно закрыть."
+msgstr ""
+
+#: admin/views/dashboard.php:32
+msgid "Планировщик работает, последняя задача:"
+msgstr ""
+
+#: admin/views/dashboard.php:33
+msgid " назад"
+msgstr ""
+
+#: admin/views/dashboard.php:36
+msgid "Задача в расписании не найдена, запустите проверку вручную."
+msgstr ""
+
+#: admin/views/dashboard.php:43
+msgid "Попыток было"
+msgstr ""
+
+#: admin/views/dashboard.php:43
+msgid ", а прогресса нет."
+msgstr ""
+
+#: admin/views/dashboard.php:44
+msgid ""
+"Похоже, проверка обрывается на первой же порции: обычно это нехватка\n"
+"                    памяти. Помогает увеличение"
+msgstr ""
+
+#: admin/views/dashboard.php:45
+msgid ""
+", а до того\n"
+"                    маркировка продолжает работать по прежним результатам."
+msgstr ""
+
+#: admin/views/dashboard.php:51
+msgid "Проверить архив сейчас"
+msgstr ""
+
+#: admin/views/dashboard.php:63
+#: admin/views/dashboard.php:78
+msgid "Проверка архива завершена"
+msgstr ""
+
+#: admin/views/dashboard.php:64
+#: admin/views/report.php:65
+msgid "Просмотрено материалов:"
+msgstr ""
+
+#: admin/views/dashboard.php:64
+msgid ""
+",\n"
+"                из них с упоминаниями:"
+msgstr ""
+
+#: admin/views/dashboard.php:67
+#: admin/views/dashboard.php:93
+msgid "Ссылок на ресурсы из реестров:"
+msgstr ""
+
+#: admin/views/dashboard.php:68
+#: admin/views/dashboard.php:82
+#: admin/views/dashboard.php:94
+msgid "материалах."
+msgstr ""
+
+#: admin/views/dashboard.php:70
+msgid ""
+"Кого принесло очередным обновлением реестров, будет показано здесь же\n"
+"                после ближайшего обновления."
+msgstr ""
+
+#: admin/views/dashboard.php:79
+msgid "Новых записей в реестрах:"
+msgstr ""
+
+#: admin/views/dashboard.php:81
+msgid "Из них встречаются на сайте:"
+msgstr ""
+
+#: admin/views/dashboard.php:83
+#: admin/views/dashboard.php:95
+msgid "Посмотреть"
+msgstr ""
+
+#: admin/views/dashboard.php:85
+msgid "В материалах сайта ни одна из них не встречается."
+msgstr ""
+
+#: admin/views/dashboard.php:88
+msgid "Новички:"
+msgstr ""
+
+#: admin/views/dashboard.php:90
+msgid " и другие"
+msgstr ""
+
+#: admin/views/dashboard.php:104
+msgid "никогда"
+msgstr ""
+
+#: admin/views/dashboard.php:105
+msgid "не задана"
+msgstr ""
+
+#: admin/views/dashboard.php:127
+#: admin/views/settings.php:45
+msgid "Реестры"
+msgstr ""
+
+#: admin/views/dashboard.php:131
+#: admin/views/entities.php:55
+#: admin/views/entities.php:110
+msgid "Тип"
+msgstr ""
+
+#: admin/views/dashboard.php:132
+msgid "Активных"
+msgstr ""
+
+#: admin/views/dashboard.php:133
+msgid "Исключённых"
+msgstr ""
+
+#: admin/views/dashboard.php:140
+msgid "Экстремистские орг."
+msgstr ""
+
+#: admin/views/dashboard.php:141
+msgid "Террористические орг."
+msgstr ""
+
+#: admin/views/dashboard.php:142
+msgid "Нежелательные орг."
+msgstr ""
+
+#: admin/views/dashboard.php:143
+#: admin/views/entities.php:30
+#: admin/views/report.php:43
+#: includes/class-lem-metabox.php:82
+msgid "Физлица: Росфинмониторинг"
+msgstr ""
+
+#: admin/views/dashboard.php:158
+msgid "Итого"
+msgstr ""
+
+#: admin/views/dashboard.php:167
+msgid "Статус"
+msgstr ""
+
+#: admin/views/dashboard.php:170
+msgid "Статей с маркировкой:"
+msgstr ""
+
+#: admin/views/dashboard.php:174
+msgid "Ресурсов в реестре:"
+msgstr ""
+
+#: admin/views/dashboard.php:178
+msgid "Статей со ссылками на них:"
+msgstr ""
+
+#: admin/views/dashboard.php:181
+msgid ", из них подлежат чистке:"
+msgstr ""
+
+#: admin/views/dashboard.php:186
+msgid "Версия списков:"
+msgstr ""
+
+#: admin/views/dashboard.php:190
+msgid "Последнее обновление:"
+msgstr ""
+
+#: admin/views/dashboard.php:197
+msgid "Канал реестров:"
+msgstr ""
+
+#: admin/views/dashboard.php:199
+msgid "доступен"
+msgstr ""
+
+#: admin/views/dashboard.php:199
+#: admin/views/dashboard.php:218
+msgid ""
+",\n"
+"                        срез от"
+msgstr ""
+
+#: admin/views/dashboard.php:203
+msgid "недоступен"
+msgstr ""
+
+#: admin/views/dashboard.php:212
+msgid "Физлица Росфинмониторинга:"
+msgstr ""
+
+#: admin/views/dashboard.php:216
+msgid "загружаются в фоне:"
+msgstr ""
+
+#: admin/views/dashboard.php:216
+msgid "ФИО"
+msgstr ""
+
+#: admin/views/dashboard.php:218
+msgid "загружены"
+msgstr ""
+
+#: admin/views/dashboard.php:221
+msgid "ещё не загружены"
+msgstr ""
+
+#: admin/views/dashboard.php:229
+msgid "официальный реестр"
+msgstr ""
+
+#: admin/views/dashboard.php:230
+msgid "зеркало перечня"
+msgstr ""
+
+#: admin/views/dashboard.php:231
+msgid "канал реестров"
+msgstr ""
+
+#: admin/views/dashboard.php:232
+msgid "встроенный перечень"
+msgstr ""
+
+#: admin/views/dashboard.php:233
+msgid "прежний подтверждённый список"
+msgstr ""
+
+#: admin/views/dashboard.php:234
+msgid "данных нет"
+msgstr ""
+
+#: admin/views/dashboard.php:241
+msgid "Источник данных:"
+msgstr ""
+
+#: admin/views/dashboard.php:243
+msgid "официальные реестры"
+msgstr ""
+
+#: admin/views/dashboard.php:259
+msgid "Диагностика источников"
+msgstr ""
+
+#: admin/views/dashboard.php:271
+msgid "Последнее обновление прошло не полностью:"
+msgstr ""
+
+#: admin/views/dashboard.php:279
+msgid "Быстрые действия"
+msgstr ""
+
+#: admin/views/dashboard.php:282
+msgid "Обновить реестры"
+msgstr ""
+
+#: admin/views/dashboard.php:288
+msgid "Запустить сканер"
+msgstr ""
+
+#: admin/views/dashboard.php:293
+msgid "Проверить ссылки"
+msgstr ""
+
+#: admin/views/dashboard.php:298
+msgid "Очистить кеш"
+msgstr ""
+
+#: admin/views/dashboard.php:304
+msgid "Проверить архив"
+msgstr ""
+
+#: admin/views/dashboard.php:310
+msgid "Проверить источники"
+msgstr ""
+
+#: admin/views/dashboard.php:326
+msgid "Обновление..."
+msgstr ""
+
+#: admin/views/dashboard.php:345
+msgid "Опрашиваем..."
+msgstr ""
+
+#: admin/views/dashboard.php:357
+msgid "Недоступны: "
+msgstr ""
+
+#: admin/views/dashboard.php:357
+msgid "Все источники отвечают"
+msgstr ""
+
+#: admin/views/dashboard.php:364
+msgid "<p class=\"description\">При недоступности официального источника плагин "
+msgstr ""
+
+#: admin/views/dashboard.php:365
+msgid "пробует канал реестров, затем зеркало (если оно есть) и встроенный перечень. "
+msgstr ""
+
+#: admin/views/dashboard.php:366
+msgid "Источник последней загрузки указан в блоке «Статус».</p>"
+msgstr ""
+
+#: admin/views/dashboard.php:390
+msgid " из "
+msgstr ""
+
+#: admin/views/dashboard.php:394
+msgid "Проверка завершена"
+msgstr ""
+
+#: admin/views/dashboard.php:410
+msgid "Проверить весь архив на упоминания и ссылки на ресурсы из реестров? "
+msgstr ""
+
+#: admin/views/dashboard.php:411
+msgid "Это может занять несколько минут, вкладку надо держать открытой."
+msgstr ""
+
+#: admin/views/dashboard.php:418
+msgid "Очистка..."
+msgstr ""
+
+#: admin/views/dashboard.php:426
+msgid "Очищено для "
+msgstr ""
+
+#: admin/views/dashboard.php:426
+msgid " статей"
+msgstr ""
+
+#: admin/views/entities.php:26
+msgid "Иноагент"
+msgstr ""
+
+#: admin/views/entities.php:27
+msgid "Экстремист."
+msgstr ""
+
+#: admin/views/entities.php:28
+msgid "Террорист."
+msgstr ""
+
+#: admin/views/entities.php:29
+msgid "Нежелат."
+msgstr ""
+
+#: admin/views/entities.php:34
+msgid "Реестр сущностей"
+msgstr ""
+
+#: admin/views/entities.php:35
+msgid "Добавить"
+msgstr ""
+
+#: admin/views/entities.php:40
+msgid "Все типы"
+msgstr ""
+
+#: admin/views/entities.php:41
+#: admin/views/entities.php:113
+msgid "Иностранный агент"
+msgstr ""
+
+#: admin/views/entities.php:42
+#: admin/views/entities.php:114
+msgid "Экстремистская орг."
+msgstr ""
+
+#: admin/views/entities.php:43
+#: admin/views/entities.php:115
+msgid "Террористическая орг."
+msgstr ""
+
+#: admin/views/entities.php:44
+#: admin/views/entities.php:116
+msgid "Нежелательная орг."
+msgstr ""
+
+#: admin/views/entities.php:46
+msgid "Поиск..."
+msgstr ""
+
+#: admin/views/entities.php:47
+#: admin/views/report.php:113
+msgid "Фильтр"
+msgstr ""
+
+#: admin/views/entities.php:54
+#: admin/views/entities.php:106
+msgid "Название"
+msgstr ""
+
+#: admin/views/entities.php:56
+#: admin/views/entities.php:121
+msgid "Физлицо"
+msgstr ""
+
+#: admin/views/entities.php:57
+msgid "Алиасы"
+msgstr ""
+
+#: admin/views/entities.php:63
+msgid "Записи не найдены."
+msgstr ""
+
+#. translators: Formatted number of registry entries.
+#: admin/views/entities.php:85
+#, php-format
+msgid "%1$s записей"
+msgstr ""
+
+#: admin/views/entities.php:102
+#: admin/views/entities.php:147
+msgid "Добавить запись"
+msgstr ""
+
+#: admin/views/entities.php:125
+msgid "Алиасы (по одному в строке)"
+msgstr ""
+
+#: admin/views/entities.php:129
+msgid "Свой текст дисклеймера"
+msgstr ""
+
+#: admin/views/entities.php:196
+msgid "Удалить эту запись?"
+msgstr ""
+
+#: admin/views/report.php:51
+msgid ""
+"Все материалы, где сканер нашёл организации из отслеживаемых реестров.\n"
+"        Маркируемые показаны вместе с остальными: столбец «Маркируется» показывает,\n"
+"        видит ли метку читатель. Реестры, которые только отслеживаются, меток на сайте\n"
+"        не оставляют, но их упоминания и ссылки видны здесь."
+msgstr ""
+
+#: admin/views/report.php:59
+msgid "Последняя проверка архива:"
+msgstr ""
+
+#: admin/views/report.php:61
+msgid "Реестры пополнились на"
+msgstr ""
+
+#: admin/views/report.php:61
+msgid ""
+"записей,\n"
+"                из них в материалах сайта встречается"
+msgstr ""
+
+#: admin/views/report.php:62
+msgid ""
+".\n"
+"                Отбор «новое с последнего обновления» показывает именно их."
+msgstr ""
+
+#: admin/views/report.php:65
+msgid ""
+".\n"
+"                Отбор «новое с последнего обновления» заработает после ближайшего\n"
+"                обновления реестров."
+msgstr ""
+
+#. translators: 1: number of mentions, 2: number of articles.
+#: admin/views/report.php:80
+#, php-format
+msgid "%1$d упоминаний в %2$d материалах"
+msgstr ""
+
+#: admin/views/report.php:90
+msgid "Все реестры"
+msgstr ""
+
+#: admin/views/report.php:99
+msgid "Все находки"
+msgstr ""
+
+#: admin/views/report.php:100
+msgid "Только маркируемые"
+msgstr ""
+
+#: admin/views/report.php:101
+msgid "Только без меток"
+msgstr ""
+
+#: admin/views/report.php:104
+msgid "За всё время"
+msgstr ""
+
+#: admin/views/report.php:105
+msgid "Новое с последнего обновления реестров"
+msgstr ""
+
+#: admin/views/report.php:106
+msgid "Новое за 30 дней"
+msgstr ""
+
+#: admin/views/report.php:110
+msgid "только со ссылками"
+msgstr ""
+
+#: admin/views/report.php:112
+msgid "организация или заголовок"
+msgstr ""
+
+#: admin/views/report.php:126
+msgid "Выгрузить CSV"
+msgstr ""
+
+#: admin/views/report.php:129
+msgid "Найдено:"
+msgstr ""
+
+#: admin/views/report.php:134
+msgid "Материал"
+msgstr ""
+
+#: admin/views/report.php:135
+msgid "Организация"
+msgstr ""
+
+#: admin/views/report.php:137
+msgid "В реестре с"
+msgstr ""
+
+#: admin/views/report.php:138
+msgid "Найдено как"
+msgstr ""
+
+#: admin/views/report.php:139
+msgid "Маркируется"
+msgstr ""
+
+#: admin/views/report.php:140
+msgid "Ссылки на ресурсы"
+msgstr ""
+
+#: admin/views/report.php:145
+msgid ""
+"Ничего не найдено. Если материалы давно не сканировались,\n"
+"                запустите сканирование в разделе «Сканер»."
+msgstr ""
+
+#: admin/views/report.php:152
+msgid "(без заголовка)"
+msgstr ""
+
+#: admin/views/report.php:155
+msgid "открыть"
+msgstr ""
+
+#: admin/views/report.php:165
+msgid "(исключена из реестра)"
+msgstr ""
+
+#: admin/views/report.php:178
+msgid "найдено недавно"
+msgstr ""
+
+#: admin/views/report.php:184
+msgid "да"
+msgstr ""
+
+#: admin/views/report.php:186
+msgid "нет"
+msgstr ""
+
+#: admin/views/scanner.php:9
+msgid "Поиск упоминаний в статьях"
+msgstr ""
+
+#: admin/views/scanner.php:11
+msgid ""
+"Сканирует все опубликованные статьи и отмечает те, в которых упоминаются сущности из реестров.\n"
+"            Существующие результаты сканирования будут обновлены."
+msgstr ""
+
+#: admin/views/scanner.php:20
+msgid "Только за 7 дней"
+msgstr ""
+
+#. translators: 1: scan date, 2: articles with matches, 3: total mentions.
+#: admin/views/scanner.php:47
+#, php-format
+msgid "Последний скан: %1$s - %2$d статей с совпадениями, %3$d упоминаний всего"
+msgstr ""
+
+#: admin/views/scanner.php:108
+msgid " совпадений, "
+msgstr ""
+
+#: admin/views/scanner.php:108
+#: admin/views/scanner.php:116
+msgid " упоминаний"
+msgstr ""
+
+#: admin/views/scanner.php:115
+msgid " статей с совпадениями, "
+msgstr ""
+
+#: admin/views/settings.php:9
+msgid "Настройки маркировки"
+msgstr ""
+
+#: admin/views/settings.php:16
+msgid "Типы записей"
+msgstr ""
+
+#: admin/views/settings.php:26
+msgid "Какие типы записей сканировать и маркировать."
+msgstr ""
+
+#: admin/views/settings.php:31
+msgid "Профиль сайта"
+msgstr ""
+
+#: admin/views/settings.php:60
+#: admin/views/settings.php:89
+#: admin/views/settings.php:110
+msgid "Маркировать"
+msgstr ""
+
+#: admin/views/settings.php:61
+#: admin/views/settings.php:90
+msgid "Отслеживать"
+msgstr ""
+
+#: admin/views/settings.php:89
+msgid "- сноска в тексте и строка в блоке дисклеймеров."
+msgstr ""
+
+#: admin/views/settings.php:90
+msgid ""
+"- без меток на сайте, но упоминания и ссылки видны\n"
+"                        в разделе «Упоминания». Нужно, когда маркировка не требуется, а знать о факте\n"
+"                        упоминания надо."
+msgstr ""
+
+#: admin/views/settings.php:93
+msgid ""
+"Маркируемый реестр отслеживается автоматически. Изменения действуют сразу,\n"
+"                        пересканирование не требуется."
+msgstr ""
+
+#: admin/views/settings.php:95
+msgid ""
+"Галочки\n"
+"                        расставляет выбранный профиль. Чтобы менять вручную,\n"
+"                        выберите профиль «Вручную»."
+msgstr ""
+
+#: admin/views/settings.php:107
+msgid "Физические лица: Росфинмониторинг"
+msgstr ""
+
+#: admin/views/settings.php:110
+msgid "Выключено"
+msgstr ""
+
+#: admin/views/settings.php:110
+msgid "Только отслеживать"
+msgstr ""
+
+#: admin/views/settings.php:115
+msgid ""
+"Дополнительный перечень физических лиц из «Наблюдателя». По умолчанию выключен,\n"
+"                        профили сайта его не включают. Для загрузки нужны включённый канал и токен канала.\n"
+"                        Загрузка идёт в фоне, порциями; после завершения проверяется архив публикаций."
+msgstr ""
+
+#: admin/views/settings.php:120
+msgid ""
+"Ищется полное ФИО, включая отчество, если оно есть в перечне.\n"
+"                        Совпадения по одной фамилии, инициалам и неполному имени не маркируются.\n"
+"                        У разных людей могут совпадать даже полные ФИО: такие случаи проверяет редакция."
+msgstr ""
+
+#: admin/views/settings.php:129
+msgid "Для повторной попытки сохраните настройки или нажмите «Обновить реестры» на «Обзоре»."
+msgstr ""
+
+#: admin/views/settings.php:131
+msgid "Идёт загрузка:"
+msgstr ""
+
+#: admin/views/settings.php:131
+msgid "ФИО."
+msgstr ""
+
+#: admin/views/settings.php:134
+msgid "Последняя успешная сверка:"
+msgstr ""
+
+#: admin/views/settings.php:134
+msgid ". Срез канала:"
+msgstr ""
+
+#: admin/views/settings.php:134
+msgid ". ФИО:"
+msgstr ""
+
+#: admin/views/settings.php:141
+msgid "Ссылки, подлежащие удалению"
+msgstr ""
+
+#: admin/views/settings.php:144
+msgid ""
+"Ссылка на ресурс нежелательной организации может толковаться как\n"
+"                        участие в её деятельности, такие ссылки убирают из текста.\n"
+"                        Ссылка на сайт иноагента ничем не запрещена, ей достаточно маркировки.\n"
+"                        Отметьте реестры, ссылки на ресурсы которых считать подлежащими удалению."
+msgstr ""
+
+#: admin/views/settings.php:158
+msgid ""
+"Найденные ссылки видны в разделе «Ссылки» в любом случае, отметка\n"
+"                        влияет только на то, что удаляется из текста."
+msgstr ""
+
+#: admin/views/settings.php:165
+msgid "Канал реестров"
+msgstr ""
+
+#: admin/views/settings.php:168
+msgid ""
+"Запасной источник на случай, когда официальный реестр не отвечает:\n"
+"                        сайт Минюста бывает недоступен, а хостинг может резать исходящие\n"
+"                        соединения. Данные там свежее снимка из поставки плагина.\n"
+"                        Порядок такой: официальный реестр, потом канал, зеркало (если оно есть)\n"
+"                        и встроенный перечень. Канал поддерживает все четыре реестра плагина."
+msgstr ""
+
+#: admin/views/settings.php:177
+msgid "Использовать канал реестров как запасной источник"
+msgstr ""
+
+#: admin/views/settings.php:181
+msgid "Адрес"
+msgstr ""
+
+#: admin/views/settings.php:194
+msgid "Токен"
+msgstr ""
+
+#: admin/views/settings.php:197
+msgid "сохранён, оставьте пустым"
+msgstr ""
+
+#: admin/views/settings.php:197
+msgid "не требуется"
+msgstr ""
+
+#: admin/views/settings.php:202
+msgid "удалить"
+msgstr ""
+
+#: admin/views/settings.php:207
+msgid "Для четырёх основных реестров токен не нужен"
+msgstr ""
+
+#: admin/views/settings.php:207
+msgid ""
+", выгрузки открыты.\n"
+"                        Токен требуется для добровольной загрузки физических лиц из перечня\n"
+"                        Росфинмониторинга. Без её включения этот перечень не скачивается."
+msgstr ""
+
+#: admin/views/settings.php:211
+msgid "Сейчас токен задан константой"
+msgstr ""
+
+#: admin/views/settings.php:212
+msgid "в wp-config.php и настройкой не перекрывается."
+msgstr ""
+
+#: admin/views/settings.php:214
+msgid ""
+"Токен хранится в настройках сайта и на страницу не выводится.\n"
+"                            Его можно держать вне базы, добавив в wp-config.php строку"
+msgstr ""
+
+#: admin/views/settings.php:221
+msgid "Проверить канал"
+msgstr ""
+
+#: admin/views/settings.php:228
+msgid "Обновление и удаление"
+msgstr ""
+
+#: admin/views/settings.php:231
+msgid "Обновляйте загрузкой поверх."
+msgstr ""
+
+#: admin/views/settings.php:231
+msgid ""
+"«Плагины → Добавить новый →\n"
+"                        Загрузить плагин», выбрать архив, на вопрос об уже установленной версии\n"
+"                        ответить «Заменить текущей версией». Настройки, реестры и результаты\n"
+"                        сканирования при этом сохраняются."
+msgstr ""
+
+#: admin/views/settings.php:235
+msgid ""
+"Удалять плагин перед установкой новой версии не нужно: раньше так\n"
+"                        приходилось делать, и каждый такой круг стирал всё нажитое."
+msgstr ""
+
+#: admin/views/settings.php:241
+msgid "Удалить все данные плагина, если его удалят из WordPress"
+msgstr ""
+
+#: admin/views/settings.php:244
+msgid ""
+"По умолчанию выключено: при удалении плагина реестры, настройки\n"
+"                        и результаты сканирования остаются в базе, и повторная установка\n"
+"                        подхватывает их как были. Включайте, если убираете плагин насовсем\n"
+"                        и хотите, чтобы после него ничего не осталось."
+msgstr ""
+
+#: admin/views/settings.php:253
+msgid "Помочь развитию плагина"
+msgstr ""
+
+#: admin/views/settings.php:260
+msgid ""
+"Плагин раздаётся бесплатно, и понять, сколько людей им пользуется,\n"
+"                        можно только с вашей помощью. Ничего обязательного тут нет:\n"
+"                        и счётчик, и регистрацию можно не включать, плагин будет работать\n"
+"                        точно так же."
+msgstr ""
+
+#: admin/views/settings.php:269
+msgid "Разрешить отправку случайного идентификатора и версии для подсчёта установок"
+msgstr ""
+
+#: admin/views/settings.php:272
+msgid ""
+"По умолчанию счётчик выключен. Чтобы разрешить отправку, отметьте галочку и сохраните настройки.\n"
+"                        Раз в неделю, вместе с обновлением реестров, плагин проверяет\n"
+"                        доступность канала - это нужно и само по себе, чтобы знать\n"
+"                        о запасном источнике заранее, а не в тот момент, когда официальный\n"
+"                        реестр уже упал. С этим запросом уходят две вещи: случайный\n"
+"                        идентификатор установки\n"
+"                        ("
+msgstr ""
+
+#: admin/views/settings.php:278
+msgid ""
+")\n"
+"                        и версия плагина. Ни домена, ни адреса, ни чего-либо о содержимом\n"
+"                        сайта. Идентификатор к сайту не привязан и сохраняется вместе с настройками плагина.\n"
+"                        Со снятой галочкой проверка канала остаётся, но уходит без этих\n"
+"                        заголовков, и посчитать установку по ней нельзя."
+msgstr ""
+
+#: admin/views/settings.php:285
+msgid "Зарегистрировать сайт"
+msgstr ""
+
+#: admin/views/settings.php:287
+msgid ""
+"Это уже не анонимно. Регистрация нужна, чтобы автор мог предупредить\n"
+"                        о важном обновлении или о поломке в реестрах. Отправляется"
+msgstr ""
+
+#: admin/views/settings.php:289
+msgid "только по нажатию кнопки"
+msgstr ""
+
+#: admin/views/settings.php:289
+msgid "и ровно в таком составе:"
+msgstr ""
+
+#: admin/views/settings.php:293
+msgid "Адрес сайта"
+msgstr ""
+
+#: admin/views/settings.php:295
+msgid "Название сайта"
+msgstr ""
+
+#: admin/views/settings.php:297
+msgid "Версия плагина"
+msgstr ""
+
+#: admin/views/settings.php:299
+msgid "Версия WordPress"
+msgstr ""
+
+#: admin/views/settings.php:301
+msgid "Версия PHP"
+msgstr ""
+
+#: admin/views/settings.php:303
+msgid "Идентификатор установки"
+msgstr ""
+
+#: admin/views/settings.php:305
+msgid "Почта для связи"
+msgstr ""
+
+#: admin/views/settings.php:307
+msgid "необязательно"
+msgstr ""
+
+#: admin/views/settings.php:311
+msgid ""
+"Больше ничего не уходит: ни содержимое статей, ни списки найденных\n"
+"                        организаций, ни данные редакции."
+msgstr ""
+
+#: admin/views/settings.php:316
+msgid "Отправить ещё раз"
+msgstr ""
+
+#: admin/views/settings.php:316
+msgid "Отправить"
+msgstr ""
+
+#: admin/views/settings.php:320
+msgid "Сайт зарегистрирован"
+msgstr ""
+
+#: admin/views/settings.php:328
+msgid "Поиск имён"
+msgstr ""
+
+#: admin/views/settings.php:333
+msgid "Искать фамилии и имена во всех падежах"
+msgstr ""
+
+#: admin/views/settings.php:336
+msgid ""
+"Без этого найдётся только «Иванов Иван» из реестра, а «по словам Иванова»\n"
+"                        или «интервью с Ивановым» пройдут мимо. Учитывается род: женские фамилии\n"
+"                        на согласную не склоняются."
+msgstr ""
+
+#: admin/views/settings.php:340
+msgid "Упоминание одной фамилии без имени"
+msgstr ""
+
+#: admin/views/settings.php:343
+msgid "Только если в статье есть полное имя (рекомендуется)"
+msgstr ""
+
+#: admin/views/settings.php:346
+msgid "Не искать, нужно полное «Имя Фамилия»"
+msgstr ""
+
+#: admin/views/settings.php:349
+msgid "Искать всегда"
+msgstr ""
+
+#: admin/views/settings.php:353
+msgid ""
+"В статьях принято называть человека полностью при первом упоминании,\n"
+"                        а дальше по фамилии. Рекомендуемый режим это учитывает: «Лев Пономарев\n"
+"                        заявил… Пономарев добавил…» будет размечено целиком, а заметка про\n"
+"                        однофамильца-чиновника не попадёт под маркировку."
+msgstr ""
+
+#: admin/views/settings.php:358
+msgid ""
+"Режим «искать всегда» даёт ложные срабатывания на однофамильцах:\n"
+"                        13 из 24 самых частых русских фамилий есть в реестре иноагентов.\n"
+"                        После изменения запустите пересканирование."
+msgstr ""
+
+#: admin/views/settings.php:366
+msgid "Иноагенты: только в цитатах"
+msgstr ""
+
+#: admin/views/settings.php:371
+msgid "Маркировать иноагентов только там, где их цитируют или дают ссылку"
+msgstr ""
+
+#: admin/views/settings.php:374
+msgid ""
+"Обычное упоминание фамилии в тексте маркироваться не будет.\n"
+"                        Остальные три реестра правило не затрагивает."
+msgstr ""
+
+#: admin/views/settings.php:379
+msgid "Что считать поводом для маркировки:"
+msgstr ""
+
+#: admin/views/settings.php:382
+msgid "Блок цитаты (blockquote, q) вместе с подводкой и подписью"
+msgstr ""
+
+#: admin/views/settings.php:383
+msgid "Абзац с гиперссылкой, текст и адрес ссылки"
+msgstr ""
+
+#: admin/views/settings.php:384
+msgid "Абзац с прямой речью в кавычках «…»"
+msgstr ""
+
+#: admin/views/settings.php:385
+msgid "Встроенный пост из соцсети вместе с подводкой и подписью"
+msgstr ""
+
+#: admin/views/settings.php:396
+msgid ""
+"После изменения этих условий запустите пересканирование:\n"
+"                            признак «упомянут в цитате» вычисляется во время сканирования."
+msgstr ""
+
+#: admin/views/settings.php:404
+msgid "Дополнительные поля"
+msgstr ""
+
+#: admin/views/settings.php:409
+msgid "Не сканировать (только заголовок и текст записи)"
+msgstr ""
+
+#: admin/views/settings.php:413
+msgid "Сканировать выбранные поля"
+msgstr ""
+
+#: admin/views/settings.php:417
+msgid "Сканировать все произвольные поля"
+msgstr ""
+
+#: admin/views/settings.php:422
+msgid "Полей с текстом на сайте не найдено."
+msgstr ""
+
+#: admin/views/settings.php:438
+msgid ""
+"Темы часто выводят подзаголовок или лид отдельным блоком, мимо основного\n"
+"                        текста записи - такие упоминания сканер не видит. Здесь показаны\n"
+"                        произвольные поля этого сайта, в которых лежит текст: отметьте нужные.\n"
+"                        После изменения запустите пересканирование."
+msgstr ""
+
+#: admin/views/settings.php:443
+msgid "Если текст собирается темой на лету и в базе его нет, используйте фильтр"
+msgstr ""
+
+#: admin/views/settings.php:450
+msgid "Исключённые из реестра"
+msgstr ""
+
+#: admin/views/settings.php:455
+msgid "Маркировать и тех, кого уже исключили из реестра"
+msgstr ""
+
+#: admin/views/settings.php:458
+msgid ""
+"По закону после исключения из реестра маркировка не требуется, поэтому\n"
+"                        по умолчанию плагин помечает только действующих. Если включить, исключённые\n"
+"                        помечаются формулировкой в прошедшем времени, например «ранее признан(а)\n"
+"                        иностранным агентом (исключён из реестра 12.04.2024)».\n"
+"                        После изменения запустите пересканирование."
+msgstr ""
+
+#: admin/views/settings.php:469
+msgid "Приоритет фильтра"
+msgstr ""
+
+#: admin/views/settings.php:475
+msgid "Приоритет фильтра the_content. Чем больше - тем позже выполняется. По умолчанию: 9999."
+msgstr ""
+
+#: admin/views/settings.php:481
+msgid "Цвет маркера"
+msgstr ""
+
+#: admin/views/settings.php:486
+msgid "Цвет сносок-маркеров в тексте статьи."
+msgstr ""
+
+#: admin/views/settings.php:492
+msgid "Фон дисклеймера"
+msgstr ""
+
+#: admin/views/settings.php:502
+msgid "Рамка дисклеймера"
+msgstr ""
+
+#: admin/views/settings.php:512
+msgid "Интервал обновления"
+msgstr ""
+
+#: admin/views/settings.php:516
+msgid "Ежедневно"
+msgstr ""
+
+#: admin/views/settings.php:517
+msgid "Дважды в день"
+msgstr ""
+
+#: admin/views/settings.php:518
+msgid "Еженедельно"
+msgstr ""
+
+#: admin/views/settings.php:520
+msgid "Как часто автоматически проверять обновления реестров."
+msgstr ""
+
+#: admin/views/settings.php:525
+msgid "Автоскан при публикации"
+msgstr ""
+
+#: admin/views/settings.php:530
+msgid "Автоматически сканировать статьи при публикации."
+msgstr ""
+
+#: admin/views/settings.php:536
+msgid "Сохранить настройки"
+msgstr ""
+
+#: admin/views/settings.php:546
+msgid ""
+"Отправить автору плагина адрес сайта, его название, версии и почту?\n"
+""
+msgstr ""
+
+#: admin/views/settings.php:548
+msgid "Содержимое статей и результаты поиска не отправляются."
+msgstr ""
+
+#: admin/views/settings.php:551
+msgid "Отправляем..."
+msgstr ""
+
+#: admin/views/settings.php:560
+msgid "не получилось"
+msgstr ""
+
+#: admin/views/settings.php:570
+msgid "Проверяем..."
+msgstr ""
+
+#: admin/views/settings.php:579
+msgid "Ошибка проверки"
+msgstr ""
+
+#: includes/class-lem-channel.php:115
+msgid "канал такой реестр не ведёт"
+msgstr ""
+
+#: includes/class-lem-channel.php:143
+#: includes/class-lem-channel.php:259
+msgid "соединение не удалось: "
+msgstr ""
+
+#: includes/class-lem-channel.php:153
+msgid "канал вернул неожиданный ответ"
+msgstr ""
+
+#: includes/class-lem-channel.php:161
+msgid "канал не подтвердил полноту и версию списка"
+msgstr ""
+
+#: includes/class-lem-channel.php:173
+msgid "Для физических лиц нужен включённый канал и его токен."
+msgstr ""
+
+#: includes/class-lem-channel.php:183
+msgid "Канал физических лиц недоступен: "
+msgstr ""
+
+#: includes/class-lem-channel.php:195
+msgid "Канал вернул неподходящий формат перечня физических лиц."
+msgstr ""
+
+#: includes/class-lem-channel.php:213
+msgid "канал требует токен для этого реестра: укажите его в настройках"
+msgstr ""
+
+#: includes/class-lem-channel.php:215
+msgid "токен не признан или отозван: нужен новый"
+msgstr ""
+
+#: includes/class-lem-channel.php:217
+msgid "в канале нет такого реестра"
+msgstr ""
+
+#: includes/class-lem-channel.php:219
+msgid "слишком частые запросы к каналу, попробуйте позже"
+msgstr ""
+
+#: includes/class-lem-channel.php:264
+msgid "сервер пока не принимает регистрации, попробуйте позже"
+msgstr ""
+
+#: includes/class-lem-channel.php:271
+msgid "сайт зарегистрирован"
+msgstr ""
+
+#: includes/class-lem-cron.php:16
+msgid "Раз в неделю"
+msgstr ""
+
+#. translators: 1: remaining registry entries, 2: grammatical form of the word for entries.
+#: includes/class-lem-frontend.php:178
+#, php-format
+msgid "и ещё %1$d %2$s реестра с этим названием"
+msgstr ""
+
+#: includes/class-lem-frontend.php:292
+msgid ", включён(-а) в перечень Росфинмониторинга организаций и физических лиц, "
+msgstr ""
+
+#: includes/class-lem-frontend.php:293
+msgid "в отношении которых имеются сведения об их причастности к экстремистской деятельности или терроризму"
+msgstr ""
+
+#: includes/class-lem-frontend.php:296
+msgid ", признанный(-ая) в РФ иностранным агентом"
+msgstr ""
+
+#: includes/class-lem-frontend.php:298
+msgid ", признанная в РФ иностранным агентом"
+msgstr ""
+
+#: includes/class-lem-frontend.php:304
+msgid ", деятельность которой признана экстремистской и запрещена на территории РФ"
+msgstr ""
+
+#: includes/class-lem-frontend.php:306
+msgid ", признанная террористической и запрещённая на территории РФ организация"
+msgstr ""
+
+#: includes/class-lem-frontend.php:308
+msgid ", признанная нежелательной на территории РФ организация"
+msgstr ""
+
+#: includes/class-lem-frontend.php:326
+msgid " (исключён(-а) из реестра "
+msgstr ""
+
+#: includes/class-lem-frontend.php:328
+msgid " (исключена из реестра "
+msgstr ""
+
+#: includes/class-lem-frontend.php:334
+msgid ", ранее признанный(-ая) в РФ иностранным агентом"
+msgstr ""
+
+#: includes/class-lem-frontend.php:336
+msgid ", ранее признанная в РФ иностранным агентом"
+msgstr ""
+
+#: includes/class-lem-frontend.php:338
+msgid ", деятельность которой ранее была признана экстремистской"
+msgstr ""
+
+#: includes/class-lem-frontend.php:340
+msgid ", ранее признанная террористической организация"
+msgstr ""
+
+#: includes/class-lem-frontend.php:342
+msgid ", ранее признанная нежелательной на территории РФ организация"
+msgstr ""
+
+#: includes/class-lem-frontend.php:353
+msgid "запись"
+msgstr ""
+
+#: includes/class-lem-frontend.php:356
+msgid "записи"
+msgstr ""
+
+#: includes/class-lem-frontend.php:358
+msgid "записей"
+msgstr ""
+
+#: includes/class-lem-importer.php:989
+msgid "реестр Минюста не подтвердил версию списка"
+msgstr ""
+
+#: includes/class-lem-importer.php:993
+msgid "реестр Минюста вернул неподходящую версию списка"
+msgstr ""
+
+#: includes/class-lem-importer.php:1013
+msgid "реестр Минюста не отдал весь список"
+msgstr ""
+
+#: includes/class-lem-importer.php:1018
+msgid "полнота списка Минюста не подтверждена"
+msgstr ""
+
+#: includes/class-lem-importer.php:1022
+msgid "реестр Минюста вернул неполную страницу"
+msgstr ""
+
+#: includes/class-lem-importer.php:1025
+msgid "реестр Минюста вернул повреждённую строку"
+msgstr ""
+
+#: includes/class-lem-importer.php:1028
+msgid "реестр Минюста вернул повреждённое поле"
+msgstr ""
+
+#: includes/class-lem-importer.php:1032
+msgid "страницы реестра Минюста пересекаются"
+msgstr ""
+
+#: includes/class-lem-importer.php:1039
+msgid "реестр Минюста изменился во время загрузки"
+msgstr ""
+
+#: includes/class-lem-importer.php:1062
+#: includes/class-lem-importer.php:1236
+msgid "реестр Минюста содержит строку без наименования"
+msgstr ""
+
+#: includes/class-lem-importer.php:1122
+#: includes/class-lem-importer.php:1256
+msgid "реестр Минюста ответил, но записей не разобрано"
+msgstr ""
+
+#: includes/class-lem-importer.php:1171
+msgid "зеркало вернуло неожиданный ответ"
+msgstr ""
+
+#: includes/class-lem-importer.php:1278
+msgid "канал реестров выключен в настройках"
+msgstr ""
+
+#: includes/class-lem-metabox.php:62
+#: includes/class-lem-metabox.php:135
+msgid "Упоминаний из реестров не найдено."
+msgstr ""
+
+#: includes/class-lem-metabox.php:64
+msgid "Статья ещё не сканировалась. Она будет проверена при сохранении."
+msgstr ""
+
+#: includes/class-lem-metabox.php:108
+msgid "Автоматически (сейчас помечается)"
+msgstr ""
+
+#: includes/class-lem-metabox.php:109
+msgid "Автоматически (сейчас не помечается: "
+msgstr ""
+
+#: includes/class-lem-metabox.php:120
+msgid "Всегда помечать"
+msgstr ""
+
+#: includes/class-lem-metabox.php:122
+msgid "Не помечать"
+msgstr ""
+
+#: includes/class-lem-metabox.php:139
+msgid "«Автоматически» подчиняется общим правилам плагина. Два других положения действуют только для этой статьи."
+msgstr ""
+
+#: includes/class-lem-metabox.php:142
+msgid "Иноагенты маркируются только в цитатах, ссылках и встроенных постах (режим включён в настройках плагина)."
+msgstr ""
+
+#: includes/class-lem-metabox.php:154
+msgid "нет цитаты или ссылки"
+msgstr ""
+
+#: includes/class-lem-metabox.php:156
+msgid "по правилам плагина"
+msgstr ""
+
+#: includes/class-lem-people.php:50
+msgid "Для загрузки физических лиц включите канал и укажите его токен."
+msgstr ""
+
+#: includes/class-lem-people.php:120
+msgid "Канал вернул несогласованные страницы перечня. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-people.php:146
+msgid "Канал вернул неподходящую запись физических лиц. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-people.php:155
+msgid "В странице перечня повторяются ФИО. Загрузите перечень заново."
+msgstr ""
+
+#: includes/class-lem-people.php:162
+msgid "Не удалось сохранить порцию перечня. Прежние статусы сохранены."
+msgstr ""
+
+#: includes/class-lem-people.php:180
+msgid "Не удалось сохранить порцию перечня. Исключение прежних записей не выполнялось."
+msgstr ""
+
+#: includes/class-lem-people.php:221
+#: includes/class-lem-registry-sync.php:150
+msgid "Для безопасной сверки таблицы плагина и настроек должны использовать InnoDB. Данные сохранены."
+msgstr ""
+
+#: includes/class-lem-people.php:251
+msgid "Не удалось завершить полную сверку физических лиц. Прежние статусы сохранены."
+msgstr ""
+
+#: includes/class-lem-plugin.php:244
+msgid "СМИ"
+msgstr ""
+
+#: includes/class-lem-plugin.php:245
+msgid "Маркируются все четыре реестра, как требует закон о СМИ."
+msgstr ""
+
+#: includes/class-lem-plugin.php:246
+msgid "Не СМИ"
+msgstr ""
+
+#: includes/class-lem-plugin.php:247
+msgid "Маркируются экстремистские и террористические. Нежелательные только отслеживаются: упоминания и ссылки видны в отчёте, но меток на сайте нет. Иноагенты не затрагиваются."
+msgstr ""
+
+#: includes/class-lem-plugin.php:248
+msgid "Вручную"
+msgstr ""
+
+#: includes/class-lem-plugin.php:249
+msgid "Отмечайте галочками сами."
+msgstr ""
+
+#: includes/class-lem-postlist.php:31
+msgid "С маркировкой"
+msgstr ""
+
+#: includes/class-lem-postlist.php:32
+msgid "С отслеживаемыми упоминаниями"
+msgstr ""
+
+#: includes/class-lem-postlist.php:33
+msgid "Со ссылками на ресурсы из реестров"
+msgstr ""
+
+#: includes/class-lem-postlist.php:34
+msgid "Без находок"
+msgstr ""
+
+#: includes/class-lem-postlist.php:45
+msgid "Маркировка: любая"
+msgstr ""
+
+#: includes/class-lem-postlist.php:147
+msgid "меток: "
+msgstr ""
+
+#: includes/class-lem-postlist.php:150
+msgid "<span style=\"color:#996800\">без меток: "
+msgstr ""
+
+#: includes/class-lem-postlist.php:153
+msgid "<span style=\"color:#b32d2e\">ссылок: "
+msgstr ""
+
+#: includes/class-lem-registry-sync.php:23
+msgid "Блокировка обновления потеряна. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-registry-sync.php:29
+msgid "Обновление реестров уже выполняется. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-registry-sync.php:70
+msgid "Полнота или версия списка не подтверждена. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-registry-sync.php:79
+msgid "В списке есть повреждённая запись. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-registry-sync.php:83
+msgid "В списке есть неподходящее наименование. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-registry-sync.php:88
+msgid "В списке есть неподходящая дата. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-registry-sync.php:96
+msgid "В списке есть неподходящий статус. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-registry-sync.php:109
+msgid "Полный список не содержит распознанных записей. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-registry-sync.php:141
+msgid "Источник вернул более старый срез. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-registry-sync.php:158
+msgid "Не удалось начать безопасную сверку. Прежние данные сохранены."
+msgstr ""
+
+#: includes/class-lem-registry-sync.php:190
+msgid "Не удалось сохранить полный срез. Прежние данные сохранены."
+msgstr ""
