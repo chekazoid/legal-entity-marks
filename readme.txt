@@ -1,5 +1,5 @@
 === Legal Entity Marks ===
-Contributors: chekazoid
+Contributors: shliapuzhnikov
 Tags: editorial, registry, compliance, media, russian
 Requires at least: 6.1
 Tested up to: 7.1

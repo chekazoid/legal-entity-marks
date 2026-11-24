@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-24",
+  "version": "1.15.1",
+  "github": {
+    "status": "published",
+    "url": "https://github.com/chekazoid/legal-entity-marks/releases/tag/v1.15.1",
+    "commit": "e44305b40828b34c5f10d26a7db6df86a121bbef",
+    "file": "legal-entity-marks-1.15.1.zip",
+    "sha256": "20dcae19200e05d75538f55da6ac6c5b9725223c708908c304db6c58cede95b7",
+    "downloaded_and_verified": true
+  },
+  "observer": {
+    "commit": "69daf953e26995afbab7ab67b1cff6bb7f885f20",
+    "source_published": true,
+    "api_already_deployed": true
+  },
+  "wordpress_org": {
+    "status": "awaiting_review",
+    "submitted": true,
+    "submission_date": "2026-11-24",
+    "owner": "shliapuzhnikov",
+    "slug": "legal-entity-marks",
+    "file": "legal-entity-marks-1.15.1-wordpress.zip",
+    "sha256": "18306b2acab039a39e86e6479cdf85b2e725823b3965a67f24300e9b314e86f3",
+    "automated_plugin_scanning": "pass",
+    "submission_confirmation_observed": true,
+    "manual_approval_received": false,
+    "svn_publication_done": false
+  },
+  "package_difference": {
+    "files": [
+      "legal-entity-marks/readme.txt"
+    ],
+    "description": "Contributors corrected from the GitHub handle chekazoid to the verified WordPress.org owner shliapuzhnikov. Executable code is identical. The published GitHub tag and ZIP were not replaced."
+  }
+}

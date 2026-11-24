@@ -53,7 +53,7 @@
   "package": {
     "files": 42,
     "bytes": 266972,
-    "sha256": "20dcae19200e05d75538f55da6ac6c5b9725223c708908c304db6c58cede95b7"
+    "sha256": "18306b2acab039a39e86e6479cdf85b2e725823b3965a67f24300e9b314e86f3"
   },
   "assets": {
     "images": 8,
@@ -67,9 +67,9 @@
   "observer_api_tests": 20,
   "php_74_runtime_files": 31,
   "reviewed_reconciliation_warnings_before_annotations": 21,
-  "plugin_release_published": false,
-  "wordpress_submission_sent": false,
-  "source_publication_required_before_submission": true,
+  "plugin_release_published": true,
+  "wordpress_submission_sent": true,
+  "source_publication_required_before_submission": false,
   "reconciliation": {
     "status": "fixed_and_verified",
     "categories": [
@@ -97,5 +97,14 @@
       "tokens_unchanged": true,
       "panel_unchanged": true
     }
+  },
+  "publication_report": "publication-1.15.1.json",
+  "wordpress_org_owner": "shliapuzhnikov",
+  "wordpress_org_slug": "legal-entity-marks",
+  "wordpress_org_automated_scan": "pass",
+  "wordpress_org_review_status": "awaiting_review",
+  "github_release_package": {
+    "file": "legal-entity-marks-1.15.1.zip",
+    "sha256": "20dcae19200e05d75538f55da6ac6c5b9725223c708908c304db6c58cede95b7"
   }
 }
