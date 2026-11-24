@@ -104,6 +104,40 @@ $all_post_types = get_post_types(['public' => true], 'objects');
             </tr>
 
             <tr>
+                <th scope="row">Физические лица: Росфинмониторинг</th>
+                <td>
+                    <select name="lem_fedsfm_people_mode">
+                        <?php foreach (['off' => 'Выключено', 'track' => 'Только отслеживать', 'mark' => 'Маркировать'] as $value => $label) : ?>
+                        <option value="<?php echo esc_attr($value); ?>" <?php selected($settings['fedsfm_people_mode'], $value); ?>><?php echo esc_html($label); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="description" style="max-width:700px">
+                        Дополнительный перечень физических лиц из «Наблюдателя». По умолчанию выключен,
+                        профили сайта его не включают. Для загрузки нужны включённый канал и токен канала.
+                        Загрузка идёт в фоне, порциями; после завершения проверяется архив публикаций.
+                    </p>
+                    <p class="description" style="max-width:700px">
+                        Ищется полное ФИО, включая отчество, если оно есть в перечне.
+                        Совпадения по одной фамилии, инициалам и неполному имени не маркируются.
+                        У разных людей могут совпадать даже полные ФИО: такие случаи проверяет редакция.
+                    </p>
+                    <?php
+                    $people_state = (array) get_option(LEM_People::STATE, []);
+                    $people_success = (array) get_option(LEM_People::SUCCESS, []);
+                    if ($settings['fedsfm_people_mode'] !== 'off') :
+                        if (!empty($people_state['error'])) : ?>
+                        <p class="description" style="color:#b32d2e"><?php echo esc_html($people_state['error']); ?> Для повторной попытки сохраните настройки или нажмите «Обновить реестры» на «Обзоре».</p>
+                        <?php elseif (!empty($people_state['running'])) : ?>
+                        <p class="description">Идёт загрузка: <?php echo (int) $people_state['offset']; ?> из <?php echo (int) $people_state['total']; ?> ФИО.</p>
+                        <?php endif;
+                        if (!empty($people_success['synced_at'])) : ?>
+                        <p class="description">Последняя успешная сверка: <?php echo esc_html($people_success['synced_at']); ?>. Срез канала: <?php echo esc_html($people_success['fetched_at']); ?>. ФИО: <?php echo (int) $people_success['total']; ?>.</p>
+                        <?php endif;
+                    endif; ?>
+                </td>
+            </tr>
+
+            <tr>
                 <th scope="row">Ссылки, подлежащие удалению</th>
                 <td>
                     <p class="description" style="max-width:640px;margin-bottom:8px">
@@ -135,8 +169,7 @@ $all_post_types = get_post_types(['public' => true], 'objects');
                         сайт Минюста бывает недоступен, а хостинг может резать исходящие
                         соединения. Данные там свежее снимка из поставки плагина.
                         Порядок такой: официальный реестр, потом канал, зеркало (если оно есть)
-                        и встроенный перечень. Экстремистский перечень плагин из канала не загружает:
-                        после официального источника он пробует зеркало, затем встроенную копию.
+                        и встроенный перечень. Канал поддерживает все четыре реестра плагина.
                     </p>
                     <label style="display:block;margin-bottom:8px">
                         <input type="checkbox" name="lem_channel_enabled" value="1"
@@ -171,10 +204,9 @@ $all_post_types = get_post_types(['public' => true], 'objects');
                         <?php endif; ?>
                     </p>
                     <p class="description" style="max-width:700px">
-                        <strong>Для трёх реестров выше токен не нужен</strong>, выгрузки открыты.
-                        Он понадобится, только если появится доступ к перечню Росфинмониторинга
-                        (30 775 записей, из них 29 541 физлицо) - для расстановки сносок он
-                        избыточен, и плагин его не берёт.
+                        <strong>Для четырёх основных реестров токен не нужен</strong>, выгрузки открыты.
+                        Токен требуется для добровольной загрузки физических лиц из перечня
+                        Росфинмониторинга. Без её включения этот перечень не скачивается.
                         <?php if ($from_config) : ?>
                             <br>Сейчас токен задан константой <code>LEM_CHANNEL_TOKEN</code>
                             в wp-config.php и настройкой не перекрывается.

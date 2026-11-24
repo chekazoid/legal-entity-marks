@@ -74,7 +74,8 @@ class LEM_Frontend {
             return $content;
         }
 
-        $entities_db  = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
+        $ids = array_map(static function ($match) { return (int) ($match['id'] ?? 0); }, $meta['entities']);
+        $entities_db = lem()->entities->get_for_marking_ids($ids, !empty($settings['mark_excluded']));
         $entities_map = [];
         foreach ($entities_db as $e) {
             $entities_map[(int) $e['id']] = $e;
@@ -221,6 +222,10 @@ class LEM_Frontend {
      */
     public static function should_mark($match, $settings, $overrides) {
         $type = $match['type'] ?? '';
+        if ($type === 'fedsfm_person' && (($settings['fedsfm_people_mode'] ?? 'off') !== 'mark'
+            || empty($match['full_name_match']))) {
+            return false;
+        }
         // registries - имя до 1.9.0, могло прийти из стороннего кода
         $mark = $settings['mark_registries'] ?? $settings['registries'] ?? [];
         if (!in_array($type, (array) $mark, true)) {
@@ -277,6 +282,9 @@ class LEM_Frontend {
         }
 
         switch ($entity['type']) {
+            case 'fedsfm_person':
+                return $name . ', включён(-а) в перечень Росфинмониторинга организаций и физических лиц, '
+                    . 'в отношении которых имеются сведения об их причастности к экстремистской деятельности или терроризму';
             case 'inoagent':
                 if ($entity['is_person']) {
                     return $name . ', признанный(-ая) в РФ иностранным агентом';

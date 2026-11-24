@@ -12,6 +12,7 @@ class LEM_Importer {
         'extremist'   => 'Экстремистские организации',
         'terrorist'   => 'Террористические организации',
         'undesirable' => 'Нежелательные организации',
+        'fedsfm_person' => 'Физические лица из перечня Росфинмониторинга',
     ];
 
     public function import_all_bundled() {
@@ -562,7 +563,7 @@ class LEM_Importer {
             // Онлайн-загрузчики Минюста алиасов не дают вообще, поэтому строим их
             // сами: иначе организации, попавшие в реестр после сборки плагина,
             // находились бы только по полному юридическому названию
-            $aliases = array_values(array_unique(array_merge(
+            $aliases = $type === 'fedsfm_person' ? [] : array_values(array_unique(array_merge(
                 $aliases,
                 self::generate_aliases($name, $is_person)
             )));
@@ -871,6 +872,10 @@ class LEM_Importer {
             $started
         );
 
+        if (isset(lem()->people)) {
+            lem()->people->queue();
+        }
+
         return $errors;
     }
 
@@ -1017,9 +1022,8 @@ class LEM_Importer {
     /**
      * Зеркало перечня в репозитории плагина.
      *
-     * Единственный реестр, которого нет в канале: если страница Минюста
-     * не открылась, откатываться было некуда, кроме снимка из поставки.
-     * Зеркало обновляется с каждым выпуском и всегда свежее его.
+     * Используется после официальной страницы и канала реестров.
+     * Зеркало обновляется с выпусками и остаётся перед снимком из поставки.
      */
     const EXTREMIST_MIRROR_URL = 'https://raw.githubusercontent.com/chekazoid/legal-entity-marks/main/data/extremist-orgs.json';
 

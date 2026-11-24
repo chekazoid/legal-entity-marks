@@ -328,6 +328,7 @@ class LEM_Report {
             'extremist'   => 'экстремистская',
             'terrorist'   => 'террористическая',
             'undesirable' => 'нежелательная',
+            'fedsfm_person' => 'Физлица: Росфинмониторинг',
         ];
 
         $fh = fopen('php://output', 'w');

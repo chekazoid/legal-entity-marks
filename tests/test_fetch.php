@@ -99,9 +99,16 @@ check('Причина отказа официального источника �
 check('Не печатается ERROR при успешном переключении', strpos(implode("\n", $logs), 'ERROR:') === false);
 
 [, $errors] = scenario(['inoagent', 'extremist', 'terrorist', 'undesirable']);
-check('При полном отказе органов предупреждение только о зеркале', count($errors) === 1
-    && strpos($errors[0], 'Экстремистские организации:') === 0
-    && strpos($errors[0], 'Перечень взят из зеркала') !== false);
+check('Все четыре реестра из канала не вызывают предупреждения', $errors === []
+    && count(array_filter(get_option('lem_last_fetch_sources'), static function ($source) {
+        return $source === 'channel';
+    })) === 4);
+
+[$importer, $errors] = scenario(['extremist'], 'TEST channel unavailable');
+check('Зеркало экстремистского перечня используется после отказа канала', count($errors) === 1
+    && strpos($errors[0], 'канал реестров: TEST channel unavailable') !== false
+    && get_option('lem_last_fetch_sources')['extremist'] === 'mirror');
+check('Зеркало экстремистского перечня остаётся недоверенным', $importer->imports === [['extremist', false]]);
 
 [$importer, $errors] = scenario(['inoagent', 'terrorist', 'undesirable'], 'TEST channel unavailable', true, true);
 check('Отказ канала и зеркала оставляет предупреждения', count($errors) === 3

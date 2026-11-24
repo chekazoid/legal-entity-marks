@@ -24,6 +24,7 @@ $type_labels = [
     'extremist'   => 'Экстремист.',
     'terrorist'   => 'Террорист.',
     'undesirable' => 'Нежелат.',
+    'fedsfm_person' => 'Физлица: Росфинмониторинг',
 ];
 ?>
 <div class="wrap">

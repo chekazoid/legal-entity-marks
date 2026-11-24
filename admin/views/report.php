@@ -34,6 +34,7 @@ $labels = [
     'extremist'   => 'экстремистская',
     'terrorist'   => 'террористическая',
     'undesirable' => 'нежелательная',
+    'fedsfm_person' => 'Физлица: Росфинмониторинг',
 ];
 $total_pages = (int) ceil($result['total'] / $per_page);
 ?>

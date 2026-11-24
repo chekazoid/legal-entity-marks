@@ -35,6 +35,7 @@ class LEM_Cron {
     public function clear_events() {
         wp_clear_scheduled_hook('lem_fetch_registries');
         wp_clear_scheduled_hook('lem_scan_updated');
+        wp_clear_scheduled_hook('lem_import_people');
         wp_clear_scheduled_hook(LEM_Rescan::HOOK);
         delete_transient('lem_rescan_lock'); // хвост от версий до 1.14.0
     }

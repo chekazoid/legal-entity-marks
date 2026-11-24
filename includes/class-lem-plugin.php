@@ -22,6 +22,7 @@ class LEM_Plugin {
     public $channel;
     public $brands;
     public $report;
+    public $people;
 
     public static function instance() {
         if (self::$instance === null) {
@@ -51,6 +52,7 @@ class LEM_Plugin {
         require_once $dir . 'class-lem-rescan.php';
         require_once $dir . 'class-lem-http.php';
         require_once $dir . 'class-lem-channel.php';
+        require_once $dir . 'class-lem-people.php';
         require_once $dir . 'class-lem-brands.php';
         require_once $dir . 'class-lem-report.php';
 
@@ -78,6 +80,7 @@ class LEM_Plugin {
         $this->channel      = new LEM_Channel();
         $this->brands       = new LEM_Brands();
         $this->report       = new LEM_Report();
+        $this->people       = new LEM_People();
 
         if (is_admin()) {
             $this->admin    = new LEM_Admin();
@@ -192,10 +195,13 @@ class LEM_Plugin {
     }
 
     public function deactivate() {
+        $this->people->cancel();
         $this->cron->clear_events();
     }
 
-    const REGISTRY_TYPES = ['inoagent', 'extremist', 'terrorist', 'undesirable'];
+    const REGISTRY_TYPES = ['inoagent', 'extremist', 'terrorist', 'undesirable', 'fedsfm_person'];
+
+    const PEOPLE_MODES = ['off', 'track', 'mark'];
 
     const CONTEXT_TRIGGERS = ['blockquote', 'link', 'quotes', 'embed'];
 
@@ -248,7 +254,8 @@ class LEM_Plugin {
             'cron_interval'         => 'weekly',
             'auto_scan_on_publish'  => true,
             'preset'                => 'media',
-            'mark_registries'       => self::REGISTRY_TYPES,
+            'mark_registries'       => self::PRESETS['media']['mark'],
+            'fedsfm_people_mode'    => 'off',
             'track_registries'      => [],
             'inoagent_context_only' => false,
             'match_word_forms'      => true,
@@ -291,9 +298,22 @@ class LEM_Plugin {
             $settings['track_registries'] = $preset['track'];
         }
 
+        // Физлица не входят в профили: решение всегда принимает пользователь отдельно.
+        if (!in_array($settings['fedsfm_people_mode'], self::PEOPLE_MODES, true)) {
+            $settings['fedsfm_people_mode'] = 'off';
+        }
+        $settings['mark_registries'] = array_values(array_diff($settings['mark_registries'], ['fedsfm_person']));
+        $settings['track_registries'] = array_values(array_diff($settings['track_registries'], ['fedsfm_person']));
+        if ($settings['fedsfm_people_mode'] === 'mark') {
+            $settings['mark_registries'][] = 'fedsfm_person';
+        }
+        if ($settings['fedsfm_people_mode'] !== 'off') {
+            $settings['track_registries'][] = 'fedsfm_person';
+        }
+
         // Реестр, который маркируется, отслеживается по определению
         $settings['link_registries'] = array_values(array_intersect(
-            self::REGISTRY_TYPES,
+            ['inoagent', 'extremist', 'terrorist', 'undesirable'],
             (array) ($settings['link_registries'] ?: [])
         ));
 

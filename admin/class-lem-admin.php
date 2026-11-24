@@ -344,6 +344,12 @@ class LEM_Admin {
             array_map('sanitize_text_field', (array) wp_unslash($_POST['lem_link_registries'] ?? []))
         ));
 
+        $old_people_config = [$settings['fedsfm_people_mode'], $settings['channel_enabled'],
+            $settings['channel_url'], $settings['channel_token']];
+        $people_mode = sanitize_text_field(wp_unslash($_POST['lem_fedsfm_people_mode'] ?? 'off'));
+        $settings['fedsfm_people_mode'] = in_array($people_mode, LEM_Plugin::PEOPLE_MODES, true)
+            ? $people_mode : 'off';
+
         // Канал реестров. Токен не выводится на страницу, поэтому пустое поле
         // означает «оставить прежний», а не «стереть»: для стирания есть галочка
         $settings['channel_enabled'] = !empty($_POST['lem_channel_enabled']);
@@ -406,6 +412,20 @@ class LEM_Admin {
 
         lem()->cron->clear_events();
         lem()->cron->schedule_events();
+        lem()->entities->flush_cache();
+        $people_config = [$settings['fedsfm_people_mode'], $settings['channel_enabled'],
+            $settings['channel_url'], $settings['channel_token']];
+        if ($settings['fedsfm_people_mode'] === 'off') {
+            lem()->people->cancel();
+        } else {
+            $people_state = (array) get_option(LEM_People::STATE, []);
+            $restart_people = $old_people_config[0] === 'off'
+                || array_slice($people_config, 1) !== array_slice($old_people_config, 1);
+            if ($restart_people || !empty($people_state['running']) || !empty($people_state['error'])
+                || !get_option(LEM_People::SUCCESS)) {
+                lem()->people->queue($restart_people);
+            }
+        }
 
         // Кеш страниц держит старую разметку дисклеймеров
         lem()->cache->purge_all_marked();
@@ -502,9 +522,17 @@ class LEM_Admin {
             : '';
 
         $extra .= '. Проверка архива запущена в фоне';
+        $success_message = 'Все реестры обновлены';
+        if (LEM_People::enabled(lem()->get_settings())) {
+            $success_message = 'Основные реестры обновлены';
+            $people_state = (array) get_option(LEM_People::STATE, []);
+            $extra .= !empty($people_state['error'])
+                ? '. Физлица Росфинмониторинга не обновлены: ' . $people_state['error']
+                : '. Физлица Росфинмониторинга загружаются отдельно в фоне';
+        }
 
         if (empty($errors)) {
-            wp_send_json_success(['message' => 'Все реестры обновлены' . $extra]);
+            wp_send_json_success(['message' => $success_message . $extra]);
         } else {
             wp_send_json_success(['message' => 'Завершено с ошибками' . $extra, 'errors' => $errors]);
         }

@@ -6,6 +6,8 @@ class LEM_Entities {
     const TRANSIENT_KEY = 'lem_entities_active';
     const TRANSIENT_TTL = HOUR_IN_SECONDS;
 
+    private static $request_cache = [];
+
     public function get_all_active() {
         return $this->get_for_marking(false);
     }
@@ -17,15 +19,25 @@ class LEM_Entities {
      *                               Нужно для опции «маркировать бывших».
      */
     public function get_for_marking($include_excluded = false) {
-        $key = self::TRANSIENT_KEY . ($include_excluded ? '_all' : '');
-        $entities = get_transient($key);
+        $people = in_array(lem()->get_settings()['fedsfm_people_mode'] ?? 'off', ['track', 'mark'], true);
+        $key = self::TRANSIENT_KEY . ($include_excluded ? '_all' : '') . ($people ? '_people' : '');
+        if (array_key_exists($key, self::$request_cache)) {
+            return self::$request_cache[$key];
+        }
+        // Большой перечень не помещаем одной записью в wp_options. Для одного
+        // прохода архива достаточно кеша в памяти текущего запроса.
+        $entities = $people ? false : get_transient($key);
         if ($entities !== false) {
+            self::$request_cache[$key] = $entities;
             return $entities;
         }
 
         global $wpdb;
         $table = $wpdb->prefix . LEM_TABLE;
         $where = $include_excluded ? '1=1' : 'is_active = 1';
+        $where .= $people
+            ? " AND (type <> 'fedsfm_person' OR is_active = 1)"
+            : " AND type <> 'fedsfm_person'";
         $rows  = $wpdb->get_results(
             "SELECT id, type, name, aliases, is_person, status_text, is_active,
                     date_included, date_excluded, first_seen
@@ -41,13 +53,49 @@ class LEM_Entities {
             $entities[] = $row;
         }
 
-        set_transient($key, $entities, self::TRANSIENT_TTL);
+        if (!$people) {
+            set_transient($key, $entities, self::TRANSIENT_TTL);
+        }
+        self::$request_cache[$key] = $entities;
         return $entities;
     }
 
+    /** Для вывода статьи нужны только найденные ID, а не весь большой перечень. */
+    public function get_for_marking_ids(array $ids, $include_excluded = false) {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids), static function ($id) {
+            return $id > 0;
+        })));
+        if (empty($ids)) {
+            return [];
+        }
+        global $wpdb;
+        $table = $wpdb->prefix . LEM_TABLE;
+        $in = implode(',', array_fill(0, count($ids), '%d'));
+        $where = $include_excluded ? '1=1' : 'is_active = 1';
+        $people = in_array(lem()->get_settings()['fedsfm_people_mode'] ?? 'off', ['track', 'mark'], true);
+        $where .= $people
+            ? " AND (type <> 'fedsfm_person' OR is_active = 1)"
+            : " AND type <> 'fedsfm_person'";
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT id, type, name, aliases, is_person, status_text, is_active,
+                    date_included, date_excluded, first_seen
+             FROM $table WHERE $where AND id IN ($in)", ...$ids
+        ), ARRAY_A);
+        foreach ($rows as &$row) {
+            $row['aliases'] = json_decode($row['aliases'], true) ?: [];
+            $row['is_person'] = (int) $row['is_person'];
+            $row['is_active'] = (int) $row['is_active'];
+        }
+        unset($row);
+        return $rows;
+    }
+
     public function flush_cache() {
+        self::$request_cache = [];
         delete_transient(self::TRANSIENT_KEY);
         delete_transient(self::TRANSIENT_KEY . '_all');
+        delete_transient(self::TRANSIENT_KEY . '_people');
+        delete_transient(self::TRANSIENT_KEY . '_all_people');
     }
 
     public function get_by_id($id) {

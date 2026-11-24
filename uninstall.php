@@ -17,10 +17,14 @@ global $wpdb;
 // Задачи и временные записи без плагина бесполезны в любом случае
 wp_clear_scheduled_hook('lem_fetch_registries');
 wp_clear_scheduled_hook('lem_scan_updated');
+wp_clear_scheduled_hook('lem_import_people');
+delete_option('lem_people_import_lock');
 wp_clear_scheduled_hook('lem_run_rescan');
 
 delete_transient('lem_entities_active');
 delete_transient('lem_entities_active_all');
+delete_transient('lem_entities_active_people');
+delete_transient('lem_entities_active_all_people');
 delete_transient('lem_scan_state');
 delete_transient('lem_banned_sites_all');
 delete_transient('lem_banned_sites_accounts');
@@ -54,7 +58,7 @@ foreach ([
     'lem_brand_rules', 'lem_installed_at', 'lem_rescan_state',
     'lem_last_update_report', 'lem_update_notice_seen', 'lem_first_fetch_done',
     'lem_bundled_data_version', 'lem_cron_last_run', 'lem_install_id',
-    'lem_registered_at',
+    'lem_registered_at', 'lem_people_import_state', 'lem_people_last_success',
 ] as $option) {
     delete_option($option);
 }

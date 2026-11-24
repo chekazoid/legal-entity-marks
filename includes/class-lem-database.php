@@ -3,7 +3,7 @@ defined('ABSPATH') || exit;
 
 class LEM_Database {
 
-    const DB_VERSION = '1.1.0';
+    const DB_VERSION = '1.2.0';
 
     public function __construct() {
         // Не admin_init: плагин может обновиться автообновлением, и тогда
@@ -29,9 +29,11 @@ class LEM_Database {
             date_excluded DATE DEFAULT NULL,
             is_active TINYINT(1) DEFAULT 1,
             first_seen DATETIME DEFAULT NULL,
+            sync_generation VARCHAR(32) NOT NULL DEFAULT '',
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             INDEX idx_type_active (type, is_active),
+            INDEX idx_type_name (type, name(190)),
             INDEX idx_first_seen (first_seen)
         ) $charset;";
 

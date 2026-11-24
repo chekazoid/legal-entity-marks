@@ -136,6 +136,7 @@
                         'extremist'   => 'Экстремистские орг.',
                         'terrorist'   => 'Террористические орг.',
                         'undesirable' => 'Нежелательные орг.',
+                        'fedsfm_person' => 'Физлица: Росфинмониторинг',
                     ];
                     $total_active = 0;
                     foreach ($types as $key => $label) :
@@ -197,6 +198,23 @@
                     <?php else : ?>
                         <span style="color:#b32d2e">недоступен</span>
                         <?php echo esc_html($health['error']); ?>
+                    <?php endif; ?>
+                </li>
+                <?php endif; ?>
+                <?php if (LEM_People::enabled($settings ?? lem()->get_settings())) :
+                    $people_state = (array) get_option(LEM_People::STATE, []);
+                    $people_success = (array) get_option(LEM_People::SUCCESS, []); ?>
+                <li>
+                    <span class="lem-label">Физлица Росфинмониторинга:</span>
+                    <?php if (!empty($people_state['error'])) : ?>
+                        <span class="lem-error"><?php echo esc_html($people_state['error']); ?></span>
+                    <?php elseif (!empty($people_state['running'])) : ?>
+                        загружаются в фоне: <?php echo (int) $people_state['offset']; ?> из <?php echo (int) $people_state['total']; ?> ФИО
+                    <?php elseif (!empty($people_success['synced_at'])) : ?>
+                        загружены <?php echo esc_html($people_success['synced_at']); ?>,
+                        срез от <?php echo esc_html($people_success['fetched_at']); ?>
+                    <?php else : ?>
+                        ещё не загружены
                     <?php endif; ?>
                 </li>
                 <?php endif; ?>

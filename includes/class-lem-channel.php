@@ -10,22 +10,21 @@ defined('ABSPATH') || exit;
  * на снимок из своей поставки, который стареет с каждым днём.
  *
  * Канал стоит между ними: данные свежие, формат тот же, что у import_json.
- * Экстремистских организаций в канале нет - для них остаётся прежняя схема.
  */
 class LEM_Channel {
 
     const DEFAULT_URL = 'https://api.shliapuzhnikov.com/v1/';
 
     /**
-     * Тип в плагине -> реестр в канале. Соответствие не полное:
-     * экстремистских в канале нет, а перечень Росфинмониторинга (fedsfm)
-     * для расстановки сносок избыточен - 30 775 записей, из них 29 541
-     * физлицо. Он же единственный, для выгрузки которого нужен токен.
+     * Четыре основных типа плагина -> открытые выгрузки канала.
+     * Физлица Росфинмониторинга загружаются отдельно через fetch_people_page:
+     * только по выбору пользователя и с токеном.
      */
     const REGISTRY_MAP = [
         'inoagent'    => 'inoagent',
         'undesirable' => 'undesirable',
         'terrorist'   => 'terrorist',
+        'extremist'   => 'extremist',
     ];
 
     /** Ответ канала может быть большим (иноагенты - четверть мегабайта). */
@@ -94,7 +93,7 @@ class LEM_Channel {
 
     /**
      * Канал включён. Токен для этого не нужен: выгрузки открыты,
-     * он требуется только перечню Росфинмониторинга, который плагин не берёт.
+     * он требуется отдельной добровольной выгрузке физических лиц Росфинмониторинга.
      */
     public function is_enabled() {
         $settings = lem()->get_settings();
@@ -132,7 +131,7 @@ class LEM_Channel {
         $url      = $this->base_url() . self::REGISTRY_MAP[$type] . '/export/lem';
         $response = LEM_Http::get($url, $args);
 
-        // Ограничение частоты на стороне канала: обновление берёт три реестра
+        // Ограничение частоты на стороне канала: обновление берёт четыре реестра
         // подряд, и на общем адресе (офис, хостинг) счётчик может быть уже занят.
         // Одна повторная попытка дешевле, чем неделя на встроенном перечне
         if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 429) {
@@ -155,6 +154,36 @@ class LEM_Channel {
         }
 
         return ['entries' => $data, 'count' => count($data)];
+    }
+
+    /** Физлица загружаются отдельно: только по выбору пользователя и с токеном. */
+    public function fetch_people_page($offset, $version = '') {
+        if (!$this->is_enabled() || !$this->has_token()) {
+            return ['error' => 'Для физических лиц нужен включённый канал и его токен.'];
+        }
+        $url = add_query_arg(['limit' => 500, 'offset' => (int) $offset, 'version' => $version],
+            $this->base_url() . 'fedsfm/people');
+        $response = LEM_Http::get($url, [
+            'timeout' => self::TIMEOUT,
+            'user-agent' => 'LegalEntityMarks/' . LEM_VERSION,
+            'headers' => array_merge($this->stats_headers(), ['Authorization' => 'Bearer ' . $this->token()]),
+        ]);
+        if (is_wp_error($response)) {
+            return ['error' => 'Канал физических лиц недоступен: ' . $response->get_error_message(), 'retry' => true];
+        }
+        $code = wp_remote_retrieve_response_code($response);
+        if ($code !== 200) {
+            return ['error' => self::explain_code($code, wp_remote_retrieve_body($response)),
+                    'restart' => $code === 409, 'retry' => $code === 429 || $code >= 500];
+        }
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+        if (!is_array($data) || !is_array($data['entries'] ?? null)
+            || !is_int($data['offset'] ?? null) || !is_int($data['total'] ?? null)
+            || !is_string($data['version'] ?? null) || $data['version'] === ''
+            || !is_string($data['fetched_at'] ?? null)) {
+            return ['error' => 'Канал вернул неподходящий формат перечня физических лиц.'];
+        }
+        return $data;
     }
 
     /**

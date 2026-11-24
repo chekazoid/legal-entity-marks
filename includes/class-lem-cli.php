@@ -83,9 +83,18 @@ class LEM_CLI {
         if ($source === 'all') {
             $errors = lem()->importer->fetch_all($log);
             if (empty($errors)) {
-                WP_CLI::success('Все реестры успешно обновлены.');
+                WP_CLI::success(LEM_People::enabled(lem()->get_settings())
+                    ? 'Основные реестры успешно обновлены.' : 'Все реестры успешно обновлены.');
             } else {
                 WP_CLI::warning('Завершено с ошибками: ' . implode('; ', $errors));
+            }
+            if (LEM_People::enabled(lem()->get_settings())) {
+                $state = (array) get_option(LEM_People::STATE, []);
+                if (!empty($state['error'])) {
+                    WP_CLI::warning('Физлица Росфинмониторинга: ' . $state['error']);
+                } else {
+                    WP_CLI::log('Физлица Росфинмониторинга загружаются отдельно в фоне.');
+                }
             }
         } else {
             $methods = [

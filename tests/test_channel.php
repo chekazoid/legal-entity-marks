@@ -37,8 +37,7 @@ echo "=== какие реестры канал ведёт ===\n";
 eq('иноагенты',      LEM_Channel::supports('inoagent'), true);
 eq('нежелательные',  LEM_Channel::supports('undesirable'), true);
 eq('террористические', LEM_Channel::supports('terrorist'), true);
-// В канале такого реестра нет, для него остаётся встроенный перечень
-eq('экстремистские - нет',  LEM_Channel::supports('extremist'), false);
+eq('экстремистские', LEM_Channel::supports('extremist'), true);
 // Перечень Росфинмониторинга не подключаем: тридцать тысяч физлиц
 eq('Росфинмониторинг - нет', LEM_Channel::supports('fedsfm'), false);
 eq('выдуманный тип - нет',   LEM_Channel::supports('нечто'), false);
@@ -48,6 +47,7 @@ $map = LEM_Channel::REGISTRY_MAP;
 eq('иноагенты -> inoagent',       $map['inoagent'], 'inoagent');
 eq('нежелательные -> undesirable', $map['undesirable'], 'undesirable');
 eq('террористические -> terrorist', $map['terrorist'], 'terrorist');
+eq('экстремистские -> extremist', $map['extremist'] ?? '', 'extremist');
 
 echo "\n=== разбор отказов канала ===\n";
 $explain = new ReflectionMethod('LEM_Channel', 'explain_code');

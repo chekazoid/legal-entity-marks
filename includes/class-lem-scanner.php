@@ -55,9 +55,33 @@ class LEM_Scanner {
      * Пустой ответ означает «отсеивать нельзя, проверяй как обычно».
      */
     public static function entity_stems($entity, $settings = null) {
-        $key = $entity['id'] ?? $entity['name'];
+        $key = ($entity['id'] ?? '') . '|' . ($entity['type'] ?? '') . '|' . $entity['name'];
         if (isset(self::$stem_cache[$key])) {
             return self::$stem_cache[$key];
+        }
+
+        if (($entity['type'] ?? '') === 'fedsfm_person') {
+            $words = preg_split('/\s+/u', trim($entity['name']), -1, PREG_SPLIT_NO_EMPTY);
+            $forms = LEM_Morphology::surname_forms($words[0] ?? '', LEM_Morphology::detect_gender($entity['name']));
+            $stems = [];
+            foreach ($forms as $form) {
+                $prefix = mb_substr(mb_strtolower($form), 0, self::STEM_LEN);
+                $variants = [''];
+                foreach (preg_split('//u', $prefix, -1, PREG_SPLIT_NO_EMPTY) as $letter) {
+                    $next = [];
+                    foreach ($variants as $value) {
+                        foreach (in_array($letter, ['е', 'ё'], true) ? ['е', 'ё'] : [$letter] as $char) {
+                            $next[] = $value . $char;
+                        }
+                    }
+                    $variants = $next;
+                }
+                foreach ($variants as $value) {
+                    $stems[$value] = true;
+                }
+            }
+            self::$stem_cache[$key] = $stems;
+            return $stems;
         }
 
         $terms = self::search_terms($entity);
@@ -147,7 +171,13 @@ class LEM_Scanner {
      */
     public static function build_pattern($entity, $settings = null, $variant = 'strict') {
         $body = self::build_pattern_body($entity, $settings, $variant);
-        return $body === null ? null : '/(?<!\pL)(?:' . $body . ')(?!\pL)/ui';
+        if ($body === null) {
+            return null;
+        }
+        if (($entity['type'] ?? '') === 'fedsfm_person') {
+            return "/(?<![\pL'’\-])(?:" . $body . ")(?![\pL'’\-])/ui";
+        }
+        return '/(?<!\pL)(?:' . $body . ')(?!\pL)/ui';
     }
 
     /**
@@ -156,15 +186,53 @@ class LEM_Scanner {
      * $variant = 'strict' - точные названия, алиасы и пары «Имя Фамилия»;
      * $variant = 'bare'   - только одиночная фамилия во всех падежах.
      */
+    /** Для нового перечня требуются все части ФИО, без алиасов и одиночных фамилий. */
+    private static function people_pattern_body($entity, $settings, $variant) {
+        if ($variant === 'bare') {
+            return null;
+        }
+        $words = preg_split('/\s+/u', trim((string) $entity['name']), -1, PREG_SPLIT_NO_EMPTY);
+        if (count($words) < 2) {
+            return null;
+        }
+        foreach ($words as $word) {
+            if (!preg_match("/^[\p{L}][\p{L}'’\-]+$/u", $word)) {
+                return null; // инициалы и сокращённые имена не подтверждают человека
+            }
+        }
+        if (empty($settings['match_word_forms']) || count($words) > 3) {
+            $body = implode(self::WORD_SEP, array_map(static function ($word) {
+                return preg_quote($word, '/');
+            }, $words));
+        } else {
+            $gender = LEM_Morphology::detect_gender($entity['name']);
+            $surname = self::alternation(LEM_Morphology::surname_forms($words[0], $gender));
+            $given = self::alternation(LEM_Morphology::first_name_forms($words[1], $gender));
+            if (isset($words[2])) {
+                $given .= self::WORD_SEP . self::alternation(
+                    LEM_Morphology::first_name_forms($words[2], $gender)
+                );
+            }
+            $body = $surname . self::WORD_SEP . $given . '|' . $given . self::WORD_SEP . $surname;
+        }
+        return preg_replace('/[её]/ui', '[её]', $body);
+    }
+
     public static function build_pattern_body($entity, $settings = null, $variant = 'strict') {
         if ($settings === null) {
             $settings = lem()->get_settings();
         }
-        $key = ($entity['id'] ?? $entity['name'])
+        $key = ($entity['id'] ?? '') . '|' . ($entity['type'] ?? '') . '|' . $entity['name']
             . '|' . $variant . '|' . (int) !empty($settings['match_word_forms'])
             . '|' . ($settings['surname_mode'] ?? 'confirmed');
         if (array_key_exists($key, self::$pattern_cache)) {
             return self::$pattern_cache[$key];
+        }
+
+        if (($entity['type'] ?? '') === 'fedsfm_person') {
+            $body = self::people_pattern_body($entity, $settings, $variant);
+            self::$pattern_cache[$key] = $body;
+            return $body;
         }
 
         $frags     = [];
@@ -309,6 +377,11 @@ class LEM_Scanner {
      * @return array{matched_as:string, position:int}|null
      */
     public static function asterisk_hit($text, $entity, $settings = null) {
+        $settings = $settings ?? lem()->get_settings();
+        if (($entity['type'] ?? '') === 'fedsfm_person'
+            && !in_array($settings['fedsfm_people_mode'] ?? 'off', ['track', 'mark'], true)) {
+            return null;
+        }
         $body = self::build_pattern_body($entity, $settings, 'all');
         if ($body === null) {
             return null;
@@ -357,6 +430,13 @@ class LEM_Scanner {
     public static function match_entity($text, $entity, $settings = null, $allow_bare = null) {
         if ($settings === null) {
             $settings = lem()->get_settings();
+        }
+
+        if (($entity['type'] ?? '') === 'fedsfm_person') {
+            if (!in_array($settings['fedsfm_people_mode'] ?? 'off', ['track', 'mark'], true)) {
+                return null;
+            }
+            return self::first_hit($text, self::build_pattern($entity, $settings, 'strict'));
         }
 
         $best = self::first_hit($text, self::build_pattern($entity, $settings, 'strict'));
@@ -707,6 +787,11 @@ class LEM_Scanner {
         $text_stems = $prefilter ? self::text_stems($plain) : [];
 
         foreach ($entities as $entity) {
+            if (($entity['type'] ?? '') === 'fedsfm_person'
+                && (!in_array($settings['fedsfm_people_mode'] ?? 'off', ['track', 'mark'], true)
+                    || (isset($entity['is_active']) && !$entity['is_active']))) {
+                continue;
+            }
             if ($prefilter) {
                 $stems = self::entity_stems($entity, $settings);
                 if (!empty($stems) && !array_intersect_key($stems, $text_stems)) {
@@ -735,6 +820,10 @@ class LEM_Scanner {
                 'matched_as' => $hit['matched_as'],
                 'position'   => $hit['position'],
             ];
+
+            if ($entity['type'] === 'fedsfm_person') {
+                $match['full_name_match'] = true;
+            }
 
             // Признак «упомянут в цитате или ссылке» считаем всегда, независимо
             // от настройки: тогда её переключение работает без пересканирования.
