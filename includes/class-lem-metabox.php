@@ -92,6 +92,7 @@ class LEM_Metabox {
                 continue; // сущность исключена из реестра, маркировка не ставится
             }
             $match = array_merge($match, $active_ids[$id]);
+            if (!LEM_Scanner::is_current_mention($match, $settings)) { continue; }
             if (!in_array($match['type'], $settings['track_registries'], true)) {
                 continue; // реестр не маркируется и не отслеживается
             }
@@ -136,7 +137,7 @@ class LEM_Metabox {
             return;
         }
 
-        echo '<p class="description">' . esc_html__('«Автоматически» подчиняется общим правилам плагина. Два других положения действуют только для этой статьи.', 'legal-entity-marks') . '</p>';
+        echo '<p class="description">' . esc_html__('«Автоматически» подчиняется общим правилам плагина. Ручной выбор действует только в этой статье. Для четырёх основных реестров «Всегда помечать» работает и при включённом отслеживании без автоматической маркировки.', 'legal-entity-marks') . '</p>';
 
         if (!empty($settings['inoagent_context_only'])) {
             echo '<p class="description">' . esc_html__('Иноагенты маркируются только в цитатах, ссылках и встроенных постах (режим включён в настройках плагина).', 'legal-entity-marks') . '</p>';
@@ -147,6 +148,9 @@ class LEM_Metabox {
      * Почему автоматические правила не помечают это упоминание.
      */
     private static function skip_reason($match, $settings) {
+        if (!in_array($match['type'] ?? '', (array) $settings['mark_registries'], true)) {
+            return __('автоматическая маркировка реестра выключена', 'legal-entity-marks');
+        }
         if (($match['type'] ?? '') === 'inoagent'
             && !empty($settings['inoagent_context_only'])
             && array_key_exists('in_context', $match)

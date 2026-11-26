@@ -85,7 +85,7 @@ class LEM_Scanner {
         }
 
         $terms = self::search_terms($entity);
-        foreach ((array) ($entity['aliases'] ?? []) as $a) {
+        foreach (self::search_aliases($entity) as $a) {
             $inner = self::quoted_brand_inner($a);
             if ($inner !== null) {
                 $terms[] = $inner;
@@ -274,19 +274,16 @@ class LEM_Scanner {
 
         // Алиасы, обёрнутые в кавычки («Дождь»), в обычном режиме матчатся
         // ТОЛЬКО в кавычках: издание «Дождь» помечаем, «шёл дождь» нет.
-        $quoted_terms  = [];
-        $plain_entity  = $entity;
-        if (!empty($entity['aliases'])) {
-            $plain_aliases = [];
-            foreach ($entity['aliases'] as $a) {
-                $inner = self::quoted_brand_inner($a);
-                if ($inner !== null) {
-                    $quoted_terms[] = $inner;
-                } else {
-                    $plain_aliases[] = $a;
-                }
+        $quoted_terms = [];
+        $plain_entity = $entity;
+        $plain_entity['aliases'] = [];
+        foreach (self::search_aliases($entity) as $alias) {
+            $inner = self::quoted_brand_inner($alias);
+            if ($inner !== null) {
+                $quoted_terms[] = $inner;
+            } else {
+                $plain_entity['aliases'][] = $alias;
             }
-            $plain_entity['aliases'] = $plain_aliases;
         }
 
         // Точные названия из реестра и обычные алиасы (со словесными границами).
@@ -611,10 +608,55 @@ class LEM_Scanner {
         return $set;
     }
 
+    public static function is_local_branch($name) {
+        return (bool) preg_match(
+            '/^(Местн(ая|ое)|Первичн(ая|ое)|Религиозная группа|Региональн(ая|ое)\s+религиозн)/ui',
+            trim((string) $name)
+        );
+    }
+
+    private static function is_fan_club($name) {
+        return (bool) preg_match('/(?<!\pL)клуб\s+болельщиков(?!\pL)/ui', $name);
+    }
+
+    /** A locality or supported team's name does not identify the organisation. */
+    public static function organization_aliases($name, array $aliases) {
+        if (self::is_local_branch($name)) {
+            return [];
+        }
+        if (!self::is_fan_club($name)) {
+            return $aliases;
+        }
+        return array_values(array_filter($aliases, static function ($alias) {
+            // Require the club's own name. Nested quotes in an automatic
+            // export can leave an unfinished fragment even if it names a club.
+            return self::is_fan_club($alias) && preg_match_all('/[\pL\pN]+/u', $alias) >= 4
+                && substr_count($alias, '«') === substr_count($alias, '»')
+                && substr_count($alias, '"') % 2 === 0;
+        }));
+    }
+
+    private static function search_aliases($entity) {
+        $aliases = (array) ($entity['aliases'] ?? []);
+        return empty($entity['is_person']) ? self::organization_aliases($entity['name'], $aliases) : $aliases;
+    }
+
+    /** Recheck previously saved matches whose aliases may now be ineligible. */
+    public static function is_current_mention($match, $settings) {
+        $name = $match['name'] ?? '';
+        if (!empty($match['is_person']) || (!self::is_local_branch($name) && !self::is_fan_club($name))) {
+            return true;
+        }
+        $body = self::build_pattern_body($match, $settings);
+        return $body !== null && preg_match('/\A(?:' . $body . ')\z/ui', $match['matched_as'] ?? '') === 1;
+    }
+
     public static function search_terms($entity) {
-        $terms = [$entity['name']];
-        if (!empty($entity['aliases'])) {
-            $terms = array_merge($terms, $entity['aliases']);
+        $name = $entity['name'];
+        $terms = array_merge([$name], self::search_aliases($entity));
+        if (empty($entity['is_person']) && (self::is_local_branch($name) || self::is_fan_club($name))) {
+            // Registration numbers are part of the source row, not of its name.
+            $terms[] = rtrim(preg_replace('/\s*\(ОГРН\s*[:№]?\s*\d+\)\s*$/ui', '', $name));
         }
 
         $cleaned = [];

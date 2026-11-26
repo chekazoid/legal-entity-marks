@@ -130,12 +130,12 @@ class LEM_Postlist {
         foreach ($ents as $m) {
             if (!isset($current[(int) ($m['id'] ?? 0)])) { continue; }
             $m = array_merge($m, $current[(int) $m['id']]);
+            if (!LEM_Scanner::is_current_mention($m, $settings)) { continue; }
             $type = $m['type'] ?? '';
             if (!in_array($type, $settings['track_registries'], true)) {
                 continue;
             }
-            if (in_array($type, $settings['mark_registries'], true)
-                && LEM_Frontend::should_mark($m, $settings, $overrides)) {
+            if (LEM_Frontend::should_mark($m, $settings, $overrides)) {
                 $marked++;
             } else {
                 $tracked++;

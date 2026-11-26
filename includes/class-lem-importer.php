@@ -218,7 +218,7 @@ class LEM_Importer {
             }
         }
 
-        return self::clean_aliases($out, $name);
+        return self::clean_aliases(LEM_Scanner::organization_aliases($name, $out), $name);
     }
 
     /**
@@ -323,10 +323,7 @@ class LEM_Importer {
      * а город даёт ложные срабатывания в любом тексте.
      */
     public static function is_local_branch($name) {
-        return (bool) preg_match(
-            '/^(Местн(ая|ое)|Первичн(ая|ое)|Религиозная группа|Региональн(ая|ое)\s+религиозн)/u',
-            trim((string) $name)
-        );
+        return LEM_Scanner::is_local_branch($name);
     }
 
     /**
@@ -605,6 +602,10 @@ class LEM_Importer {
                 $aliases,
                 self::generate_aliases($name, $is_person)
             )));
+
+            if (!$is_person) {
+                $aliases = LEM_Scanner::organization_aliases($name, $aliases);
+            }
 
             $date_in = $this->parse_date($entry['date_included'] ?? $entry['dateIn'] ?? null);
             $date_out = $this->parse_date($entry['date_excluded'] ?? $entry['dateOut'] ?? null);

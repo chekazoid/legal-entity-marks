@@ -4,7 +4,7 @@ Tags: editorial, registry, compliance, media, russian
 Requires at least: 6.1
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.15.1
+Stable tag: 1.15.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,10 @@ Statistics and site registration are optional. They do not need to be enabled to
 
 Footnotes are generated when content is displayed. Explicit link removal changes stored content and should be reviewed and backed up by the editor.
 
+= Can I mark an individual article with automatic marking turned off? =
+
+For one of the four main registries, enable monitoring and leave automatic marking off. In the article editor, choose Always mark for a verified match and save the article. This choice applies to that article only.
+
 = Does it send articles to Observer? =
 
 No. Matching runs inside WordPress. Registry downloads do not send article content, lists of matches or visitor information.
@@ -109,6 +113,10 @@ The [Russian manual](https://github.com/chekazoid/legal-entity-marks/blob/main/d
 
 == Changelog ==
 
+= 1.15.2 =
+* Always mark now works for an individual article when a main registry is monitored with automatic marking turned off.
+* Prevented false matches for locality names and sports teams extracted from local organisations and supporters' club names. Older saved matches are checked against the same rules when displayed.
+
 = 1.15.1 =
 * Prepared the package for WordPress.org review.
 * Added complete-snapshot reconciliation in every registry category, with rollback on incomplete or failed updates.
@@ -126,6 +134,9 @@ The [Russian manual](https://github.com/chekazoid/legal-entity-marks/blob/main/d
 * Fixed misleading update warnings after a successful Observer fallback.
 
 == Upgrade Notice ==
+
+= 1.15.2 =
+Use Always mark for individual articles while automatic marking is off. Keep monitoring enabled for the registry. Improved matching of locality names and sports teams applies to older scan results as well.
 
 = 1.15.1 =
 Statistics require new explicit consent. Complete updates deactivate missing imported names while retaining their data. Review historical custom additions: older versions did not record their origin. Existing marking settings are retained.

@@ -89,7 +89,8 @@ class LEM_Frontend {
                 continue;
             }
             $match = array_merge($match, $entities_map[$eid]);
-            if (!self::should_mark($match, $settings, $overrides)) {
+            if (!LEM_Scanner::is_current_mention($match, $settings)
+                || !self::should_mark($match, $settings, $overrides)) {
                 continue;
             }
             $match['entity']  = $entities_map[$eid];
@@ -219,8 +220,8 @@ class LEM_Frontend {
     /**
      * Решает, маркировать ли найденное упоминание.
      *
-     * Порядок: отключённая категория → снятое вручную → правило контекста
-     * (для иноагентов), которое редактор может перебить вручную.
+     * Пригодность записи проверяется до ручного решения. Явная отметка
+     * действует и в отслеживаемой категории без автоматической маркировки.
      */
     public static function should_mark($match, $settings, $overrides) {
         $type = $match['type'] ?? '';
@@ -232,14 +233,19 @@ class LEM_Frontend {
             || empty($match['full_name_match']))) {
             return false;
         }
-        // registries - имя до 1.9.0, могло прийти из стороннего кода
-        $mark = $settings['mark_registries'] ?? $settings['registries'] ?? [];
-        if (!in_array($type, (array) $mark, true)) {
+        $id = (int) ($match['id'] ?? 0);
+        if (in_array($id, $overrides['excluded'], true)) {
             return false;
         }
 
-        $id = (int) ($match['id'] ?? 0);
-        if (in_array($id, $overrides['excluded'], true)) {
+        // registries - имя до 1.9.0, могло прийти из стороннего кода
+        $mark = (array) ($settings['mark_registries'] ?? $settings['registries'] ?? []);
+        $automatic = in_array($type, $mark, true);
+        if ($id > 0 && in_array($id, $overrides['forced'], true)
+            && ($automatic || in_array($type, (array) ($settings['track_registries'] ?? []), true))) {
+            return true;
+        }
+        if (!$automatic) {
             return false;
         }
 
@@ -247,8 +253,7 @@ class LEM_Frontend {
             // У записей, отсканированных до версии 1.5.0, признака нет.
             // Считаем их маркируемыми, пока статью не пересканируют.
             if (array_key_exists('in_context', $match)
-                && empty($match['in_context'])
-                && !in_array($id, $overrides['forced'], true)) {
+                && empty($match['in_context'])) {
                 return false;
             }
         }

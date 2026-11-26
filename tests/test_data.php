@@ -15,6 +15,7 @@ function add_action(){} function add_filter(){}
 function sanitize_key($k) { return preg_replace('/[^a-z0-9_\-]/', '', mb_strtolower((string) $k)); }
 
 require_once __DIR__ . '/../includes/class-lem-banned-sites.php';
+require_once __DIR__ . '/../includes/class-lem-scanner.php';
 require_once __DIR__ . '/../includes/class-lem-importer.php';
 
 /** REGISTRY_TYPES живёт в LEM_Plugin, который тянет за собой весь WordPress. */

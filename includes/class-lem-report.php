@@ -33,7 +33,6 @@ class LEM_Report {
         global $wpdb;
 
         $settings = lem()->get_settings();
-        $mark     = $settings['mark_registries'];
         $track    = $settings['track_registries'];
 
         $registry = $args['registry'] ?? '';
@@ -83,6 +82,7 @@ class LEM_Report {
                 $eid = (int) ($match['id'] ?? 0);
                 if (!isset($entities[$eid])) { continue; }
                 $match = array_merge($match, $entities[$eid]);
+                if (!LEM_Scanner::is_current_mention($match, $settings)) { continue; }
                 $type = $match['type'] ?? '';
                 if (!in_array($type, $track, true)) {
                     continue; // реестр не отслеживается
@@ -91,8 +91,7 @@ class LEM_Report {
                     continue;
                 }
 
-                $is_marked = in_array($type, $mark, true)
-                    && LEM_Frontend::should_mark($match, $settings, $overrides);
+                $is_marked = LEM_Frontend::should_mark($match, $settings, $overrides);
 
                 if ($mode === 'marked' && !$is_marked) {
                     continue;

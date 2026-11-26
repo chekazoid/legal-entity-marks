@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0+.
 msgid ""
 msgstr ""
-"Project-Id-Version: Legal Entity Marks 1.15.1\n"
+"Project-Id-Version: Legal Entity Marks 1.15.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/legal-entity-marks\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-24T18:03:36+00:00\n"
+"POT-Creation-Date: 2026-11-26T18:43:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: legal-entity-marks\n"
@@ -592,8 +592,8 @@ msgstr ""
 #: admin/views/banned-links.php:405
 #: admin/views/banned-links.php:452
 #: admin/views/dashboard.php:400
-#: admin/views/settings.php:562
-#: admin/views/settings.php:581
+#: admin/views/settings.php:560
+#: admin/views/settings.php:579
 msgid "Ошибка сети"
 msgstr ""
 
@@ -806,7 +806,7 @@ msgstr ""
 
 #: admin/views/dashboard.php:22
 #: admin/views/dashboard.php:216
-#: admin/views/settings.php:131
+#: admin/views/settings.php:129
 msgid "из"
 msgstr ""
 
@@ -1454,7 +1454,7 @@ msgstr ""
 
 #: admin/views/settings.php:60
 #: admin/views/settings.php:89
-#: admin/views/settings.php:110
+#: admin/views/settings.php:108
 msgid "Маркировать"
 msgstr ""
 
@@ -1468,80 +1468,77 @@ msgid "- сноска в тексте и строка в блоке дискле
 msgstr ""
 
 #: admin/views/settings.php:90
-msgid ""
-"- без меток на сайте, но упоминания и ссылки видны\n"
-"                        в разделе «Упоминания». Нужно, когда маркировка не требуется, а знать о факте\n"
-"                        упоминания надо."
+msgid "- упоминания и ссылки видны в отчёте. Автоматических меток нет. Чтобы поставить метку в отдельной статье, выберите «Всегда помечать» в её редакторе."
 msgstr ""
 
-#: admin/views/settings.php:93
+#: admin/views/settings.php:91
 msgid ""
 "Маркируемый реестр отслеживается автоматически. Изменения действуют сразу,\n"
 "                        пересканирование не требуется."
 msgstr ""
 
-#: admin/views/settings.php:95
+#: admin/views/settings.php:93
 msgid ""
 "Галочки\n"
 "                        расставляет выбранный профиль. Чтобы менять вручную,\n"
 "                        выберите профиль «Вручную»."
 msgstr ""
 
-#: admin/views/settings.php:107
+#: admin/views/settings.php:105
 msgid "Физические лица: Росфинмониторинг"
 msgstr ""
 
-#: admin/views/settings.php:110
+#: admin/views/settings.php:108
 msgid "Выключено"
 msgstr ""
 
-#: admin/views/settings.php:110
+#: admin/views/settings.php:108
 msgid "Только отслеживать"
 msgstr ""
 
-#: admin/views/settings.php:115
+#: admin/views/settings.php:113
 msgid ""
 "Дополнительный перечень физических лиц из «Наблюдателя». По умолчанию выключен,\n"
 "                        профили сайта его не включают. Для загрузки нужны включённый канал и токен канала.\n"
 "                        Загрузка идёт в фоне, порциями; после завершения проверяется архив публикаций."
 msgstr ""
 
-#: admin/views/settings.php:120
+#: admin/views/settings.php:118
 msgid ""
 "Ищется полное ФИО, включая отчество, если оно есть в перечне.\n"
 "                        Совпадения по одной фамилии, инициалам и неполному имени не маркируются.\n"
 "                        У разных людей могут совпадать даже полные ФИО: такие случаи проверяет редакция."
 msgstr ""
 
-#: admin/views/settings.php:129
+#: admin/views/settings.php:127
 msgid "Для повторной попытки сохраните настройки или нажмите «Обновить реестры» на «Обзоре»."
 msgstr ""
 
-#: admin/views/settings.php:131
+#: admin/views/settings.php:129
 msgid "Идёт загрузка:"
 msgstr ""
 
-#: admin/views/settings.php:131
+#: admin/views/settings.php:129
 msgid "ФИО."
 msgstr ""
 
-#: admin/views/settings.php:134
+#: admin/views/settings.php:132
 msgid "Последняя успешная сверка:"
 msgstr ""
 
-#: admin/views/settings.php:134
+#: admin/views/settings.php:132
 msgid ". Срез канала:"
 msgstr ""
 
-#: admin/views/settings.php:134
+#: admin/views/settings.php:132
 msgid ". ФИО:"
 msgstr ""
 
-#: admin/views/settings.php:141
+#: admin/views/settings.php:139
 msgid "Ссылки, подлежащие удалению"
 msgstr ""
 
-#: admin/views/settings.php:144
+#: admin/views/settings.php:142
 msgid ""
 "Ссылка на ресурс нежелательной организации может толковаться как\n"
 "                        участие в её деятельности, такие ссылки убирают из текста.\n"
@@ -1549,17 +1546,17 @@ msgid ""
 "                        Отметьте реестры, ссылки на ресурсы которых считать подлежащими удалению."
 msgstr ""
 
-#: admin/views/settings.php:158
+#: admin/views/settings.php:156
 msgid ""
 "Найденные ссылки видны в разделе «Ссылки» в любом случае, отметка\n"
 "                        влияет только на то, что удаляется из текста."
 msgstr ""
 
-#: admin/views/settings.php:165
+#: admin/views/settings.php:163
 msgid "Канал реестров"
 msgstr ""
 
-#: admin/views/settings.php:168
+#: admin/views/settings.php:166
 msgid ""
 "Запасной источник на случай, когда официальный реестр не отвечает:\n"
 "                        сайт Минюста бывает недоступен, а хостинг может резать исходящие\n"
@@ -1568,68 +1565,68 @@ msgid ""
 "                        и встроенный перечень. Канал поддерживает все четыре реестра плагина."
 msgstr ""
 
-#: admin/views/settings.php:177
+#: admin/views/settings.php:175
 msgid "Использовать канал реестров как запасной источник"
 msgstr ""
 
-#: admin/views/settings.php:181
+#: admin/views/settings.php:179
 msgid "Адрес"
 msgstr ""
 
-#: admin/views/settings.php:194
+#: admin/views/settings.php:192
 msgid "Токен"
 msgstr ""
 
-#: admin/views/settings.php:197
+#: admin/views/settings.php:195
 msgid "сохранён, оставьте пустым"
 msgstr ""
 
-#: admin/views/settings.php:197
+#: admin/views/settings.php:195
 msgid "не требуется"
 msgstr ""
 
-#: admin/views/settings.php:202
+#: admin/views/settings.php:200
 msgid "удалить"
 msgstr ""
 
-#: admin/views/settings.php:207
+#: admin/views/settings.php:205
 msgid "Для четырёх основных реестров токен не нужен"
 msgstr ""
 
-#: admin/views/settings.php:207
+#: admin/views/settings.php:205
 msgid ""
 ", выгрузки открыты.\n"
 "                        Токен требуется для добровольной загрузки физических лиц из перечня\n"
 "                        Росфинмониторинга. Без её включения этот перечень не скачивается."
 msgstr ""
 
-#: admin/views/settings.php:211
+#: admin/views/settings.php:209
 msgid "Сейчас токен задан константой"
 msgstr ""
 
-#: admin/views/settings.php:212
+#: admin/views/settings.php:210
 msgid "в wp-config.php и настройкой не перекрывается."
 msgstr ""
 
-#: admin/views/settings.php:214
+#: admin/views/settings.php:212
 msgid ""
 "Токен хранится в настройках сайта и на страницу не выводится.\n"
 "                            Его можно держать вне базы, добавив в wp-config.php строку"
 msgstr ""
 
-#: admin/views/settings.php:221
+#: admin/views/settings.php:219
 msgid "Проверить канал"
 msgstr ""
 
-#: admin/views/settings.php:228
+#: admin/views/settings.php:226
 msgid "Обновление и удаление"
 msgstr ""
 
-#: admin/views/settings.php:231
+#: admin/views/settings.php:229
 msgid "Обновляйте загрузкой поверх."
 msgstr ""
 
-#: admin/views/settings.php:231
+#: admin/views/settings.php:229
 msgid ""
 "«Плагины → Добавить новый →\n"
 "                        Загрузить плагин», выбрать архив, на вопрос об уже установленной версии\n"
@@ -1637,17 +1634,17 @@ msgid ""
 "                        сканирования при этом сохраняются."
 msgstr ""
 
-#: admin/views/settings.php:235
+#: admin/views/settings.php:233
 msgid ""
 "Удалять плагин перед установкой новой версии не нужно: раньше так\n"
 "                        приходилось делать, и каждый такой круг стирал всё нажитое."
 msgstr ""
 
-#: admin/views/settings.php:241
+#: admin/views/settings.php:239
 msgid "Удалить все данные плагина, если его удалят из WordPress"
 msgstr ""
 
-#: admin/views/settings.php:244
+#: admin/views/settings.php:242
 msgid ""
 "По умолчанию выключено: при удалении плагина реестры, настройки\n"
 "                        и результаты сканирования остаются в базе, и повторная установка\n"
@@ -1655,11 +1652,11 @@ msgid ""
 "                        и хотите, чтобы после него ничего не осталось."
 msgstr ""
 
-#: admin/views/settings.php:253
+#: admin/views/settings.php:251
 msgid "Помочь развитию плагина"
 msgstr ""
 
-#: admin/views/settings.php:260
+#: admin/views/settings.php:258
 msgid ""
 "Плагин раздаётся бесплатно, и понять, сколько людей им пользуется,\n"
 "                        можно только с вашей помощью. Ничего обязательного тут нет:\n"
@@ -1667,11 +1664,11 @@ msgid ""
 "                        точно так же."
 msgstr ""
 
-#: admin/views/settings.php:269
+#: admin/views/settings.php:267
 msgid "Разрешить отправку случайного идентификатора и версии для подсчёта установок"
 msgstr ""
 
-#: admin/views/settings.php:272
+#: admin/views/settings.php:270
 msgid ""
 "По умолчанию счётчик выключен. Чтобы разрешить отправку, отметьте галочку и сохраните настройки.\n"
 "                        Раз в неделю, вместе с обновлением реестров, плагин проверяет\n"
@@ -1682,7 +1679,7 @@ msgid ""
 "                        ("
 msgstr ""
 
-#: admin/views/settings.php:278
+#: admin/views/settings.php:276
 msgid ""
 ")\n"
 "                        и версия плагина. Ни домена, ни адреса, ни чего-либо о содержимом\n"
@@ -1691,106 +1688,106 @@ msgid ""
 "                        заголовков, и посчитать установку по ней нельзя."
 msgstr ""
 
-#: admin/views/settings.php:285
+#: admin/views/settings.php:283
 msgid "Зарегистрировать сайт"
 msgstr ""
 
-#: admin/views/settings.php:287
+#: admin/views/settings.php:285
 msgid ""
 "Это уже не анонимно. Регистрация нужна, чтобы автор мог предупредить\n"
 "                        о важном обновлении или о поломке в реестрах. Отправляется"
 msgstr ""
 
-#: admin/views/settings.php:289
+#: admin/views/settings.php:287
 msgid "только по нажатию кнопки"
 msgstr ""
 
-#: admin/views/settings.php:289
+#: admin/views/settings.php:287
 msgid "и ровно в таком составе:"
 msgstr ""
 
-#: admin/views/settings.php:293
+#: admin/views/settings.php:291
 msgid "Адрес сайта"
 msgstr ""
 
-#: admin/views/settings.php:295
+#: admin/views/settings.php:293
 msgid "Название сайта"
 msgstr ""
 
-#: admin/views/settings.php:297
+#: admin/views/settings.php:295
 msgid "Версия плагина"
 msgstr ""
 
-#: admin/views/settings.php:299
+#: admin/views/settings.php:297
 msgid "Версия WordPress"
 msgstr ""
 
-#: admin/views/settings.php:301
+#: admin/views/settings.php:299
 msgid "Версия PHP"
 msgstr ""
 
-#: admin/views/settings.php:303
+#: admin/views/settings.php:301
 msgid "Идентификатор установки"
 msgstr ""
 
-#: admin/views/settings.php:305
+#: admin/views/settings.php:303
 msgid "Почта для связи"
 msgstr ""
 
-#: admin/views/settings.php:307
+#: admin/views/settings.php:305
 msgid "необязательно"
 msgstr ""
 
-#: admin/views/settings.php:311
+#: admin/views/settings.php:309
 msgid ""
 "Больше ничего не уходит: ни содержимое статей, ни списки найденных\n"
 "                        организаций, ни данные редакции."
 msgstr ""
 
-#: admin/views/settings.php:316
+#: admin/views/settings.php:314
 msgid "Отправить ещё раз"
 msgstr ""
 
-#: admin/views/settings.php:316
+#: admin/views/settings.php:314
 msgid "Отправить"
 msgstr ""
 
-#: admin/views/settings.php:320
+#: admin/views/settings.php:318
 msgid "Сайт зарегистрирован"
 msgstr ""
 
-#: admin/views/settings.php:328
+#: admin/views/settings.php:326
 msgid "Поиск имён"
 msgstr ""
 
-#: admin/views/settings.php:333
+#: admin/views/settings.php:331
 msgid "Искать фамилии и имена во всех падежах"
 msgstr ""
 
-#: admin/views/settings.php:336
+#: admin/views/settings.php:334
 msgid ""
 "Без этого найдётся только «Иванов Иван» из реестра, а «по словам Иванова»\n"
 "                        или «интервью с Ивановым» пройдут мимо. Учитывается род: женские фамилии\n"
 "                        на согласную не склоняются."
 msgstr ""
 
-#: admin/views/settings.php:340
+#: admin/views/settings.php:338
 msgid "Упоминание одной фамилии без имени"
 msgstr ""
 
-#: admin/views/settings.php:343
+#: admin/views/settings.php:341
 msgid "Только если в статье есть полное имя (рекомендуется)"
 msgstr ""
 
-#: admin/views/settings.php:346
+#: admin/views/settings.php:344
 msgid "Не искать, нужно полное «Имя Фамилия»"
 msgstr ""
 
-#: admin/views/settings.php:349
+#: admin/views/settings.php:347
 msgid "Искать всегда"
 msgstr ""
 
-#: admin/views/settings.php:353
+#: admin/views/settings.php:351
 msgid ""
 "В статьях принято называть человека полностью при первом упоминании,\n"
 "                        а дальше по фамилии. Рекомендуемый режим это учитывает: «Лев Пономарев\n"
@@ -1798,74 +1795,74 @@ msgid ""
 "                        однофамильца-чиновника не попадёт под маркировку."
 msgstr ""
 
-#: admin/views/settings.php:358
+#: admin/views/settings.php:356
 msgid ""
 "Режим «искать всегда» даёт ложные срабатывания на однофамильцах:\n"
 "                        13 из 24 самых частых русских фамилий есть в реестре иноагентов.\n"
 "                        После изменения запустите пересканирование."
 msgstr ""
 
-#: admin/views/settings.php:366
+#: admin/views/settings.php:364
 msgid "Иноагенты: только в цитатах"
 msgstr ""
 
-#: admin/views/settings.php:371
+#: admin/views/settings.php:369
 msgid "Маркировать иноагентов только там, где их цитируют или дают ссылку"
 msgstr ""
 
-#: admin/views/settings.php:374
+#: admin/views/settings.php:372
 msgid ""
 "Обычное упоминание фамилии в тексте маркироваться не будет.\n"
 "                        Остальные три реестра правило не затрагивает."
 msgstr ""
 
-#: admin/views/settings.php:379
+#: admin/views/settings.php:377
 msgid "Что считать поводом для маркировки:"
 msgstr ""
 
-#: admin/views/settings.php:382
+#: admin/views/settings.php:380
 msgid "Блок цитаты (blockquote, q) вместе с подводкой и подписью"
 msgstr ""
 
-#: admin/views/settings.php:383
+#: admin/views/settings.php:381
 msgid "Абзац с гиперссылкой, текст и адрес ссылки"
 msgstr ""
 
-#: admin/views/settings.php:384
+#: admin/views/settings.php:382
 msgid "Абзац с прямой речью в кавычках «…»"
 msgstr ""
 
-#: admin/views/settings.php:385
+#: admin/views/settings.php:383
 msgid "Встроенный пост из соцсети вместе с подводкой и подписью"
 msgstr ""
 
-#: admin/views/settings.php:396
+#: admin/views/settings.php:394
 msgid ""
 "После изменения этих условий запустите пересканирование:\n"
 "                            признак «упомянут в цитате» вычисляется во время сканирования."
 msgstr ""
 
-#: admin/views/settings.php:404
+#: admin/views/settings.php:402
 msgid "Дополнительные поля"
 msgstr ""
 
-#: admin/views/settings.php:409
+#: admin/views/settings.php:407
 msgid "Не сканировать (только заголовок и текст записи)"
 msgstr ""
 
-#: admin/views/settings.php:413
+#: admin/views/settings.php:411
 msgid "Сканировать выбранные поля"
 msgstr ""
 
-#: admin/views/settings.php:417
+#: admin/views/settings.php:415
 msgid "Сканировать все произвольные поля"
 msgstr ""
 
-#: admin/views/settings.php:422
+#: admin/views/settings.php:420
 msgid "Полей с текстом на сайте не найдено."
 msgstr ""
 
-#: admin/views/settings.php:438
+#: admin/views/settings.php:436
 msgid ""
 "Темы часто выводят подзаголовок или лид отдельным блоком, мимо основного\n"
 "                        текста записи - такие упоминания сканер не видит. Здесь показаны\n"
@@ -1873,19 +1870,19 @@ msgid ""
 "                        После изменения запустите пересканирование."
 msgstr ""
 
-#: admin/views/settings.php:443
+#: admin/views/settings.php:441
 msgid "Если текст собирается темой на лету и в базе его нет, используйте фильтр"
 msgstr ""
 
-#: admin/views/settings.php:450
+#: admin/views/settings.php:448
 msgid "Исключённые из реестра"
 msgstr ""
 
-#: admin/views/settings.php:455
+#: admin/views/settings.php:453
 msgid "Маркировать и тех, кого уже исключили из реестра"
 msgstr ""
 
-#: admin/views/settings.php:458
+#: admin/views/settings.php:456
 msgid ""
 "По закону после исключения из реестра маркировка не требуется, поэтому\n"
 "                        по умолчанию плагин помечает только действующих. Если включить, исключённые\n"
@@ -1894,85 +1891,85 @@ msgid ""
 "                        После изменения запустите пересканирование."
 msgstr ""
 
-#: admin/views/settings.php:469
+#: admin/views/settings.php:467
 msgid "Приоритет фильтра"
 msgstr ""
 
-#: admin/views/settings.php:475
+#: admin/views/settings.php:473
 msgid "Приоритет фильтра the_content. Чем больше - тем позже выполняется. По умолчанию: 9999."
 msgstr ""
 
-#: admin/views/settings.php:481
+#: admin/views/settings.php:479
 msgid "Цвет маркера"
 msgstr ""
 
-#: admin/views/settings.php:486
+#: admin/views/settings.php:484
 msgid "Цвет сносок-маркеров в тексте статьи."
 msgstr ""
 
-#: admin/views/settings.php:492
+#: admin/views/settings.php:490
 msgid "Фон дисклеймера"
 msgstr ""
 
-#: admin/views/settings.php:502
+#: admin/views/settings.php:500
 msgid "Рамка дисклеймера"
 msgstr ""
 
-#: admin/views/settings.php:512
+#: admin/views/settings.php:510
 msgid "Интервал обновления"
 msgstr ""
 
-#: admin/views/settings.php:516
+#: admin/views/settings.php:514
 msgid "Ежедневно"
 msgstr ""
 
-#: admin/views/settings.php:517
+#: admin/views/settings.php:515
 msgid "Дважды в день"
 msgstr ""
 
-#: admin/views/settings.php:518
+#: admin/views/settings.php:516
 msgid "Еженедельно"
 msgstr ""
 
-#: admin/views/settings.php:520
+#: admin/views/settings.php:518
 msgid "Как часто автоматически проверять обновления реестров."
 msgstr ""
 
-#: admin/views/settings.php:525
+#: admin/views/settings.php:523
 msgid "Автоскан при публикации"
 msgstr ""
 
-#: admin/views/settings.php:530
+#: admin/views/settings.php:528
 msgid "Автоматически сканировать статьи при публикации."
 msgstr ""
 
-#: admin/views/settings.php:536
+#: admin/views/settings.php:534
 msgid "Сохранить настройки"
 msgstr ""
 
-#: admin/views/settings.php:546
+#: admin/views/settings.php:544
 msgid ""
 "Отправить автору плагина адрес сайта, его название, версии и почту?\n"
 ""
 msgstr ""
 
-#: admin/views/settings.php:548
+#: admin/views/settings.php:546
 msgid "Содержимое статей и результаты поиска не отправляются."
 msgstr ""
 
-#: admin/views/settings.php:551
+#: admin/views/settings.php:549
 msgid "Отправляем..."
 msgstr ""
 
-#: admin/views/settings.php:560
+#: admin/views/settings.php:558
 msgid "не получилось"
 msgstr ""
 
-#: admin/views/settings.php:570
+#: admin/views/settings.php:568
 msgid "Проверяем..."
 msgstr ""
 
-#: admin/views/settings.php:579
+#: admin/views/settings.php:577
 msgid "Ошибка проверки"
 msgstr ""
 
@@ -2034,135 +2031,135 @@ msgid "Раз в неделю"
 msgstr ""
 
 #. translators: 1: remaining registry entries, 2: grammatical form of the word for entries.
-#: includes/class-lem-frontend.php:178
+#: includes/class-lem-frontend.php:179
 #, php-format
 msgid "и ещё %1$d %2$s реестра с этим названием"
 msgstr ""
 
-#: includes/class-lem-frontend.php:292
+#: includes/class-lem-frontend.php:297
 msgid ", включён(-а) в перечень Росфинмониторинга организаций и физических лиц, "
 msgstr ""
 
-#: includes/class-lem-frontend.php:293
+#: includes/class-lem-frontend.php:298
 msgid "в отношении которых имеются сведения об их причастности к экстремистской деятельности или терроризму"
 msgstr ""
 
-#: includes/class-lem-frontend.php:296
+#: includes/class-lem-frontend.php:301
 msgid ", признанный(-ая) в РФ иностранным агентом"
 msgstr ""
 
-#: includes/class-lem-frontend.php:298
+#: includes/class-lem-frontend.php:303
 msgid ", признанная в РФ иностранным агентом"
 msgstr ""
 
-#: includes/class-lem-frontend.php:304
+#: includes/class-lem-frontend.php:309
 msgid ", деятельность которой признана экстремистской и запрещена на территории РФ"
 msgstr ""
 
-#: includes/class-lem-frontend.php:306
+#: includes/class-lem-frontend.php:311
 msgid ", признанная террористической и запрещённая на территории РФ организация"
 msgstr ""
 
-#: includes/class-lem-frontend.php:308
+#: includes/class-lem-frontend.php:313
 msgid ", признанная нежелательной на территории РФ организация"
 msgstr ""
 
-#: includes/class-lem-frontend.php:326
+#: includes/class-lem-frontend.php:331
 msgid " (исключён(-а) из реестра "
 msgstr ""
 
-#: includes/class-lem-frontend.php:328
+#: includes/class-lem-frontend.php:333
 msgid " (исключена из реестра "
 msgstr ""
 
-#: includes/class-lem-frontend.php:334
+#: includes/class-lem-frontend.php:339
 msgid ", ранее признанный(-ая) в РФ иностранным агентом"
 msgstr ""
 
-#: includes/class-lem-frontend.php:336
+#: includes/class-lem-frontend.php:341
 msgid ", ранее признанная в РФ иностранным агентом"
 msgstr ""
 
-#: includes/class-lem-frontend.php:338
+#: includes/class-lem-frontend.php:343
 msgid ", деятельность которой ранее была признана экстремистской"
 msgstr ""
 
-#: includes/class-lem-frontend.php:340
+#: includes/class-lem-frontend.php:345
 msgid ", ранее признанная террористической организация"
 msgstr ""
 
-#: includes/class-lem-frontend.php:342
+#: includes/class-lem-frontend.php:347
 msgid ", ранее признанная нежелательной на территории РФ организация"
 msgstr ""
 
-#: includes/class-lem-frontend.php:353
+#: includes/class-lem-frontend.php:358
 msgid "запись"
 msgstr ""
 
-#: includes/class-lem-frontend.php:356
+#: includes/class-lem-frontend.php:361
 msgid "записи"
 msgstr ""
 
-#: includes/class-lem-frontend.php:358
+#: includes/class-lem-frontend.php:363
 msgid "записей"
 msgstr ""
 
-#: includes/class-lem-importer.php:989
+#: includes/class-lem-importer.php:990
 msgid "реестр Минюста не подтвердил версию списка"
 msgstr ""
 
-#: includes/class-lem-importer.php:993
+#: includes/class-lem-importer.php:994
 msgid "реестр Минюста вернул неподходящую версию списка"
 msgstr ""
 
-#: includes/class-lem-importer.php:1013
+#: includes/class-lem-importer.php:1014
 msgid "реестр Минюста не отдал весь список"
 msgstr ""
 
-#: includes/class-lem-importer.php:1018
+#: includes/class-lem-importer.php:1019
 msgid "полнота списка Минюста не подтверждена"
 msgstr ""
 
-#: includes/class-lem-importer.php:1022
+#: includes/class-lem-importer.php:1023
 msgid "реестр Минюста вернул неполную страницу"
 msgstr ""
 
-#: includes/class-lem-importer.php:1025
+#: includes/class-lem-importer.php:1026
 msgid "реестр Минюста вернул повреждённую строку"
 msgstr ""
 
-#: includes/class-lem-importer.php:1028
+#: includes/class-lem-importer.php:1029
 msgid "реестр Минюста вернул повреждённое поле"
 msgstr ""
 
-#: includes/class-lem-importer.php:1032
+#: includes/class-lem-importer.php:1033
 msgid "страницы реестра Минюста пересекаются"
 msgstr ""
 
-#: includes/class-lem-importer.php:1039
+#: includes/class-lem-importer.php:1040
 msgid "реестр Минюста изменился во время загрузки"
 msgstr ""
 
-#: includes/class-lem-importer.php:1062
-#: includes/class-lem-importer.php:1236
+#: includes/class-lem-importer.php:1063
+#: includes/class-lem-importer.php:1237
 msgid "реестр Минюста содержит строку без наименования"
 msgstr ""
 
-#: includes/class-lem-importer.php:1122
-#: includes/class-lem-importer.php:1256
+#: includes/class-lem-importer.php:1123
+#: includes/class-lem-importer.php:1257
 msgid "реестр Минюста ответил, но записей не разобрано"
 msgstr ""
 
-#: includes/class-lem-importer.php:1171
+#: includes/class-lem-importer.php:1172
 msgid "зеркало вернуло неожиданный ответ"
 msgstr ""
 
-#: includes/class-lem-importer.php:1278
+#: includes/class-lem-importer.php:1279
 msgid "канал реестров выключен в настройках"
 msgstr ""
 
 #: includes/class-lem-metabox.php:62
-#: includes/class-lem-metabox.php:135
+#: includes/class-lem-metabox.php:136
 msgid "Упоминаний из реестров не найдено."
 msgstr ""
 
@@ -2170,35 +2167,39 @@ msgstr ""
 msgid "Статья ещё не сканировалась. Она будет проверена при сохранении."
 msgstr ""
 
-#: includes/class-lem-metabox.php:108
+#: includes/class-lem-metabox.php:109
 msgid "Автоматически (сейчас помечается)"
 msgstr ""
 
-#: includes/class-lem-metabox.php:109
+#: includes/class-lem-metabox.php:110
 msgid "Автоматически (сейчас не помечается: "
 msgstr ""
 
-#: includes/class-lem-metabox.php:120
+#: includes/class-lem-metabox.php:121
 msgid "Всегда помечать"
 msgstr ""
 
-#: includes/class-lem-metabox.php:122
+#: includes/class-lem-metabox.php:123
 msgid "Не помечать"
 msgstr ""
 
-#: includes/class-lem-metabox.php:139
-msgid "«Автоматически» подчиняется общим правилам плагина. Два других положения действуют только для этой статьи."
+#: includes/class-lem-metabox.php:140
+msgid "«Автоматически» подчиняется общим правилам плагина. Ручной выбор действует только в этой статье. Для четырёх основных реестров «Всегда помечать» работает и при включённом отслеживании без автоматической маркировки."
 msgstr ""
 
-#: includes/class-lem-metabox.php:142
+#: includes/class-lem-metabox.php:143
 msgid "Иноагенты маркируются только в цитатах, ссылках и встроенных постах (режим включён в настройках плагина)."
 msgstr ""
 
-#: includes/class-lem-metabox.php:154
+#: includes/class-lem-metabox.php:152
+msgid "автоматическая маркировка реестра выключена"
+msgstr ""
+
+#: includes/class-lem-metabox.php:158
 msgid "нет цитаты или ссылки"
 msgstr ""
 
-#: includes/class-lem-metabox.php:156
+#: includes/class-lem-metabox.php:160
 msgid "по правилам плагина"
 msgstr ""
 

@@ -87,9 +87,7 @@ $all_post_types = get_post_types(['public' => true], 'objects');
                     </table>
                     <p class="description">
                         <strong><?php echo esc_html__('Маркировать', 'legal-entity-marks'); ?></strong> <?php echo esc_html__('- сноска в тексте и строка в блоке дисклеймеров.', 'legal-entity-marks'); ?><br>
-                        <strong><?php echo esc_html__('Отслеживать', 'legal-entity-marks'); ?></strong> <?php echo esc_html__('- без меток на сайте, но упоминания и ссылки видны
-                        в разделе «Упоминания». Нужно, когда маркировка не требуется, а знать о факте
-                        упоминания надо.', 'legal-entity-marks'); ?><br>
+                        <strong><?php echo esc_html__('Отслеживать', 'legal-entity-marks'); ?></strong> <?php echo esc_html__('- упоминания и ссылки видны в отчёте. Автоматических меток нет. Чтобы поставить метку в отдельной статье, выберите «Всегда помечать» в её редакторе.', 'legal-entity-marks'); ?><br>
                         <?php echo esc_html__('Маркируемый реестр отслеживается автоматически. Изменения действуют сразу,
                         пересканирование не требуется.', 'legal-entity-marks'); ?>
                         <br><em id="lem-preset-hint" <?php echo $manual ? 'style="display:none"' : ''; ?>><?php echo esc_html__('Галочки

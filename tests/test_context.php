@@ -133,6 +133,9 @@ $rules = [
     ['иноагент вне контекста, но forced', ['id'=>1,'type'=>'inoagent','in_context'=>false], $settings, ['excluded'=>[],'forced'=>[1]], true],
     ['иноагент в контексте, но excluded', ['id'=>1,'type'=>'inoagent','in_context'=>true],  $settings, ['excluded'=>[1],'forced'=>[]], false],
     ['excluded важнее forced',            ['id'=>1,'type'=>'inoagent','in_context'=>false], $settings, ['excluded'=>[1],'forced'=>[1]], false],
+    ['ручная метка в отслеживаемой категории', ['id'=>1,'type'=>'inoagent','in_context'=>false], ['mark_registries'=>[],'track_registries'=>['inoagent'],'inoagent_context_only'=>true], ['excluded'=>[],'forced'=>[1]], true],
+    ['ручная метка не включает отключённый реестр', ['id'=>1,'type'=>'inoagent'], ['mark_registries'=>[],'track_registries'=>[]], ['excluded'=>[],'forced'=>[1]], false],
+    ['без ручного выбора отслеживание без меток', ['id'=>1,'type'=>'inoagent'], ['mark_registries'=>[],'track_registries'=>['inoagent']], $none, false],
     ['старая мета без in_context',        ['id'=>1,'type'=>'inoagent'],                     $settings, $none, true],
 ];
 foreach ($rules as [$desc, $match, $st, $ov, $expect]) {
