@@ -7,20 +7,20 @@ defined('ABSPATH') || exit;
  * Позволяет отобрать материалы, где сканер что-то нашёл, не уходя в отдельный
  * отчёт: «покажи все статьи с маркировкой» или «где есть ссылки на ресурсы из реестров».
  */
-class LEM_Postlist {
+class CLEM_Postlist {
 
-    const QUERY_VAR = 'lem_filter';
+    const QUERY_VAR = 'clem_filter';
 
     public function __construct() {
         add_action('restrict_manage_posts', [$this, 'render_filter']);
         add_action('pre_get_posts', [$this, 'apply_filter']);
         // Настройки читаем не в конструкторе: он выполняется, пока объект
-        // плагина ещё создаётся, и обращение к lem() уходит в рекурсию
+        // плагина ещё создаётся, и обращение к clem_plugin() уходит в рекурсию
         add_action('admin_init', [$this, 'register_columns']);
     }
 
     public function register_columns() {
-        foreach (lem()->get_settings()['post_types'] as $type) {
+        foreach (clem_plugin()->get_settings()['post_types'] as $type) {
             add_filter("manage_{$type}_posts_columns", [$this, 'add_column']);
             add_action("manage_{$type}_posts_custom_column", [$this, 'render_column'], 10, 2);
         }
@@ -28,21 +28,21 @@ class LEM_Postlist {
 
     private function options() {
         return [
-            'marked'  => __('С маркировкой', 'legal-entity-marks'),
-            'tracked' => __('С отслеживаемыми упоминаниями', 'legal-entity-marks'),
-            'links'   => __('Со ссылками на ресурсы из реестров', 'legal-entity-marks'),
-            'none'    => __('Без находок', 'legal-entity-marks'),
+            'marked'  => __('С маркировкой', 'chekazoid-legal-entity-marks'),
+            'tracked' => __('С отслеживаемыми упоминаниями', 'chekazoid-legal-entity-marks'),
+            'links'   => __('Со ссылками на ресурсы из реестров', 'chekazoid-legal-entity-marks'),
+            'none'    => __('Без находок', 'chekazoid-legal-entity-marks'),
         ];
     }
 
     public function render_filter($post_type) {
-        if (!in_array($post_type, lem()->get_settings()['post_types'], true)) {
+        if (!in_array($post_type, clem_plugin()->get_settings()['post_types'], true)) {
             return;
         }
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin search/filter; sanitized input, no state changes.
         $current = sanitize_text_field(wp_unslash($_GET[self::QUERY_VAR] ?? ''));
         echo '<select name="' . esc_attr(self::QUERY_VAR) . '">';
-        echo '<option value="">' . esc_html__('Маркировка: любая', 'legal-entity-marks') . '</option>';
+        echo '<option value="">' . esc_html__('Маркировка: любая', 'chekazoid-legal-entity-marks') . '</option>';
         foreach ($this->options() as $key => $label) {
             printf('<option value="%s"%s>%s</option>',
                 esc_attr($key), selected($current, $key, false), esc_html($label));
@@ -62,7 +62,7 @@ class LEM_Postlist {
 
         if ($filter === 'links') {
             $query->set('meta_query', [[
-                'key'     => LEM_BANNED_LINKS_META_KEY,
+                'key'     => CLEM_BANNED_LINKS_META_KEY,
                 'compare' => 'EXISTS',
             ]]);
             return;
@@ -70,7 +70,7 @@ class LEM_Postlist {
 
         if ($filter === 'none') {
             $query->set('meta_query', [[
-                'key'     => LEM_META_KEY,
+                'key'     => CLEM_META_KEY,
                 'compare' => 'NOT EXISTS',
             ]]);
             return;
@@ -86,7 +86,7 @@ class LEM_Postlist {
      * ID материалов, где есть маркируемые (или наоборот только отслеживаемые) находки.
      */
     private function post_ids_by_mode($mode) {
-        $rows = lem()->report->get_rows(['mode' => $mode, 'limit' => 100000]);
+        $rows = clem_plugin()->report->get_rows(['mode' => $mode, 'limit' => 100000]);
         $ids  = [];
         foreach ($rows['items'] as $r) {
             $ids[$r['post_id']] = true;
@@ -95,22 +95,22 @@ class LEM_Postlist {
     }
 
     public function add_column($columns) {
-        $columns['lem_marks'] = __('Маркировка', 'legal-entity-marks');
+        $columns['clem_marks'] = __('Маркировка', 'chekazoid-legal-entity-marks');
         return $columns;
     }
 
     public function render_column($column, $post_id) {
-        if ($column !== 'lem_marks') {
+        if ($column !== 'clem_marks') {
             return;
         }
 
-        $raw  = get_post_meta($post_id, LEM_META_KEY, true);
+        $raw  = get_post_meta($post_id, CLEM_META_KEY, true);
         $meta = $raw ? json_decode($raw, true) : [];
         $ents = $meta['entities'] ?? [];
 
-        $links_raw = get_post_meta($post_id, LEM_BANNED_LINKS_META_KEY, true);
+        $links_raw = get_post_meta($post_id, CLEM_BANNED_LINKS_META_KEY, true);
         $links     = $links_raw ? json_decode($links_raw, true) : [];
-        $index = lem()->banned_sites->get_index();
+        $index = clem_plugin()->banned_sites->get_index();
         $links_n = count(array_filter($links['links'] ?? [], static function ($link) use ($index) {
             return array_key_exists($link['matched_domain'] ?? '', $index);
         }));
@@ -120,22 +120,22 @@ class LEM_Postlist {
             return;
         }
 
-        $settings  = lem()->get_settings();
-        $overrides = LEM_Frontend::get_overrides($post_id);
+        $settings  = clem_plugin()->get_settings();
+        $overrides = CLEM_Frontend::get_overrides($post_id);
         $marked = $tracked = 0;
         $current = [];
-        foreach (lem()->entities->get_for_marking_ids(array_column($ents, 'id'), true) as $entity) {
+        foreach (clem_plugin()->entities->get_for_marking_ids(array_column($ents, 'id'), true) as $entity) {
             $current[(int) $entity['id']] = $entity;
         }
         foreach ($ents as $m) {
             if (!isset($current[(int) ($m['id'] ?? 0)])) { continue; }
             $m = array_merge($m, $current[(int) $m['id']]);
-            if (!LEM_Scanner::is_current_mention($m, $settings)) { continue; }
+            if (!CLEM_Scanner::is_current_mention($m, $settings)) { continue; }
             $type = $m['type'] ?? '';
             if (!in_array($type, $settings['track_registries'], true)) {
                 continue;
             }
-            if (LEM_Frontend::should_mark($m, $settings, $overrides)) {
+            if (CLEM_Frontend::should_mark($m, $settings, $overrides)) {
                 $marked++;
             } else {
                 $tracked++;
@@ -144,13 +144,13 @@ class LEM_Postlist {
 
         $out = [];
         if ($marked) {
-            $out[] = __('меток: ', 'legal-entity-marks') . $marked;
+            $out[] = __('меток: ', 'chekazoid-legal-entity-marks') . $marked;
         }
         if ($tracked) {
-            $out[] = __('<span style="color:#996800">без меток: ', 'legal-entity-marks') . $tracked . '</span>';
+            $out[] = __('<span style="color:#996800">без меток: ', 'chekazoid-legal-entity-marks') . $tracked . '</span>';
         }
         if ($links_n) {
-            $out[] = __('<span style="color:#b32d2e">ссылок: ', 'legal-entity-marks') . $links_n . '</span>';
+            $out[] = __('<span style="color:#b32d2e">ссылок: ', 'chekazoid-legal-entity-marks') . $links_n . '</span>';
         }
         echo wp_kses_post($out ? implode('<br>', $out) : '<span style="color:#999">-</span>');
     }

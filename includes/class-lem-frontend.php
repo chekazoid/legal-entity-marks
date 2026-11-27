@@ -1,7 +1,7 @@
 <?php
 defined('ABSPATH') || exit;
 
-class LEM_Frontend {
+class CLEM_Frontend {
 
     /** Сколько статусов показывать под одной сноской, остальные считаем. */
     const MAX_DISCLAIMER_LINES = 3;
@@ -11,11 +11,11 @@ class LEM_Frontend {
 
     public function __construct() {
         add_action('wp', [$this, 'register_filter']);
-        add_action('wp_head', [$this, 'print_css'], 30);
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_styles']);
     }
 
     public function register_filter() {
-        $settings = lem()->get_settings();
+        $settings = clem_plugin()->get_settings();
         $priority = (int) $settings['filter_priority'];
         add_filter('the_content', [$this, 'filter_content'], $priority);
     }
@@ -34,7 +34,7 @@ class LEM_Frontend {
             return $content;
         }
 
-        $settings   = lem()->get_settings();
+        $settings   = clem_plugin()->get_settings();
         $post_types = $settings['post_types'];
         if (!is_singular($post_types)) {
             return $content;
@@ -64,7 +64,7 @@ class LEM_Frontend {
             return $content;
         }
 
-        $meta_raw = get_post_meta($post_id, LEM_META_KEY, true);
+        $meta_raw = get_post_meta($post_id, CLEM_META_KEY, true);
         if (empty($meta_raw)) {
             return $content;
         }
@@ -75,7 +75,7 @@ class LEM_Frontend {
         }
 
         $ids = array_map(static function ($match) { return (int) ($match['id'] ?? 0); }, $meta['entities']);
-        $entities_db = lem()->entities->get_for_marking_ids($ids, !empty($settings['mark_excluded']));
+        $entities_db = clem_plugin()->entities->get_for_marking_ids($ids, !empty($settings['mark_excluded']));
         $entities_map = [];
         foreach ($entities_db as $e) {
             $entities_map[(int) $e['id']] = $e;
@@ -89,7 +89,7 @@ class LEM_Frontend {
                 continue;
             }
             $match = array_merge($match, $entities_map[$eid]);
-            if (!LEM_Scanner::is_current_mention($match, $settings)
+            if (!CLEM_Scanner::is_current_mention($match, $settings)
                 || !self::should_mark($match, $settings, $overrides)) {
                 continue;
             }
@@ -124,7 +124,7 @@ class LEM_Frontend {
             if (!empty($first['matched_as'])) {
                 $try[] = preg_quote($first['matched_as'], '/');
             }
-            $body = LEM_Scanner::build_pattern_body($first['entity'], $settings);
+            $body = CLEM_Scanner::build_pattern_body($first['entity'], $settings);
             if ($body !== null) {
                 $try[] = '(?:' . $body . ')';
             }
@@ -141,7 +141,7 @@ class LEM_Frontend {
                     }
                     $replaced = true;
                     // $m[3] (ручные звёздочки) намеренно отбрасываем
-                    return $m[1] . $m[2] . '<sup class="lem-ref">' . esc_html($sym) . '</sup>';
+                    return $m[1] . $m[2] . '<sup class="clem-ref">' . esc_html($sym) . '</sup>';
                 }, $marked_content);
             }
 
@@ -176,7 +176,7 @@ class LEM_Frontend {
             if ($rest > 0) {
                 $html .= '<p style="margin:4px 0 4px 14px">'
                     /* translators: 1: remaining registry entries, 2: grammatical form of the word for entries. */
-                    . esc_html(sprintf(__('и ещё %1$d %2$s реестра с этим названием', 'legal-entity-marks'),
+                    . esc_html(sprintf(__('и ещё %1$d %2$s реестра с этим названием', 'chekazoid-legal-entity-marks'),
                         $rest, self::plural_records($rest)))
                     . '</p>';
             }
@@ -188,7 +188,7 @@ class LEM_Frontend {
         }
 
         $s = $settings;
-        $block = '<div class="lem-disclaimers" style="margin-top:24px;padding:16px 20px;'
+        $block = '<div class="clem-disclaimers" style="margin-top:24px;padding:16px 20px;'
             . 'background:' . esc_attr($s['disclaimer_bg']) . ';'
             . 'border-left:4px solid ' . esc_attr($s['disclaimer_border']) . ';'
             . 'border-radius:4px;font-size:13px;line-height:1.6;color:#555">'
@@ -209,7 +209,7 @@ class LEM_Frontend {
      * @return array ['excluded' => int[], 'forced' => int[]]
      */
     public static function get_overrides($post_id) {
-        $raw = get_post_meta($post_id, LEM_OVERRIDES_META_KEY, true);
+        $raw = get_post_meta($post_id, CLEM_OVERRIDES_META_KEY, true);
         $ov  = $raw ? json_decode($raw, true) : [];
         return [
             'excluded' => array_map('intval', (array) ($ov['excluded'] ?? [])),
@@ -261,8 +261,8 @@ class LEM_Frontend {
         return true;
     }
 
-    public function print_css() {
-        $settings = lem()->get_settings();
+    public function enqueue_styles() {
+        $settings = clem_plugin()->get_settings();
         if (!is_singular($settings['post_types'])) {
             return;
         }
@@ -270,12 +270,15 @@ class LEM_Frontend {
         // На страницах без находок стиль незачем: он попадал в код каждой
         // страницы сайта и создавал впечатление, что плагин тут что-то пометил,
         // хотя звёздочки в тексте могли быть расставлены редакцией вручную
-        $meta = json_decode((string) get_post_meta(get_queried_object_id(), LEM_META_KEY, true), true);
+        $meta = json_decode((string) get_post_meta(get_queried_object_id(), CLEM_META_KEY, true), true);
         if (empty($meta['entities'])) {
             return;
         }
-        $color = esc_attr($settings['accent_color']);
-        echo '<style>.lem-ref{color:' . esc_attr($color) . ';font-weight:700;cursor:help;font-size:0.75em;vertical-align:super;text-decoration:none;margin-left:1px}</style>' . "\n";
+        wp_enqueue_style('clem-frontend', CLEM_URL . 'public/css/frontend.css', [], CLEM_VERSION);
+        $color = sanitize_hex_color($settings['accent_color']);
+        if ($color) {
+            wp_add_inline_style('clem-frontend', '.clem-ref{color:' . $color . '}');
+        }
     }
 
     public static function disclaimer_text($entity) {
@@ -294,23 +297,23 @@ class LEM_Frontend {
 
         switch ($entity['type']) {
             case 'fedsfm_person':
-                return $name . __(', включён(-а) в перечень Росфинмониторинга организаций и физических лиц, ', 'legal-entity-marks')
-                    . __('в отношении которых имеются сведения об их причастности к экстремистской деятельности или терроризму', 'legal-entity-marks');
+                return $name . __(', включён(-а) в перечень Росфинмониторинга организаций и физических лиц, ', 'chekazoid-legal-entity-marks')
+                    . __('в отношении которых имеются сведения об их причастности к экстремистской деятельности или терроризму', 'chekazoid-legal-entity-marks');
             case 'inoagent':
                 if ($entity['is_person']) {
-                    return $name . __(', признанный(-ая) в РФ иностранным агентом', 'legal-entity-marks');
+                    return $name . __(', признанный(-ая) в РФ иностранным агентом', 'chekazoid-legal-entity-marks');
                 }
-                return $name . __(', признанная в РФ иностранным агентом', 'legal-entity-marks');
+                return $name . __(', признанная в РФ иностранным агентом', 'chekazoid-legal-entity-marks');
             // Без тире: wptexturize превращает « - » в среднее тире,
             // а такая типографика читается как признак автогенерации.
             // Название идёт первым: в реестре оно обычно уже содержит
             // слово «организация», и подстановка перед ним ломает падеж.
             case 'extremist':
-                return $name . __(', деятельность которой признана экстремистской и запрещена на территории РФ', 'legal-entity-marks');
+                return $name . __(', деятельность которой признана экстремистской и запрещена на территории РФ', 'chekazoid-legal-entity-marks');
             case 'terrorist':
-                return $name . __(', признанная террористической и запрещённая на территории РФ организация', 'legal-entity-marks');
+                return $name . __(', признанная террористической и запрещённая на территории РФ организация', 'chekazoid-legal-entity-marks');
             case 'undesirable':
-                return $name . __(', признанная нежелательной на территории РФ организация', 'legal-entity-marks');
+                return $name . __(', признанная нежелательной на территории РФ организация', 'chekazoid-legal-entity-marks');
             default:
                 return $name;
         }
@@ -328,23 +331,23 @@ class LEM_Frontend {
         if ($date === '') {
             $tail = '';
         } elseif ($is_person) {
-            $tail = __(' (исключён(-а) из реестра ', 'legal-entity-marks') . $date . ')';
+            $tail = __(' (исключён(-а) из реестра ', 'chekazoid-legal-entity-marks') . $date . ')';
         } else {
-            $tail = __(' (исключена из реестра ', 'legal-entity-marks') . $date . ')';
+            $tail = __(' (исключена из реестра ', 'chekazoid-legal-entity-marks') . $date . ')';
         }
 
         switch ($entity['type']) {
             case 'inoagent':
                 if ($is_person) {
-                    return $name . __(', ранее признанный(-ая) в РФ иностранным агентом', 'legal-entity-marks') . $tail;
+                    return $name . __(', ранее признанный(-ая) в РФ иностранным агентом', 'chekazoid-legal-entity-marks') . $tail;
                 }
-                return $name . __(', ранее признанная в РФ иностранным агентом', 'legal-entity-marks') . $tail;
+                return $name . __(', ранее признанная в РФ иностранным агентом', 'chekazoid-legal-entity-marks') . $tail;
             case 'extremist':
-                return $name . __(', деятельность которой ранее была признана экстремистской', 'legal-entity-marks') . $tail;
+                return $name . __(', деятельность которой ранее была признана экстремистской', 'chekazoid-legal-entity-marks') . $tail;
             case 'terrorist':
-                return $name . __(', ранее признанная террористической организация', 'legal-entity-marks') . $tail;
+                return $name . __(', ранее признанная террористической организация', 'chekazoid-legal-entity-marks') . $tail;
             case 'undesirable':
-                return $name . __(', ранее признанная нежелательной на территории РФ организация', 'legal-entity-marks') . $tail;
+                return $name . __(', ранее признанная нежелательной на территории РФ организация', 'chekazoid-legal-entity-marks') . $tail;
             default:
                 return $name;
         }
@@ -355,12 +358,12 @@ class LEM_Frontend {
         $n10  = $n % 10;
         $n100 = $n % 100;
         if ($n10 === 1 && $n100 !== 11) {
-            return __('запись', 'legal-entity-marks');
+            return __('запись', 'chekazoid-legal-entity-marks');
         }
         if ($n10 >= 2 && $n10 <= 4 && ($n100 < 12 || $n100 > 14)) {
-            return __('записи', 'legal-entity-marks');
+            return __('записи', 'chekazoid-legal-entity-marks');
         }
-        return __('записей', 'legal-entity-marks');
+        return __('записей', 'chekazoid-legal-entity-marks');
     }
 
     /** Прямые кавычки в названии заменяем на ёлочки (см. disclaimer_text). */

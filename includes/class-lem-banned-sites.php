@@ -1,11 +1,11 @@
 <?php
 defined('ABSPATH') || exit;
 
-class LEM_Banned_Sites {
+class CLEM_Banned_Sites {
 
-    const TRANSIENT_KEY  = 'lem_banned_sites_all';
-    const ACCOUNTS_KEY   = 'lem_banned_sites_accounts';
-    const INDEX_KEY      = 'lem_banned_sites_index';
+    const TRANSIENT_KEY  = 'clem_banned_sites_all';
+    const ACCOUNTS_KEY   = 'clem_banned_sites_accounts';
+    const INDEX_KEY      = 'clem_banned_sites_index';
     const TRANSIENT_TTL  = HOUR_IN_SECONDS;
 
     /**
@@ -28,6 +28,8 @@ class LEM_Banned_Sites {
         't.me'          => ['s'],
         'telegram.me'   => ['s'],
         'vk.com'        => [],
+        'vk.ru'         => [],
+        'max.ru'        => [],
         'ok.ru'         => ['group', 'profile'],
         'facebook.com'  => ['pages', 'groups', 'people'],
         'fb.com'        => ['pages', 'groups'],
@@ -61,7 +63,7 @@ class LEM_Banned_Sites {
 
     private function table() {
         global $wpdb;
-        return $wpdb->prefix . 'lem_banned_sites';
+        return $wpdb->prefix . 'clem_banned_sites';
     }
 
     /**
@@ -71,16 +73,21 @@ class LEM_Banned_Sites {
     public function get_all_domains() {
         $domains = get_transient(self::TRANSIENT_KEY);
         if ($domains !== false) {
-            return $domains;
+            return array_values(array_filter($domains, static function ($domain) {
+                return !self::requires_account($domain);
+            }));
         }
 
         global $wpdb;
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Cached in the surrounding transient. */
         $domains = $wpdb->get_col(
-            "SELECT s.domain FROM {$this->table()} s LEFT JOIN {$wpdb->prefix}lem_entities e ON e.id = s.entity_id
+            "SELECT s.domain FROM {$this->table()} s LEFT JOIN {$wpdb->prefix}clem_entities e ON e.id = s.entity_id
              WHERE s.account = '' AND (s.entity_id IS NULL OR s.entity_id = 0 OR e.is_active = 1) ORDER BY s.domain"
         ) ;
         /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
+        $domains = array_values(array_filter($domains, static function ($domain) {
+            return !self::requires_account($domain);
+        }));
         set_transient(self::TRANSIENT_KEY, $domains, self::TRANSIENT_TTL);
         return $domains;
     }
@@ -99,7 +106,7 @@ class LEM_Banned_Sites {
         global $wpdb;
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Cached in the surrounding transient. */
         $rows = $wpdb->get_results(
-            "SELECT s.domain, s.account FROM {$this->table()} s LEFT JOIN {$wpdb->prefix}lem_entities e ON e.id = s.entity_id
+            "SELECT s.domain, s.account FROM {$this->table()} s LEFT JOIN {$wpdb->prefix}clem_entities e ON e.id = s.entity_id
              WHERE s.account != '' AND (s.entity_id IS NULL OR s.entity_id = 0 OR e.is_active = 1) ORDER BY s.domain",
             ARRAY_A
         ) ;
@@ -134,7 +141,7 @@ class LEM_Banned_Sites {
         $target  = self::split_target($data['domain'] ?? '');
         $domain  = $target['domain'];
         $account = isset($data['account']) ? mb_strtolower(trim($data['account'])) : $target['account'];
-        if (empty($domain)) {
+        if ($domain === '' || ($account === '' && self::requires_account($domain))) {
             return false;
         }
 
@@ -176,6 +183,12 @@ class LEM_Banned_Sites {
         }
         if (isset($data['account'])) {
             $update['account'] = mb_strtolower(trim($data['account']));
+        }
+        if (isset($update['account']) && $update['account'] === '') {
+            $domain = $update['domain'] ?? ($this->get_by_id($id)['domain'] ?? '');
+            if ($domain === '' || self::requires_account($domain)) {
+                return false;
+            }
         }
         if (array_key_exists('label', $data)) {
             $update['label'] = $data['label'];
@@ -266,12 +279,14 @@ class LEM_Banned_Sites {
         }
         $index = get_transient(self::INDEX_KEY);
         if ($index !== false) {
-            $this->index_cache = $index;
-            return $index;
+            $this->index_cache = array_filter($index, static function ($key) {
+                return !self::requires_account($key);
+            }, ARRAY_FILTER_USE_KEY);
+            return $this->index_cache;
         }
 
         global $wpdb;
-        $ents  = $wpdb->prefix . LEM_TABLE;
+        $ents  = $wpdb->prefix . CLEM_TABLE;
         $index = [];
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         foreach ($wpdb->get_results(
@@ -281,6 +296,9 @@ class LEM_Banned_Sites {
         ) as $row) {
         /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
             $key = $row->account !== '' ? $row->domain . '/' . $row->account : $row->domain;
+            if (self::requires_account($key)) {
+                continue;
+            }
             // Комплектные домены реестра не связаны с записью, но свой тип знают
             $index[$key] = $row->type ?: ($row->registry ?: '');
         }
@@ -293,7 +311,7 @@ class LEM_Banned_Sites {
     /** Только известные реестры, иначе пустая строка. */
     public static function clean_registry($type) {
         $type = sanitize_key((string) $type);
-        return in_array($type, LEM_Plugin::REGISTRY_TYPES, true) ? $type : '';
+        return in_array($type, CLEM_Plugin::REGISTRY_TYPES, true) ? $type : '';
     }
 
     /** Реестр ресурса по ключу, каким его пометил сканер. */
@@ -307,7 +325,7 @@ class LEM_Banned_Sites {
      * Настройка позволяет расширить список, если сайт хочет строже.
      */
     public function is_removable($type) {
-        $settings = lem()->get_settings();
+        $settings = clem_plugin()->get_settings();
         $allowed  = $settings['link_registries'] ?? self::REMOVABLE_TYPES;
         return $type === '' || in_array($type, $allowed, true);
     }
@@ -339,6 +357,11 @@ class LEM_Banned_Sites {
         return mb_strtolower(trim($input, '/.'));
     }
 
+    /** Shared platforms that require a resource key containing an account. */
+    public static function requires_account($domain) {
+        return strpos($domain, '/') === false && (bool) preg_match('/(?:^|\.)(?:max|vk)\.ru$/iD', $domain);
+    }
+
     /**
      * Проверяет, совпадает ли хост URL с запрещённым доменом.
      * Поддерживает поддомены: banned "example.org" → совпадает "sub.example.org".
@@ -348,6 +371,9 @@ class LEM_Banned_Sites {
      */
     public static function is_domain_banned($url_host, $banned_domains) {
         $host = mb_strtolower(preg_replace('/^www\./i', '', $url_host));
+        if (self::requires_account($host)) {
+            return null;
+        }
         foreach ($banned_domains as $banned) {
             if ($host === $banned || str_ends_with($host, '.' . $banned)) {
                 return $banned;
@@ -414,6 +440,10 @@ class LEM_Banned_Sites {
         $handle = mb_strtolower(trim(ltrim(rawurldecode($segments[0]), '@')));
         if (mb_strlen($handle) < 3 || in_array($handle, self::NOT_HANDLES, true)) {
             return '';
+        }
+        if (($host === 'vk.ru' || str_ends_with($host, '.vk.ru'))
+            && preg_match('/^(?:wall|video|photo|clip|topic)-?\d+_\d+$/D', $handle)) {
+            return ''; // A direct publication URL is not a profile URL.
         }
         // Латиница с цифрами и разделителями: так выглядят имена аккаунтов
         // на всех перечисленных площадках, остальное это раздел сайта

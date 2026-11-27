@@ -1,21 +1,21 @@
 <?php
 defined('ABSPATH') || exit;
 
-class LEM_CLI {
+class CLEM_CLI {
 
     public function __construct() {
-        WP_CLI::add_command('lem import', [$this, 'cmd_import']);
-        WP_CLI::add_command('lem fetch', [$this, 'cmd_fetch']);
-        WP_CLI::add_command('lem scan', [$this, 'cmd_scan']);
-        WP_CLI::add_command('lem status', [$this, 'cmd_status']);
-        WP_CLI::add_command('lem list', [$this, 'cmd_list']);
-        WP_CLI::add_command('lem purge-cache', [$this, 'cmd_purge_cache']);
-        WP_CLI::add_command('lem brand-aliases', [$this, 'cmd_brand_aliases']);
+        WP_CLI::add_command('clem import', [$this, 'cmd_import']);
+        WP_CLI::add_command('clem fetch', [$this, 'cmd_fetch']);
+        WP_CLI::add_command('clem scan', [$this, 'cmd_scan']);
+        WP_CLI::add_command('clem status', [$this, 'cmd_status']);
+        WP_CLI::add_command('clem list', [$this, 'cmd_list']);
+        WP_CLI::add_command('clem purge-cache', [$this, 'cmd_purge_cache']);
+        WP_CLI::add_command('clem brand-aliases', [$this, 'cmd_brand_aliases']);
 
-        WP_CLI::add_command('lem banned-sites', [$this, 'cmd_banned_sites']);
-        WP_CLI::add_command('lem banned-sites-add', [$this, 'cmd_banned_sites_add']);
-        WP_CLI::add_command('lem banned-links-scan', [$this, 'cmd_banned_links_scan']);
-        WP_CLI::add_command('lem banned-links-clean', [$this, 'cmd_banned_links_clean']);
+        WP_CLI::add_command('clem banned-sites', [$this, 'cmd_banned_sites']);
+        WP_CLI::add_command('clem banned-sites-add', [$this, 'cmd_banned_sites_add']);
+        WP_CLI::add_command('clem banned-links-scan', [$this, 'cmd_banned_links_scan']);
+        WP_CLI::add_command('clem banned-links-clean', [$this, 'cmd_banned_links_clean']);
     }
 
     /**
@@ -34,7 +34,7 @@ class LEM_CLI {
      */
     public function cmd_import($args, $assoc_args) {
         if (isset($assoc_args['all'])) {
-            $results = lem()->importer->import_all_bundled();
+            $results = clem_plugin()->importer->import_all_bundled();
             foreach ($results as $type => $result) {
                 if (isset($result['error'])) {
                     WP_CLI::warning("$type: {$result['error']}");
@@ -54,7 +54,7 @@ class LEM_CLI {
                 WP_CLI::error("Файл не найден: $file");
             }
             $type   = $assoc_args['type'] ?? null;
-            $result = lem()->importer->import_json($file, $type);
+            $result = clem_plugin()->importer->import_json($file, $type);
             if (isset($result['error'])) {
                 WP_CLI::error($result['error']);
             }
@@ -81,15 +81,15 @@ class LEM_CLI {
         $log    = function ($msg) { WP_CLI::log($msg); };
 
         if ($source === 'all') {
-            $errors = lem()->importer->fetch_all($log);
+            $errors = clem_plugin()->importer->fetch_all($log);
             if (empty($errors)) {
-                WP_CLI::success(LEM_People::enabled(lem()->get_settings())
+                WP_CLI::success(CLEM_People::enabled(clem_plugin()->get_settings())
                     ? 'Основные реестры успешно обновлены.' : 'Все реестры успешно обновлены.');
             } else {
                 WP_CLI::warning('Завершено с ошибками: ' . implode('; ', $errors));
             }
-            if (LEM_People::enabled(lem()->get_settings())) {
-                $state = (array) get_option(LEM_People::STATE, []);
+            if (CLEM_People::enabled(clem_plugin()->get_settings())) {
+                $state = (array) get_option(CLEM_People::STATE, []);
                 if (!empty($state['error'])) {
                     WP_CLI::warning('Физлица Росфинмониторинга: ' . $state['error']);
                 } else {
@@ -97,17 +97,10 @@ class LEM_CLI {
                 }
             }
         } else {
-            $methods = [
-                'inoagent'    => 'fetch_inoagents',
-                'extremist'   => 'fetch_extremist_orgs',
-                'terrorist'   => 'fetch_terrorist_orgs',
-                'undesirable' => 'fetch_undesirable_orgs',
-            ];
-            if (!isset($methods[$source])) {
-                WP_CLI::error("Неизвестный источник: $source");
+            if (!CLEM_Channel::supports($source)) {
+                WP_CLI::error("Неизвестный реестр: $source");
             }
-            $method = $methods[$source];
-            $result = lem()->importer->$method();
+            $result = clem_plugin()->importer->fetch_registry($source);
             if (isset($result['error'])) {
                 WP_CLI::error($result['error']);
             }
@@ -141,12 +134,12 @@ class LEM_CLI {
      * : Показать результаты без сохранения.
      */
     public function cmd_scan($args, $assoc_args) {
-        $entities = lem()->entities->get_all_active();
+        $entities = clem_plugin()->entities->get_all_active();
         WP_CLI::log('Загружено ' . count($entities) . ' активных сущностей.');
 
         $post_id = $assoc_args['post_id'] ?? null;
         if ($post_id) {
-            $found = lem()->scanner->scan_post((int) $post_id);
+            $found = clem_plugin()->scanner->scan_post((int) $post_id);
             if (empty($found)) {
                 WP_CLI::log("Совпадений в статье #$post_id не найдено.");
             } else {
@@ -156,12 +149,12 @@ class LEM_CLI {
                 }
             }
             // Иначе страница продолжает отдаваться из кеша со старой маркировкой
-            lem()->cache->purge_post((int) $post_id);
+            clem_plugin()->cache->purge_post((int) $post_id);
             WP_CLI::log('Кеш статьи очищен.');
             return;
         }
 
-        $result = lem()->scanner->batch_scan([
+        $result = clem_plugin()->scanner->batch_scan([
             'batch'   => (int) ($assoc_args['batch'] ?? 500),
             'dry_run' => isset($assoc_args['dry-run']),
             'recent'  => $assoc_args['recent'] ?? null,
@@ -174,7 +167,7 @@ class LEM_CLI {
         $dry_run = isset($assoc_args['dry-run']);
         if (!$dry_run && $result['posts_with_matches'] > 0) {
             WP_CLI::log('Очистка кеша помеченных статей...');
-            $purged = lem()->cache->purge_all_marked();
+            $purged = clem_plugin()->cache->purge_all_marked();
             WP_CLI::log("Кеш очищен для $purged статей.");
         }
 
@@ -187,7 +180,7 @@ class LEM_CLI {
     public function cmd_status($args, $assoc_args) {
         WP_CLI::log('=== Маркировка: статус ===');
 
-        $counts = lem()->entities->count_by_type();
+        $counts = clem_plugin()->entities->count_by_type();
         WP_CLI::log("\nСущности:");
         foreach ($counts as $key => $cnt) {
             WP_CLI::log("  $key: $cnt");
@@ -196,18 +189,18 @@ class LEM_CLI {
         global $wpdb;
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $marked = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT post_id) FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value != ''", LEM_META_KEY
+            "SELECT COUNT(DISTINCT post_id) FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value != ''", CLEM_META_KEY
         )) ;
         /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
         WP_CLI::log("\nСтатей с маркировкой: $marked");
 
-        $version = get_option('lem_list_version', 'не задана');
+        $version = get_option('clem_list_version', 'не задана');
         WP_CLI::log("Версия списков: $version");
 
-        $last_fetch = get_option('lem_last_fetch_time', 'никогда');
+        $last_fetch = get_option('clem_last_fetch_time', 'никогда');
         WP_CLI::log("Последнее обновление: $last_fetch");
 
-        $error = get_option('lem_last_fetch_error', '');
+        $error = get_option('clem_last_fetch_error', '');
         if ($error) {
             WP_CLI::warning("Последняя ошибка: $error");
         }
@@ -234,7 +227,7 @@ class LEM_CLI {
      * : Показать также исключённые сущности.
      */
     public function cmd_list($args, $assoc_args) {
-        $result = lem()->entities->search([
+        $result = clem_plugin()->entities->search([
             'type'      => $assoc_args['type'] ?? '',
             'search'    => $assoc_args['search'] ?? '',
             'is_active' => isset($assoc_args['include-removed']) ? null : 1,
@@ -267,10 +260,10 @@ class LEM_CLI {
      * Очистить кеш (transient сущностей + страничный кеш помеченных статей).
      */
     public function cmd_purge_cache($args, $assoc_args) {
-        lem()->entities->flush_cache();
+        clem_plugin()->entities->flush_cache();
         WP_CLI::log('Кеш сущностей очищен.');
 
-        $purged = lem()->cache->purge_all_marked();
+        $purged = clem_plugin()->cache->purge_all_marked();
         WP_CLI::log("Страничный кеш очищен для $purged статей.");
 
         WP_CLI::success('Кеш очищен.');
@@ -281,7 +274,7 @@ class LEM_CLI {
      * поверх текущих записей реестра.
      */
     public function cmd_brand_aliases($args, $assoc_args) {
-        $result = lem()->importer->apply_brand_aliases();
+        $result = clem_plugin()->importer->apply_brand_aliases();
         if (isset($result['error'])) {
             WP_CLI::error($result['error']);
         }
@@ -325,7 +318,7 @@ class LEM_CLI {
      * ---
      */
     public function cmd_banned_sites($args, $assoc_args) {
-        $result = lem()->banned_sites->search([
+        $result = clem_plugin()->banned_sites->search([
             'search' => $assoc_args['search'] ?? '',
             'limit'  => (int) ($assoc_args['limit'] ?? 100),
         ]);
@@ -364,7 +357,7 @@ class LEM_CLI {
             if (!file_exists($json_file)) {
                 WP_CLI::error("Файл не найден: $json_file");
             }
-            $result = lem()->importer->import_banned_sites($json_file);
+            $result = clem_plugin()->importer->import_banned_sites($json_file);
             if (isset($result['error'])) {
                 WP_CLI::error($result['error']);
             }
@@ -407,13 +400,13 @@ class LEM_CLI {
                 }
 
                 while (($row = fgetcsv($handle, 0, $sep)) !== false) {
-                    $domain = LEM_Banned_Sites::normalize_domain($row[$domain_col] ?? '');
+                    $domain = CLEM_Banned_Sites::normalize_domain($row[$domain_col] ?? '');
                     $label  = ($label_col !== false) ? trim($row[$label_col] ?? '') : '';
                     if (empty($domain)) {
                         $skipped++;
                         continue;
                     }
-                    $result = lem()->banned_sites->insert(['domain' => $domain, 'label' => $label]);
+                    $result = clem_plugin()->banned_sites->insert(['domain' => $domain, 'label' => $label]);
                     if ($result) {
                         $added++;
                     } else {
@@ -430,13 +423,13 @@ class LEM_CLI {
                         continue;
                     }
                     $parts  = array_map('trim', explode('|', $line, 2));
-                    $domain = LEM_Banned_Sites::normalize_domain($parts[0]);
+                    $domain = CLEM_Banned_Sites::normalize_domain($parts[0]);
                     $label  = $parts[1] ?? '';
                     if (empty($domain)) {
                         $skipped++;
                         continue;
                     }
-                    $result = lem()->banned_sites->insert(['domain' => $domain, 'label' => $label]);
+                    $result = clem_plugin()->banned_sites->insert(['domain' => $domain, 'label' => $label]);
                     if ($result) {
                         $added++;
                     } else {
@@ -454,12 +447,12 @@ class LEM_CLI {
             WP_CLI::error('Укажите --domain=example.org или --file=path.txt');
         }
 
-        $result = lem()->banned_sites->insert([
+        $result = clem_plugin()->banned_sites->insert([
             'domain' => $domain,
             'label'  => $assoc_args['label'] ?? '',
         ]);
         if ($result) {
-            $normalized = LEM_Banned_Sites::normalize_domain($domain);
+            $normalized = CLEM_Banned_Sites::normalize_domain($domain);
             WP_CLI::success("Добавлен домен: $normalized (ID: $result)");
         } else {
             WP_CLI::error('Не удалось добавить (возможно, домен уже существует).');
@@ -481,7 +474,7 @@ class LEM_CLI {
      * ---
      */
     public function cmd_banned_links_scan($args, $assoc_args) {
-        $result = lem()->link_scanner->batch_scan([
+        $result = clem_plugin()->link_scanner->batch_scan([
             'batch'   => (int) ($assoc_args['batch'] ?? 500),
             'post_id' => $assoc_args['post_id'] ?? null,
             'log'     => function ($msg) { WP_CLI::log($msg); },
@@ -510,7 +503,7 @@ class LEM_CLI {
      * : Показать результаты без применения изменений.
      */
     public function cmd_banned_links_clean($args, $assoc_args) {
-        $result = lem()->link_scanner->batch_remove([
+        $result = clem_plugin()->link_scanner->batch_remove([
             'batch'   => (int) ($assoc_args['batch'] ?? 100),
             'post_id' => $assoc_args['post_id'] ?? null,
             'dry_run' => isset($assoc_args['dry-run']),

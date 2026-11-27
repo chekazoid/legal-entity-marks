@@ -1,7 +1,7 @@
 <?php
 defined('ABSPATH') || exit;
 
-class LEM_Plugin {
+class CLEM_Plugin {
 
     private static $instance = null;
 
@@ -38,12 +38,13 @@ class LEM_Plugin {
     }
 
     private function load_dependencies() {
-        $dir = LEM_DIR . 'includes/';
+        $dir = CLEM_DIR . 'includes/';
         require_once $dir . 'class-lem-database.php';
         require_once $dir . 'class-lem-entities.php';
         require_once $dir . 'class-lem-morphology.php';
         require_once $dir . 'class-lem-scanner.php';
         require_once $dir . 'class-lem-frontend.php';
+        require_once $dir . 'class-lem-registry-sync.php';
         require_once $dir . 'class-lem-importer.php';
         require_once $dir . 'class-lem-cache.php';
         require_once $dir . 'class-lem-cron.php';
@@ -57,7 +58,7 @@ class LEM_Plugin {
         require_once $dir . 'class-lem-report.php';
 
         if (is_admin()) {
-            require_once LEM_DIR . 'admin/class-lem-admin.php';
+            require_once CLEM_DIR . 'admin/class-lem-admin.php';
             require_once $dir . 'class-lem-metabox.php';
             require_once $dir . 'class-lem-postlist.php';
         }
@@ -67,34 +68,33 @@ class LEM_Plugin {
     }
 
     private function init_components() {
-        $this->database = new LEM_Database();
-        $this->entities = new LEM_Entities();
-        $this->scanner  = new LEM_Scanner();
-        $this->frontend = new LEM_Frontend();
-        $this->importer = new LEM_Importer();
-        $this->cache    = new LEM_Cache();
-        $this->cron         = new LEM_Cron();
-        $this->banned_sites = new LEM_Banned_Sites();
-        $this->link_scanner = new LEM_Link_Scanner();
-        $this->rescan       = new LEM_Rescan();
-        $this->channel      = new LEM_Channel();
-        $this->brands       = new LEM_Brands();
-        $this->report       = new LEM_Report();
-        $this->people       = new LEM_People();
+        $this->database = new CLEM_Database();
+        $this->entities = new CLEM_Entities();
+        $this->scanner  = new CLEM_Scanner();
+        $this->frontend = new CLEM_Frontend();
+        $this->importer = new CLEM_Importer();
+        $this->cache    = new CLEM_Cache();
+        $this->cron         = new CLEM_Cron();
+        $this->banned_sites = new CLEM_Banned_Sites();
+        $this->link_scanner = new CLEM_Link_Scanner();
+        $this->rescan       = new CLEM_Rescan();
+        $this->channel      = new CLEM_Channel();
+        $this->brands       = new CLEM_Brands();
+        $this->report       = new CLEM_Report();
+        $this->people       = new CLEM_People();
 
         if (is_admin()) {
-            $this->admin    = new LEM_Admin();
-            $this->metabox  = new LEM_Metabox();
-            $this->postlist = new LEM_Postlist();
+            $this->admin    = new CLEM_Admin();
+            $this->metabox  = new CLEM_Metabox();
+            $this->postlist = new CLEM_Postlist();
         }
         if (defined('WP_CLI') && WP_CLI) {
-            $this->cli = new LEM_CLI();
+            $this->cli = new CLEM_CLI();
         }
     }
 
     private function register_hooks() {
-        register_activation_hook(LEM_FILE, [$this, 'activate']);
-        register_deactivation_hook(LEM_FILE, [$this, 'deactivate']);
+        register_deactivation_hook(CLEM_FILE, [$this, 'deactivate']);
         add_action('admin_init', [$this, 'maybe_run_upgrade_tasks']);
         add_action('admin_init', [$this, 'maybe_sync_bundled_data'], 11);
     }
@@ -114,7 +114,7 @@ class LEM_Plugin {
      * Здесь своя отметка, поэтому докатку можно повторить, подняв её.
      */
     public function maybe_sync_bundled_data() {
-        if (get_option('lem_bundled_data_version') === self::BUNDLED_DATA_VERSION) {
+        if (get_option('clem_bundled_data_version') === self::BUNDLED_DATA_VERSION) {
             return;
         }
         if (!$this->database->table_exists()) {
@@ -135,14 +135,14 @@ class LEM_Plugin {
         $this->brands->sync_bundled();
 
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         if ((int) $wpdb->get_var("SELECT COUNT(*) FROM $table") > 0) {
         /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
             $this->importer->apply_brand_aliases();
         }
 
-        update_option('lem_bundled_data_version', self::BUNDLED_DATA_VERSION, false);
+        update_option('clem_bundled_data_version', self::BUNDLED_DATA_VERSION, false);
     }
 
     public function activate() {
@@ -151,7 +151,7 @@ class LEM_Plugin {
 
         // Import bundled data if table is empty
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $count = (int) $wpdb->get_var("SELECT COUNT(*) FROM $table") ;
         /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
@@ -160,7 +160,7 @@ class LEM_Plugin {
         }
 
         // Import bundled banned sites if table is empty
-        $banned_table = $wpdb->prefix . 'lem_banned_sites';
+        $banned_table = $wpdb->prefix . 'clem_banned_sites';
         /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $banned_count = (int) $wpdb->get_var("SELECT COUNT(*) FROM $banned_table") ;
         /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
@@ -168,9 +168,10 @@ class LEM_Plugin {
             $this->importer->import_banned_sites();
         }
 
-        add_option('lem_installed_at', current_time('mysql'));
-        update_option('lem_upgrade_version', LEM_VERSION);
+        add_option('clem_installed_at', current_time('mysql'));
+        update_option('clem_upgrade_version', CLEM_VERSION);
         $this->cron->schedule_events();
+        $this->rescan->resume();
     }
 
     /**
@@ -180,24 +181,24 @@ class LEM_Plugin {
      * поэтому здесь:
      *  1) докатываем курируемые брендовые алиасы (иначе новые бренды вроде
      *     «Медуза» не попадут в реестр до ручной команды);
-     *  2) ставим разовую задачу обновить реестры из источников, чтобы после
-     *     обновления плагина сайт сразу получил свежие данные, а не ждал
-     *     недельного крона. Сам фетч уходит в фон и админку не тормозит.
+     *  2) запускаем планировщик и возобновляем незавершённое сканирование.
+     *     Сетевое обновление планируется только с согласия администратора.
      */
     public function maybe_run_upgrade_tasks() {
-        if (get_option('lem_upgrade_version') === LEM_VERSION) {
+        if (get_option('clem_upgrade_version') === CLEM_VERSION) {
             return;
         }
 
-        add_option('lem_installed_at', current_time('mysql'));
+        add_option('clem_installed_at', current_time('mysql'));
 
         // Комплектные данные (брендовые правила, типы доменов) довозит
         // maybe_sync_bundled_data: у неё своя отметка, не зависящая от номера версии
 
-        wp_schedule_single_event(time() + MINUTE_IN_SECONDS, 'lem_fetch_registries');
+        $this->cron->schedule_events();
+        $this->rescan->resume();
 
-        update_option('lem_upgrade_version', LEM_VERSION);
-        delete_option('lem_brand_version'); // имя из 1.6.2, больше не используется
+        update_option('clem_upgrade_version', CLEM_VERSION);
+        delete_option('clem_brand_version'); // имя из 1.6.2, больше не используется
     }
 
     public function deactivate() {
@@ -241,12 +242,12 @@ class LEM_Plugin {
     /** Translatable labels without function calls in class constants. */
     public static function get_presets() {
         $presets = self::PRESETS;
-        $presets['media']['label'] = __('СМИ', 'legal-entity-marks');
-        $presets['media']['hint'] = __('Маркируются все четыре реестра, как требует закон о СМИ.', 'legal-entity-marks');
-        $presets['nonmedia']['label'] = __('Не СМИ', 'legal-entity-marks');
-        $presets['nonmedia']['hint'] = __('Маркируются экстремистские и террористические. Нежелательные только отслеживаются: упоминания и ссылки видны в отчёте, но меток на сайте нет. Иноагенты не затрагиваются.', 'legal-entity-marks');
-        $presets['manual']['label'] = __('Вручную', 'legal-entity-marks');
-        $presets['manual']['hint'] = __('Отмечайте галочками сами.', 'legal-entity-marks');
+        $presets['media']['label'] = __('СМИ', 'chekazoid-legal-entity-marks');
+        $presets['media']['hint'] = __('Маркируются все четыре реестра, как требует закон о СМИ.', 'chekazoid-legal-entity-marks');
+        $presets['nonmedia']['label'] = __('Не СМИ', 'chekazoid-legal-entity-marks');
+        $presets['nonmedia']['hint'] = __('Маркируются экстремистские и террористические. Нежелательные только отслеживаются: упоминания и ссылки видны в отчёте, но меток на сайте нет. Иноагенты не затрагиваются.', 'chekazoid-legal-entity-marks');
+        $presets['manual']['label'] = __('Вручную', 'chekazoid-legal-entity-marks');
+        $presets['manual']['hint'] = __('Отмечайте галочками сами.', 'chekazoid-legal-entity-marks');
         return $presets;
     }
 
@@ -255,10 +256,10 @@ class LEM_Plugin {
             'post_types'            => ['post'],
             // Ссылка на сайт иноагента законом не запрещена, поэтому в чистку
             // по умолчанию идут только три реестра
-            'link_registries'       => LEM_Banned_Sites::REMOVABLE_TYPES,
-            // Канал реестров: запасной источник, когда официальный не ответил
-            'channel_enabled'       => true,
-            'channel_url'           => LEM_Channel::DEFAULT_URL,
+            'link_registries'       => CLEM_Banned_Sites::REMOVABLE_TYPES,
+            'channel_enabled'       => false,
+            'channel_consent_url'   => '',
+            'channel_url'           => CLEM_Channel::DEFAULT_URL,
             'channel_token'         => '',
             // Анонимный счётчик установок: идентификатор и версия плагина
             'stats_enabled'         => false,
@@ -289,11 +290,14 @@ class LEM_Plugin {
                 'embed'      => true,
             ],
         ];
-        $saved    = get_option('lem_settings', []);
+        $saved    = get_option('clem_settings', []);
         $settings = wp_parse_args($saved, $defaults);
 
-        // Старые версии включали счётчик по умолчанию. Это не согласие.
-        $settings['stats_enabled'] = !empty($settings['stats_enabled'])
+        $settings['channel_url'] = CLEM_Channel::normalize_url($settings['channel_url']);
+        $settings['channel_enabled'] = !empty($settings['channel_enabled'])
+            && $settings['channel_url'] !== ''
+            && $settings['channel_consent_url'] === $settings['channel_url'];
+        $settings['stats_enabled'] = $settings['channel_enabled'] && !empty($settings['stats_enabled'])
             && !empty($settings['stats_consent_at']);
 
         // Совместимость: до 1.9.0 был один список registries, он управлял и
@@ -368,6 +372,6 @@ class LEM_Plugin {
     }
 
     public function update_settings($settings) {
-        update_option('lem_settings', $settings);
+        update_option('clem_settings', $settings);
     }
 }

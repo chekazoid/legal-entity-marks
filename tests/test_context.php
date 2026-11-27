@@ -18,9 +18,9 @@ $person = ['id' => 1, 'name' => 'Иванов Иван Иванович', 'alias
 $org    = ['id' => 2, 'name' => 'Медиазона', 'aliases' => [], 'type' => 'inoagent'];
 
 function in_context($html, $entity, $triggers) {
-    $ctx = LEM_Scanner::extract_context_text($html, $triggers);
-    foreach (LEM_Scanner::search_terms($entity) as $term) {
-        if (LEM_Scanner::word_match($ctx, $term) !== false) {
+    $ctx = CLEM_Scanner::extract_context_text($html, $triggers);
+    foreach (CLEM_Scanner::search_terms($entity) as $term) {
+        if (CLEM_Scanner::word_match($ctx, $term) !== false) {
             return true;
         }
     }
@@ -139,7 +139,7 @@ $rules = [
     ['старая мета без in_context',        ['id'=>1,'type'=>'inoagent'],                     $settings, $none, true],
 ];
 foreach ($rules as [$desc, $match, $st, $ov, $expect]) {
-    $got = LEM_Frontend::should_mark($match, $st, $ov);
+    $got = CLEM_Frontend::should_mark($match, $st, $ov);
     $ok  = ($got === $expect);
     if (!$ok) { $fail++; }
     printf("%s  %-52s ожидалось=%-5s получено=%s\n",
@@ -148,7 +148,7 @@ foreach ($rules as [$desc, $match, $st, $ov, $expect]) {
 }
 
 $st_off = ['mark_registries' => ['extremist'], 'inoagent_context_only' => false];
-$got = LEM_Frontend::should_mark(['id'=>1,'type'=>'inoagent'], $st_off, $none);
+$got = CLEM_Frontend::should_mark(['id'=>1,'type'=>'inoagent'], $st_off, $none);
 $ok = ($got === false);
 if (!$ok) { $fail++; }
 printf("%s  %-52s ожидалось=нет   получено=%s\n", $ok ? 'OK  ' : 'ФЕЙЛ',

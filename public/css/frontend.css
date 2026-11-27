@@ -1,0 +1,9 @@
+.clem-ref {
+    color: #f88c00;
+    font-weight: 700;
+    cursor: help;
+    font-size: 0.75em;
+    vertical-align: super;
+    text-decoration: none;
+    margin-left: 1px;
+}

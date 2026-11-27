@@ -1,12 +1,12 @@
 # Observer service information
 
-Last updated: 2026-11-24. Applies to the author's default API at https://api.shliapuzhnikov.com/v1/.
+Last updated: 2026-11-26. Applies to the author's default API at https://api.shliapuzhnikov.com/v1/.
 
 ## Purpose and operator
 
-Observer is operated by the author of Legal Entity Marks, Alexey Shliapuzhnikov (https://shliapuzhnikov.com/). It provides copies of public registries when an official source cannot be reached. It also offers the separately enabled Rosfinmonitoring people export, an optional anonymous installation counter, and voluntary site registration.
+Observer is operated by the author of Chekazoid Legal Entity Marks, Alexey Shliapuzhnikov (https://shliapuzhnikov.com/). It supplies public registry snapshots for online updates. It also offers the separately enabled Rosfinmonitoring people export, an optional anonymous installation counter, and voluntary site registration.
 
-The author permits use of these API exports by Legal Entity Marks for local registry updates and editorial processing, including regularly refreshed lists. This permission concerns use of the service; the official source remains responsible for its registry statements.
+The author permits use of these API exports by Chekazoid Legal Entity Marks for local registry updates and editorial processing, including regularly refreshed lists. This permission concerns use of the service; the official source remains responsible for its registry statements.
 
 Registry data is supplied as data, not executable plugin code. Availability and source freshness can vary. Editors remain responsible for reviewing registry status, ambiguous name matches and the suitability of marking rules for their publication.
 
@@ -14,7 +14,7 @@ Registry data is supplied as data, not executable plugin code. Availability and 
 
 The four small plugin exports and the health check are public. The people export requires a valid token. It returns names and technical pagination/snapshot information; dates of birth and addresses are not supplied to WordPress by that export.
 
-Requests do not include article text, article URLs, detected mentions or visitor records. As with any HTTPS service, the server necessarily receives the connecting network address and ordinary HTTP metadata. An authentication token is transmitted when a protected export is requested or when the administrator has configured one for the channel.
+Requests do not include article text, article URLs, detected mentions or visitor records. As with any HTTPS service, the server necessarily receives the connecting network address and ordinary HTTP metadata. The user agent identifies the plugin and its version. A configured authentication token is sent to the protected people export when that feature is enabled.
 
 Registry updates request a complete snapshot with its registry name, row count, version and snapshot date. The service checks that every exported row belongs to that snapshot. Historical vanished rows are omitted; explicit exclusion dates in rows still present in the source are retained. Snapshot dates identify the stored source state, and are not a promise of a new source publication on every poll. An incomplete snapshot returns an error and does not authorize the plugin to retire records.
 
@@ -36,6 +36,6 @@ Registration records currently have no automatic expiry. A request to correct or
 
 ## Choice of service
 
-The plugin works without anonymous statistics or registration. The fallback channel can be disabled. The optional people list depends on the selected channel and its authorization token and is off by default.
+The plugin works without anonymous statistics or registration. All external requests require opt-in for the selected API address. Installations can continue using bundled, previously downloaded and manually imported registries with the channel disabled. The optional people list depends on the selected channel and its authorization token and is off by default.
 
 If an administrator changes the API address, requests go to that selected service. This document describes the author's default service and does not describe an alternative operator's handling of requests.

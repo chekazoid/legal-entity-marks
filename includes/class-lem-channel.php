@@ -1,18 +1,10 @@
 <?php
 defined('ABSPATH') || exit;
 
-/**
- * Канал реестров: запасной источник данных.
- *
- * Официальные реестры отвечают не всегда: сайт Минюста бывает недоступен,
- * хостинг может резать исходящие соединения, адрес сервера могут забанить
- * после массовых выгрузок. Раньше в таких случаях плагин откатывался
- * на снимок из своей поставки, который стареет с каждым днём.
- *
- * Канал стоит между ними: данные свежие, формат тот же, что у import_json.
- */
-class LEM_Channel {
+/** Consent-gated access to Observer registry downloads and optional support features. */
+class CLEM_Channel {
 
+    const SERVICE_INFO = 'https://github.com/chekazoid/legal-entity-marks/blob/main/docs/observer-service.md';
     const DEFAULT_URL = 'https://api.shliapuzhnikov.com/v1/';
 
     /**
@@ -38,17 +30,17 @@ class LEM_Channel {
      * ни владельца, он сохраняется вместе с настройками плагина.
      */
     public function install_id() {
-        $id = get_option('lem_install_id', '');
+        $id = get_option('clem_install_id', '');
         if ($id === '') {
             $id = wp_generate_password(16, false, false);
-            update_option('lem_install_id', $id, false);
+            update_option('clem_install_id', $id, false);
         }
         return $id;
     }
 
     /** Считать установки разрешено? */
     public function stats_enabled() {
-        $settings = lem()->get_settings();
+        $settings = clem_plugin()->get_settings();
         return !empty($settings['stats_enabled']);
     }
 
@@ -62,29 +54,47 @@ class LEM_Channel {
         }
         return [
             'X-LEM-Install' => $this->install_id(),
-            'X-LEM-Version' => LEM_VERSION,
+            'X-LEM-Version' => CLEM_VERSION,
         ];
     }
 
-    public function base_url() {
-        $settings = lem()->get_settings();
-        $url      = trim((string) ($settings['channel_url'] ?? ''));
-        if ($url === '') {
-            $url = self::DEFAULT_URL;
+    public static function normalize_url($value) {
+        $url = trim((string) $value);
+        if ($url === '' || $url === self::DEFAULT_URL) {
+            return self::DEFAULT_URL;
+        }
+        $parts = wp_parse_url($url);
+        if (($parts['scheme'] ?? '') !== 'https' || empty($parts['host'])
+            || isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment'])
+            || sanitize_url($url, ['https']) !== $url) {
+            return '';
         }
         return trailingslashit($url);
     }
 
-    /**
-     * Токен. Константа в wp-config.php имеет приоритет над настройкой:
-     * так его можно держать вне базы данных и вне резервных копий сайта.
-     */
-    public function token() {
-        if (defined('LEM_CHANNEL_TOKEN') && LEM_CHANNEL_TOKEN !== '') {
-            return (string) LEM_CHANNEL_TOKEN;
+    public static function disabled_message() {
+        return __('Чтобы обновлять реестры, разрешите запросы к каналу в настройках и сохраните изменения.', 'chekazoid-legal-entity-marks');
+    }
+
+    public function base_url() {
+        return clem_plugin()->get_settings()['channel_url'];
+    }
+
+    public function config_token() {
+        foreach (['CLEM_CHANNEL_TOKEN', 'LEM_CHANNEL_TOKEN'] as $name) {
+            if (defined($name) && constant($name) !== '') {
+                return (string) constant($name);
+            }
         }
-        $settings = lem()->get_settings();
-        return trim((string) ($settings['channel_token'] ?? ''));
+        return '';
+    }
+
+    public function token() {
+        $token = $this->config_token();
+        if ($token !== '') {
+            return $token;
+        }
+        return trim((string) clem_plugin()->get_settings()['channel_token']);
     }
 
     public function has_token() {
@@ -96,7 +106,7 @@ class LEM_Channel {
      * он требуется отдельной добровольной выгрузке физических лиц Росфинмониторинга.
      */
     public function is_enabled() {
-        $settings = lem()->get_settings();
+        $settings = clem_plugin()->get_settings();
         return !empty($settings['channel_enabled']);
     }
 
@@ -111,36 +121,32 @@ class LEM_Channel {
      * @return array{entries: array, count: int}|array{error: string}
      */
     public function fetch($type) {
-        if (!self::supports($type)) {
-            return ['error' => __('канал такой реестр не ведёт', 'legal-entity-marks')];
+        if (!$this->is_enabled()) {
+            return ['error' => self::disabled_message()];
         }
-
-        // Заголовок отправляем, только если токен задан: выгрузки открыты,
-        // а лишний заголовок незачем гонять по сети
-        $headers = $this->stats_headers();
-        if ($this->has_token()) {
-            $headers['Authorization'] = 'Bearer ' . $this->token();
+        if (!self::supports($type)) {
+            return ['error' => __('канал такой реестр не ведёт', 'chekazoid-legal-entity-marks')];
         }
 
         $args = [
             'timeout'    => self::TIMEOUT,
-            'user-agent' => 'LegalEntityMarks/' . LEM_VERSION,
-            'headers'    => $headers,
+            'user-agent' => 'LegalEntityMarks/' . CLEM_VERSION,
+            'headers'    => $this->stats_headers(),
         ];
 
         $url      = $this->base_url() . self::REGISTRY_MAP[$type] . '/export/lem?format=snapshot';
-        $response = LEM_Http::get($url, $args);
+        $response = CLEM_Http::get($url, $args);
 
         // Ограничение частоты на стороне канала: обновление берёт четыре реестра
         // подряд, и на общем адресе (офис, хостинг) счётчик может быть уже занят.
         // Одна повторная попытка дешевле, чем неделя на встроенном перечне
         if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 429) {
             sleep(3);
-            $response = LEM_Http::get($url, $args);
+            $response = CLEM_Http::get($url, $args);
         }
 
         if (is_wp_error($response)) {
-            return ['error' => __('соединение не удалось: ', 'legal-entity-marks') . $response->get_error_message()];
+            return ['error' => __('соединение не удалось: ', 'chekazoid-legal-entity-marks') . $response->get_error_message()];
         }
 
         $code = wp_remote_retrieve_response_code($response);
@@ -150,7 +156,7 @@ class LEM_Channel {
 
         $data = json_decode(wp_remote_retrieve_body($response), true);
         if (!is_array($data) || empty($data)) {
-            return ['error' => __('канал вернул неожиданный ответ', 'legal-entity-marks')];
+            return ['error' => __('канал вернул неожиданный ответ', 'chekazoid-legal-entity-marks')];
         }
 
         if (($data['registry'] ?? '') !== $type || ($data['complete'] ?? false) !== true
@@ -158,7 +164,7 @@ class LEM_Channel {
             || $data['count'] !== count($data['entries']) || !$data['entries']
             || !is_string($data['version'] ?? null) || $data['version'] === ''
             || !is_string($data['fetched_at'] ?? null) || !strtotime($data['fetched_at'])) {
-            return ['error' => __('канал не подтвердил полноту и версию списка', 'legal-entity-marks')];
+            return ['error' => __('канал не подтвердил полноту и версию списка', 'chekazoid-legal-entity-marks')];
         }
         return ['entries' => $data['entries'], 'count' => $data['count'], 'meta' => [
             'source' => 'channel', 'complete' => true, 'count' => $data['count'],
@@ -170,17 +176,17 @@ class LEM_Channel {
     /** Физлица загружаются отдельно: только по выбору пользователя и с токеном. */
     public function fetch_people_page($offset, $version = '') {
         if (!$this->is_enabled() || !$this->has_token()) {
-            return ['error' => __('Для физических лиц нужен включённый канал и его токен.', 'legal-entity-marks')];
+            return ['error' => __('Для физических лиц нужен включённый канал и его токен.', 'chekazoid-legal-entity-marks')];
         }
         $url = add_query_arg(['limit' => 500, 'offset' => (int) $offset, 'version' => $version],
             $this->base_url() . 'fedsfm/people');
-        $response = LEM_Http::get($url, [
+        $response = CLEM_Http::get($url, [
             'timeout' => self::TIMEOUT,
-            'user-agent' => 'LegalEntityMarks/' . LEM_VERSION,
+            'user-agent' => 'LegalEntityMarks/' . CLEM_VERSION,
             'headers' => array_merge($this->stats_headers(), ['Authorization' => 'Bearer ' . $this->token()]),
         ]);
         if (is_wp_error($response)) {
-            return ['error' => __('Канал физических лиц недоступен: ', 'legal-entity-marks') . $response->get_error_message(), 'retry' => true];
+            return ['error' => __('Канал физических лиц недоступен: ', 'chekazoid-legal-entity-marks') . $response->get_error_message(), 'retry' => true];
         }
         $code = wp_remote_retrieve_response_code($response);
         if ($code !== 200) {
@@ -192,7 +198,7 @@ class LEM_Channel {
             || !is_int($data['offset'] ?? null) || !is_int($data['total'] ?? null)
             || !is_string($data['version'] ?? null) || $data['version'] === ''
             || !is_string($data['fetched_at'] ?? null)) {
-            return ['error' => __('Канал вернул неподходящий формат перечня физических лиц.', 'legal-entity-marks')];
+            return ['error' => __('Канал вернул неподходящий формат перечня физических лиц.', 'chekazoid-legal-entity-marks')];
         }
         return $data;
     }
@@ -210,13 +216,13 @@ class LEM_Channel {
 
         switch ((int) $code) {
             case 401:
-                return __('канал требует токен для этого реестра: укажите его в настройках', 'legal-entity-marks') . $detail;
+                return __('канал требует токен для этого реестра: укажите его в настройках', 'chekazoid-legal-entity-marks') . $detail;
             case 403:
-                return __('токен не признан или отозван: нужен новый', 'legal-entity-marks') . $detail;
+                return __('токен не признан или отозван: нужен новый', 'chekazoid-legal-entity-marks') . $detail;
             case 404:
-                return __('в канале нет такого реестра', 'legal-entity-marks') . $detail;
+                return __('в канале нет такого реестра', 'chekazoid-legal-entity-marks') . $detail;
             case 429:
-                return __('слишком частые запросы к каналу, попробуйте позже', 'legal-entity-marks') . $detail;
+                return __('слишком частые запросы к каналу, попробуйте позже', 'chekazoid-legal-entity-marks') . $detail;
             default:
                 return "канал ответил HTTP $code" . $detail;
         }
@@ -231,7 +237,7 @@ class LEM_Channel {
             'install_id'  => $this->install_id(),
             'site'        => home_url('/'),
             'name'        => get_bloginfo('name'),
-            'plugin'      => LEM_VERSION,
+            'plugin'      => CLEM_VERSION,
             'wordpress'   => get_bloginfo('version'),
             'php'         => PHP_VERSION,
             'email'       => sanitize_email($email),
@@ -248,27 +254,30 @@ class LEM_Channel {
      * @return array{ok: bool, message: string}
      */
     public function register_site($email = '') {
-        $response = LEM_Http::post($this->base_url() . 'register', [
+        if (!$this->is_enabled()) {
+            return ['ok' => false, 'message' => self::disabled_message()];
+        }
+        $response = CLEM_Http::post($this->base_url() . 'register', [
             'timeout'    => 30,
-            'user-agent' => 'LegalEntityMarks/' . LEM_VERSION,
+            'user-agent' => 'LegalEntityMarks/' . CLEM_VERSION,
             'headers'    => ['Content-Type' => 'application/json'],
             'body'       => wp_json_encode($this->registration_payload($email)),
         ]);
 
         if (is_wp_error($response)) {
-            return ['ok' => false, 'message' => __('соединение не удалось: ', 'legal-entity-marks') . $response->get_error_message()];
+            return ['ok' => false, 'message' => __('соединение не удалось: ', 'chekazoid-legal-entity-marks') . $response->get_error_message()];
         }
 
         $code = wp_remote_retrieve_response_code($response);
         if ($code === 404) {
-            return ['ok' => false, 'message' => __('сервер пока не принимает регистрации, попробуйте позже', 'legal-entity-marks')];
+            return ['ok' => false, 'message' => __('сервер пока не принимает регистрации, попробуйте позже', 'chekazoid-legal-entity-marks')];
         }
         if ($code < 200 || $code >= 300) {
             return ['ok' => false, 'message' => self::explain_code($code, wp_remote_retrieve_body($response))];
         }
 
-        update_option('lem_registered_at', current_time('mysql'), false);
-        return ['ok' => true, 'message' => __('сайт зарегистрирован', 'legal-entity-marks')];
+        update_option('clem_registered_at', current_time('mysql'), false);
+        return ['ok' => true, 'message' => __('сайт зарегистрирован', 'chekazoid-legal-entity-marks')];
     }
 
     /**
@@ -277,10 +286,22 @@ class LEM_Channel {
      *
      * @return array{ok: bool, last_snapshot: string, error: string}
      */
+    public function check_health() {
+        $result = $this->health();
+        if ($this->is_enabled()) {
+            $result['checked_at'] = current_time('mysql');
+            update_option('clem_channel_health', $result, false);
+        }
+        return $result;
+    }
+
     public function health() {
-        $response = LEM_Http::get($this->base_url() . 'health', [
+        if (!$this->is_enabled()) {
+            return ['ok' => false, 'last_snapshot' => '', 'error' => self::disabled_message()];
+        }
+        $response = CLEM_Http::get($this->base_url() . 'health', [
             'timeout'    => 20,
-            'user-agent' => 'LegalEntityMarks/' . LEM_VERSION,
+            'user-agent' => 'LegalEntityMarks/' . CLEM_VERSION,
             'headers'    => $this->stats_headers(),
         ]);
 

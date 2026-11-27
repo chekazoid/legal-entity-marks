@@ -1,7 +1,7 @@
 <?php
 defined('ABSPATH') || exit;
 
-class LEM_Database {
+class CLEM_Database {
 
     const DB_VERSION = '1.3.0';
 
@@ -14,7 +14,7 @@ class LEM_Database {
 
     public function create_table() {
         global $wpdb;
-        $table   = $wpdb->prefix . LEM_TABLE;
+        $table   = $wpdb->prefix . CLEM_TABLE;
         $charset = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table (
@@ -49,14 +49,14 @@ class LEM_Database {
                       WHERE first_seen IS NULL") ;
                       /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
 
-        update_option('lem_db_version', self::DB_VERSION);
+        update_option('clem_db_version', self::DB_VERSION);
     }
 
     const BANNED_SITES_DB_VERSION = '1.2.0';
 
     public function create_banned_sites_table() {
         global $wpdb;
-        $table   = $wpdb->prefix . 'lem_banned_sites';
+        $table   = $wpdb->prefix . 'clem_banned_sites';
         $charset = $wpdb->get_charset_collate();
 
         // account: аккаунт организации на чужой площадке (t.me/doxajournal).
@@ -88,21 +88,21 @@ class LEM_Database {
             /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
         }
 
-        update_option('lem_banned_sites_db_version', self::BANNED_SITES_DB_VERSION);
+        update_option('clem_banned_sites_db_version', self::BANNED_SITES_DB_VERSION);
     }
 
     public function check_version() {
-        if (get_option('lem_db_version') !== self::DB_VERSION) {
+        if (get_option('clem_db_version') !== self::DB_VERSION) {
             $this->create_table();
         }
-        if (get_option('lem_banned_sites_db_version') !== self::BANNED_SITES_DB_VERSION) {
+        if (get_option('clem_banned_sites_db_version') !== self::BANNED_SITES_DB_VERSION) {
             $this->create_banned_sites_table();
         }
     }
 
     public function table_exists() {
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         return $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))) === $table;
         /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */

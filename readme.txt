@@ -1,10 +1,10 @@
-=== Legal Entity Marks ===
+=== Chekazoid Legal Entity Marks ===
 Contributors: shliapuzhnikov
 Tags: editorial, registry, compliance, media, russian
 Requires at least: 6.1
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.15.2
+Stable tag: 1.16.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Review registry mentions and links in Russian-language articles, with optional f
 
 == Description ==
 
-Legal Entity Marks helps editors review mentions of people and organizations listed in Russian public registries. It finds names and their grammatical forms, records mentions in an editorial report, and can add footnotes and disclosure text when an editor enables the relevant categories.
+Chekazoid Legal Entity Marks helps editors review mentions of people and organizations listed in Russian public registries. It finds names and their grammatical forms, records mentions in an editorial report, and can add footnotes and disclosure text when an editor enables the relevant categories.
 
 The interface is intended for Russian-language editorial work. See the [Russian manual](https://github.com/chekazoid/legal-entity-marks/blob/main/docs/readme-ru.md).
 
@@ -33,13 +33,13 @@ The plugin supports editorial review. Registry status and matching results need 
 
 = Registry data and freshness =
 
-Bundled JSON files are an initial snapshot and an offline fallback. Updates try the official source first, then the documented Observer channel, then a repository mirror where available, and finally the bundled snapshot. Source dates and failures are shown in the dashboard. Only a complete, consistent official or Observer snapshot can retire missing registry entries or reactivate returning ones. Missing names remain in history without an invented legal exclusion date. Once a verified snapshot exists, bundled files, mirrors and partial imports only supplement aliases of known entries and cannot replace its statuses. New manually added entries are tracked separately. Older versions did not store import origin, so earlier custom additions absent from a complete source snapshot can also become inactive; their stored data remain available.
+Bundled JSON files provide the initial registries. After an administrator enables Observer in the Marking settings, the plugin can download and verify registry snapshots manually or through WP-Cron (weekly by default). The dashboard shows the source and any update failures. A failed or incomplete update leaves the previous registry in place.
 
-Updates run through WP-Cron, weekly by default. A working WordPress scheduler is needed for background jobs. No executable code is downloaded from external services.
+Complete Observer snapshots retire missing imported records and reactivate returning records. Historical entries retain their data and explicit exclusion dates. The plugin keeps records added manually in current versions separate. Review older custom entries before refreshing because older releases did not record their import origin.
 
 = Optional anonymous statistics =
 
-The installation counter is disabled by default. To enable it, an administrator must tick the consent checkbox and save the settings. Existing enabled settings from versions before 1.15.1 do not count as consent and are disabled until the administrator opts in again.
+The installation counter is disabled by default. To enable it, an administrator must tick the consent checkbox and save the settings. The counter also requires an enabled Observer connection. On upgrades to 1.16.0, online access and counting require consent in the current settings.
 
 When enabled, ordinary Observer requests carry a random installation identifier and the plugin version in two HTTP headers. Article content, matches, visitor information, the site URL and contact information are not included in these headers. Disabling the checkbox stops these headers immediately. The identifier is stored locally and survives reinstallation when plugin data is retained.
 
@@ -51,24 +51,27 @@ The plugin works without statistics or registration. The Observer service's data
 
 == External services ==
 
-External requests are needed to retrieve the selected public registries. Receiving servers see the network address and normal HTTP request metadata. Article text, article URLs and lists of matches are not sent for registry downloads. Authentication tokens, when configured, are sent only to the configured Observer channel.
+The only external service used by this plugin is **Observer**, operated by plugin author Alexey Shliapuzhnikov at `https://api.shliapuzhnikov.com/v1/`. It supplies snapshots of the four public registries, a health check, and optional exports and support features. Initial installation and offline use make no requests to Observer. An administrator can enable requests under Marking > Settings, and can revoke that permission there at any time. Upgrading from earlier versions requires opting in.
 
-* **Russian Ministry of Justice:** `reestrs.minjust.gov.ru` and `minjust.gov.ru`. Retrieves the foreign-agent, undesirable-organization and extremist-organization registries. Requests contain registry identifiers, pagination and an empty search, where applicable. Runs on scheduled or manual registry updates. [Official website and published policies](https://minjust.gov.ru/).
-* **Federal Security Service:** `fsb.ru`. Retrieves the public terrorist-organization list during scheduled or manual updates. [Official website and published policies](https://www.fsb.ru/).
-* **GitHub:** `raw.githubusercontent.com`. Retrieves JSON data mirrors from the public plugin repository after the official source and Observer channel fail. No scripts or updates to plugin code are loaded from these mirrors. [Terms](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service) and [privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
-* **Observer, operated by the plugin author:** `https://api.shliapuzhnikov.com/v1/`. Supplies fallback registry data and a channel health check when the channel is enabled. The four organization/foreign-agent exports are public. The optional Rosfinmonitoring people export requires a token and an explicitly selected people mode; WordPress receives names, not dates of birth or addresses. Statistics headers are added only after consent. A registration request is sent only when its separate button is pressed. Disabling the channel stops scheduled channel requests. Manual channel checks and site registration are explicit requests made by the administrator. [Service terms and privacy information](https://github.com/chekazoid/legal-entity-marks/blob/main/docs/observer-service.md).
+* **Registry updates and health check:** The selected service receives the server IP address, ordinary HTTP metadata (including the plugin version in the user agent), and the registry or health endpoint requested. Requests occur when an administrator checks or refreshes the channel, or when scheduled updates run after opt-in.
+* **Optional people list:** After the administrator enables people monitoring or marking and configures a token, paginated requests include the token and pagination/snapshot information. WordPress receives names, with no dates of birth or addresses.
+* **Optional statistics:** If separately enabled, registry and health requests also carry the installation identifier and version described above.
+* **Optional site registration:** A registration request includes the fields listed above and happens only after the administrator confirms that action.
 
-The Observer address can be changed by the administrator. The policy above describes the author's default service; an alternative service has its own terms.
+The plugin never sends visitor records, article text, article URLs or detected matches. It downloads registry data without executable code.
+[Observer terms of use](https://github.com/chekazoid/legal-entity-marks/blob/main/docs/observer-service.md#purpose-and-operator) and [Observer privacy information](https://github.com/chekazoid/legal-entity-marks/blob/main/docs/observer-service.md#registry-requests) describe the default service. A different HTTPS address needs separate consent and is subject to that operator's terms and privacy policy.
 
 == Installation ==
 
-1. Upload the `legal-entity-marks` folder to `/wp-content/plugins/`, or install the ZIP from Plugins > Add New > Upload Plugin.
+1. Upload the `chekazoid-legal-entity-marks` folder to `/wp-content/plugins/`, or install the ZIP from Plugins > Add New > Upload Plugin.
 2. Activate the plugin.
 3. Open the Marking menu (shown as "Маркировка" in the Russian interface) and select the categories and editorial profile appropriate for the site.
-4. Review registry source status and scan the archive. Check the report before enabling broad marking rules.
+4. For online updates, review the service information and enable the Observer connection in settings. Scan the archive and check the report before enabling broad marking rules.
 5. Leave the optional people list off unless it is needed. To use it, configure an Observer token and choose monitoring or marking explicitly.
 
 Statistics and site registration are optional. They do not need to be enabled to use the plugin.
+
+For an existing GitHub installation, upload the GitHub ZIP over the installed copy. When switching from the GitHub package to the WordPress.org package, deactivate the GitHub installation before activating the directory version. Activation migrates its existing data. Keep the old installation in place until the migration succeeds.
 
 == Frequently Asked Questions ==
 
@@ -84,9 +87,9 @@ For one of the four main registries, enable monitoring and leave automatic marki
 
 No. Matching runs inside WordPress. Registry downloads do not send article content, lists of matches or visitor information.
 
-= Can I use official registries without Observer? =
+= Can I use the plugin without connecting to Observer? =
 
-Yes. Disable the channel in settings. Official sources and bundled snapshots remain available. The optional people list requires the configured Observer channel and its token.
+Yes. The plugin works with the bundled registries, previously downloaded snapshots and local imports. Online updates and the optional people list require a configured Observer connection.
 
 = Does a complete name prove that the person is the listed individual? =
 
@@ -94,7 +97,7 @@ No. Complete names can coincide. The people feature requires all available name 
 
 = What happens when a source is unavailable? =
 
-The plugin tries the documented fallback sources and reports the resulting source and its freshness. An incomplete or failed update keeps the previous verified statuses in every category. The people list switches to a new active set only after all consistent pages are saved.
+The dashboard reports update failures and the plugin keeps the existing list for any category that fails to load. The people list switches to a new active set only after all consistent pages are saved.
 
 = Are settings deleted on uninstall? =
 
@@ -112,6 +115,13 @@ The [Russian manual](https://github.com/chekazoid/legal-entity-marks/blob/main/d
 4. Resource list with search, pagination and explicit link removal controls.
 
 == Changelog ==
+
+= 1.16.0 =
+* Renamed the plugin for the WordPress.org directory and migrated existing settings, registry records and article metadata to the new prefix.
+* Online registry updates use Observer with an explicit opt-in. Bundled and previously downloaded data work offline.
+* Loaded scripts and styles through WordPress on the relevant screens, and checked dependencies before activation.
+* Prevented older aliases from matching common words as organization names without the required quotation marks. The same rules apply to saved mentions.
+* Match specific MAX and VK accounts instead of flagging unrelated links on the same platform.
 
 = 1.15.2 =
 * Always mark now works for an individual article when a main registry is monitored with automatic marking turned off.
@@ -134,6 +144,9 @@ The [Russian manual](https://github.com/chekazoid/legal-entity-marks/blob/main/d
 * Fixed misleading update warnings after a successful Observer fallback.
 
 == Upgrade Notice ==
+
+= 1.16.0 =
+Deactivate the previous installation before switching to the new directory package. Existing markings and settings are migrated. Enable Observer in Marking settings if you want online registry updates.
 
 = 1.15.2 =
 Use Always mark for individual articles while automatic marking is off. Keep monitoring enabled for the registry. Improved matching of locality names and sports teams applies to older scan results as well.

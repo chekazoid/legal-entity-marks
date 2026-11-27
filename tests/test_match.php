@@ -14,7 +14,7 @@ $S_OFF = ['match_word_forms' => false, 'surname_mode' => 'off'];
 $fail = 0;
 function t($desc, $text, $entity, $settings, $want, $want_form = null) {
     global $fail;
-    $hit = LEM_Scanner::match_entity($text, $entity, $settings);
+    $hit = CLEM_Scanner::match_entity($text, $entity, $settings);
     $got = $hit !== null;
     $ok  = $got === $want;
     if ($ok && $want_form !== null) {
@@ -80,8 +80,8 @@ t('в режиме «всегда» однофамилец ловится (ри�
 
 echo "\n=== отсев по основам слов (ускорение прохода по архиву) ===\n";
 function has_stem($e, $text) {
-    $st = LEM_Scanner::entity_stems($e);
-    return !empty($st) && (bool) array_intersect_key($st, LEM_Scanner::text_stems($text));
+    $st = CLEM_Scanner::entity_stems($e);
+    return !empty($st) && (bool) array_intersect_key($st, CLEM_Scanner::text_stems($text));
 }
 function st($d, $got, $want) {
     global $fail;

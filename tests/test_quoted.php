@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/class-lem-morphology.php';
 require_once __DIR__ . '/../includes/class-lem-scanner.php';
 $S=['match_word_forms'=>true,'surname_mode'=>'confirmed'];
 $fail=0;
-function t($d,$text,$ent,$s,$want){global $fail;$h=LEM_Scanner::match_entity($text,$ent,$s);$g=$h!==null;$ok=$g===$want;if(!$ok)$fail++;
+function t($d,$text,$ent,$s,$want){global $fail;$h=CLEM_Scanner::match_entity($text,$ent,$s);$g=$h!==null;$ok=$g===$want;if(!$ok)$fail++;
   printf("%s  %-46s %s\n",$ok?'OK  ':'ФЕЙЛ',mb_substr($d,0,46),$g?'найдено «'.$h['matched_as'].'»':'не найдено');}
 
 // Бренд-общеупотребительное слово: алиас хранится как «Дождь» (в ёлочках)
@@ -45,6 +45,21 @@ echo "\n=== «Проект» ===\n";
 $pr=['id'=>3,'type'=>'inoagent','name'=>'Издание «Проект»','aliases'=>['«Проект»'],'is_person'=>0];
 t('«Проект» в кавычках -> ловим','Расследование издания «Проект» вышло',$pr,$S,true);
 t('проект без кавычек (обычное слово) -> НЕ ловим','Новый проект запустят весной',$pr,$S,false);
+
+$cases = [
+    ['Интернет-ресурс «Республика»', 'Республика', 'ведомства республики', 'по данным «Республики»'],
+    ['Проект «После»', 'После', 'после ДТП', 'для проекта «После»'],
+    ['Издание «Проект»', 'Проект', 'подготовили проект', 'расследование издания «Проект»'],
+    ['Проект «Сфера»', 'Сфера', 'в сфере образования', 'сообщили в «Сфере»'],
+    ['Quarteera e.V. («Квартира»), Федеративная Республика Германия', 'Квартира', 'для ремонта квартиры', 'для «Квартиры»'],
+];
+foreach ($cases as $i => [$name, $alias, $ordinary, $quoted]) {
+    foreach ([[$alias], [$alias, '«' . $alias . '»']] as $j => $aliases) {
+        $entry = ['id' => 100 + 2 * $i + $j, 'type' => 'inoagent', 'name' => $name, 'aliases' => $aliases];
+        t($alias . ': прежний вариант без кавычек', $ordinary, $entry, $S, false);
+        t($alias . ': настоящее название в кавычках', $quoted, $entry, $S, true);
+    }
+}
 
 echo "\n".($fail===0?"ВСЕ ПРОВЕРКИ ПРОЙДЕНЫ\n":"ПРОВАЛЕНО: $fail\n");
 exit($fail===0?0:1);

@@ -1,15 +1,15 @@
 <?php
 defined('ABSPATH') || exit;
 
-class LEM_Scanner {
+class CLEM_Scanner {
 
-    const SCAN_STATE_KEY = 'lem_scan_state';
+    const SCAN_STATE_KEY = 'clem_scan_state';
 
     public function __construct() {
         add_action('transition_post_status', [$this, 'on_post_publish'], 20, 3);
-        add_action('wp_ajax_lem_scan_init', [$this, 'ajax_scan_init']);
-        add_action('wp_ajax_lem_scan_process', [$this, 'ajax_scan_process']);
-        add_action('wp_ajax_lem_scan_cancel', [$this, 'ajax_scan_cancel']);
+        add_action('wp_ajax_clem_scan_init', [$this, 'ajax_scan_init']);
+        add_action('wp_ajax_clem_scan_process', [$this, 'ajax_scan_process']);
+        add_action('wp_ajax_clem_scan_cancel', [$this, 'ajax_scan_cancel']);
     }
 
     /* ------------------------------------------------------------------
@@ -62,7 +62,7 @@ class LEM_Scanner {
 
         if (($entity['type'] ?? '') === 'fedsfm_person') {
             $words = preg_split('/\s+/u', trim($entity['name']), -1, PREG_SPLIT_NO_EMPTY);
-            $forms = LEM_Morphology::surname_forms($words[0] ?? '', LEM_Morphology::detect_gender($entity['name']));
+            $forms = CLEM_Morphology::surname_forms($words[0] ?? '', CLEM_Morphology::detect_gender($entity['name']));
             $stems = [];
             foreach ($forms as $form) {
                 $prefix = mb_substr(mb_strtolower($form), 0, self::STEM_LEN);
@@ -84,7 +84,7 @@ class LEM_Scanner {
             return $stems;
         }
 
-        $terms = self::search_terms($entity);
+        $terms = array_merge(self::search_terms($entity), array_values(self::curated_aliases($entity['name'])['quoted']));
         foreach (self::search_aliases($entity) as $a) {
             $inner = self::quoted_brand_inner($a);
             if ($inner !== null) {
@@ -92,7 +92,7 @@ class LEM_Scanner {
             }
         }
         if (!empty($entity['is_person'])) {
-            $parts = LEM_Morphology::split_name($entity['name']);
+            $parts = CLEM_Morphology::split_name($entity['name']);
             foreach ([$parts['surname'] ?? '', $parts['first'] ?? ''] as $part) {
                 if ($part !== '') {
                     $terms[] = $part;
@@ -148,7 +148,7 @@ class LEM_Scanner {
         // «в мужском государстве» - обычная речь. Вольность в окончании
         // без этого условия ловила бы вторую
         return '(?=(?-i:\\p{Lu}))(?:' . implode(self::WORD_SEP, array_map(
-            [LEM_Morphology::class, 'word_stem_pattern'], $words
+            [CLEM_Morphology::class, 'word_stem_pattern'], $words
         )) . ')';
     }
 
@@ -205,12 +205,12 @@ class LEM_Scanner {
                 return preg_quote($word, '/');
             }, $words));
         } else {
-            $gender = LEM_Morphology::detect_gender($entity['name']);
-            $surname = self::alternation(LEM_Morphology::surname_forms($words[0], $gender));
-            $given = self::alternation(LEM_Morphology::first_name_forms($words[1], $gender));
+            $gender = CLEM_Morphology::detect_gender($entity['name']);
+            $surname = self::alternation(CLEM_Morphology::surname_forms($words[0], $gender));
+            $given = self::alternation(CLEM_Morphology::first_name_forms($words[1], $gender));
             if (isset($words[2])) {
                 $given .= self::WORD_SEP . self::alternation(
-                    LEM_Morphology::first_name_forms($words[2], $gender)
+                    CLEM_Morphology::first_name_forms($words[2], $gender)
                 );
             }
             $body = $surname . self::WORD_SEP . $given . '|' . $given . self::WORD_SEP . $surname;
@@ -220,7 +220,7 @@ class LEM_Scanner {
 
     public static function build_pattern_body($entity, $settings = null, $variant = 'strict') {
         if ($settings === null) {
-            $settings = lem()->get_settings();
+            $settings = clem_plugin()->get_settings();
         }
         $key = ($entity['id'] ?? '') . '|' . ($entity['type'] ?? '') . '|' . $entity['name']
             . '|' . $variant . '|' . (int) !empty($settings['match_word_forms'])
@@ -237,17 +237,17 @@ class LEM_Scanner {
 
         $frags     = [];
         $is_person = !empty($entity['is_person']) && !empty($settings['match_word_forms']);
-        $parts     = $is_person ? LEM_Morphology::split_name($entity['name']) : null;
+        $parts     = $is_person ? CLEM_Morphology::split_name($entity['name']) : null;
 
         $sur_alt = $first_alt = null;
         $bare_ok = false;
         if ($parts && $parts['surname'] !== '') {
-            $gender    = LEM_Morphology::detect_gender($entity['name']);
-            $sur_alt   = self::alternation(LEM_Morphology::surname_forms($parts['surname'], $gender));
+            $gender    = CLEM_Morphology::detect_gender($entity['name']);
+            $sur_alt   = self::alternation(CLEM_Morphology::surname_forms($parts['surname'], $gender));
             $first_alt = $parts['first'] !== ''
-                ? self::alternation(LEM_Morphology::first_name_forms($parts['first'], $gender))
+                ? self::alternation(CLEM_Morphology::first_name_forms($parts['first'], $gender))
                 : null;
-            $bare_ok = LEM_Morphology::surname_is_searchable($parts['surname'])
+            $bare_ok = CLEM_Morphology::surname_is_searchable($parts['surname'])
                 && !in_array(mb_strtolower($parts['surname']), self::TERM_BLACKLIST, true);
         }
 
@@ -274,42 +274,35 @@ class LEM_Scanner {
 
         // Алиасы, обёрнутые в кавычки («Дождь»), в обычном режиме матчатся
         // ТОЛЬКО в кавычках: издание «Дождь» помечаем, «шёл дождь» нет.
-        $quoted_terms = [];
+        $full_name = trim((string) ($entity['name'] ?? ''));
+        $curated = self::curated_aliases($full_name);
+        $quoted_terms = $curated['quoted'];
         $plain_entity = $entity;
         $plain_entity['aliases'] = [];
         foreach (self::search_aliases($entity) as $alias) {
             $inner = self::quoted_brand_inner($alias);
             if ($inner !== null) {
-                $quoted_terms[] = $inner;
+                $quoted_terms[mb_strtolower($inner)] = $inner;
             } else {
                 $plain_entity['aliases'][] = $alias;
             }
         }
 
-        // Точные названия из реестра и обычные алиасы (со словесными границами).
-        // Между словами допускаем кавычки: в реестре «Радио Свобода», а в статье
-        // пишут «Радио „Свобода“» - без этого многословные названия не совпадали.
-        $curated = self::curated_aliases();
-        $full_name = trim((string) ($entity['name'] ?? ''));
+        // A stale bare alias must not override the quoted copy of the same name.
+        // An explicit unquoted brand rule still applies to its own entry.
         foreach (self::search_terms($plain_entity) as $term) {
-            // Алиас из одних общеупотребительных слов («Служба поддержки»,
-            // «Новое поколение») ищем только в кавычках, иначе он ловит обычные
-            // обороты речи. Одиночные безнадёжные слова отсекает TERM_BLACKLIST.
-            //
-            // Проверяем при каждом поиске, а не только при импорте: на сайтах,
-            // обновившихся с прежних версий, такие алиасы уже лежат в базе
-            // без ёлочек. Полное название и выбранное человеком не трогаем.
-            if ($term !== $full_name
-                && !isset($curated[mb_strtolower(trim($term))])
-                && self::is_generic_phrase($term)) {
-                $quoted_terms[] = $term;
+            $term_key = mb_strtolower($term);
+            if (empty($entity['is_person']) && $term !== $full_name && !isset($curated['plain'][$term_key])
+                && (isset($quoted_terms[$term_key]) || self::is_generic_phrase($term)
+                    || in_array($term_key, self::AMBIGUOUS_ALIASES, true))) {
+                $quoted_terms[$term_key] = $term;
                 continue;
             }
             // Однословные названия склоняем: в статьях пишут «по данным Медузы»,
             // «материал Вёрстки». Многословные оставляем как есть, чтобы не
             // плодить формы у длинных официальных наименований
             $forms = (mb_strpos(trim($term), ' ') === false)
-                ? LEM_Morphology::brand_forms($term)
+                ? CLEM_Morphology::brand_forms($term)
                 : [$term];
 
             if (count($forms) > 1) {
@@ -337,11 +330,12 @@ class LEM_Scanner {
             // данных, «фонд» оплаты труда. Такие термины не ищем вовсе,
             // а вернуть их можно через «Бренды СМИ» - там выбор осознанный
             $bare = mb_strtolower(preg_replace('/^[«"„“]+|[»"”“]+$/u', '', trim($q)));
-            if (!isset($curated[$bare]) && in_array($bare, self::TERM_BLACKLIST, true)) {
+            if (!isset($curated['quoted'][$bare]) && !isset($curated['plain'][$bare])
+                && in_array($bare, self::TERM_BLACKLIST, true)) {
                 continue;
             }
 
-            $forms = LEM_Morphology::brand_forms($q);
+            $forms = CLEM_Morphology::brand_forms($q);
             // Точные формы есть только у однословных названий на -а/-я.
             // Для остальных («Мужское государство») берём основы слов:
             // иначе название находится только в именительном падеже
@@ -374,7 +368,7 @@ class LEM_Scanner {
      * @return array{matched_as:string, position:int}|null
      */
     public static function asterisk_hit($text, $entity, $settings = null) {
-        $settings = $settings ?? lem()->get_settings();
+        $settings = $settings ?? clem_plugin()->get_settings();
         if (($entity['type'] ?? '') === 'fedsfm_person'
             && !in_array($settings['fedsfm_people_mode'] ?? 'off', ['track', 'mark'], true)) {
             return null;
@@ -396,6 +390,7 @@ class LEM_Scanner {
     public static function flush_pattern_cache() {
         self::$pattern_cache = [];
         self::$stem_cache    = [];
+        self::$brand_rules   = null;
     }
 
     /**
@@ -426,7 +421,7 @@ class LEM_Scanner {
      */
     public static function match_entity($text, $entity, $settings = null, $allow_bare = null) {
         if ($settings === null) {
-            $settings = lem()->get_settings();
+            $settings = clem_plugin()->get_settings();
         }
 
         if (($entity['type'] ?? '') === 'fedsfm_person') {
@@ -484,6 +479,13 @@ class LEM_Scanner {
         'азербайджан', 'молдова', 'казахстан',
         // Regions
         'донбасс', 'крым', 'кавказ', 'сибирь',
+    ];
+
+    // These short aliases also name ordinary things or phrases in an article.
+    private const AMBIGUOUS_ALIASES = [
+        'после', 'республика', 'квартира', 'проект', 'сфера', 'реанимация',
+        'выход', 'сеть', 'бумага', 'весьма', 'гроза', 'бюро', 'действие', 'черта',
+        'холод', 'полигон', 'довод', 'объектив', 'сова', 'маяк', 'смола', 'реверс',
     ];
 
     /**
@@ -585,27 +587,31 @@ class LEM_Scanner {
         return true;
     }
 
-    /**
-     * Алиасы, заданные пользователем в разделе «Бренды СМИ», проверке на
-     * общеупотребительность не подлежат: их выбрал человек осознанно.
-     */
-    private static function curated_aliases() {
-        static $set = null;
-        if ($set !== null) {
-            return $set;
+    private static $brand_rules = null;
+
+    private static function curated_aliases($name) {
+        if (self::$brand_rules === null) {
+            self::$brand_rules = function_exists('clem_plugin') && isset(clem_plugin()->brands)
+                ? clem_plugin()->brands->get_rules()
+                : [];
         }
-        $set = [];
-        if (function_exists('lem') && isset(lem()->brands)) {
-            foreach (lem()->brands->get_rules() as $rule) {
-                if (empty($rule['enabled'])) {
-                    continue;
-                }
-                foreach (array_merge($rule['aliases'], $rule['quoted']) as $a) {
-                    $set[mb_strtolower(trim($a))] = true;
-                }
+
+        $aliases = ['plain' => [], 'quoted' => []];
+        if (self::is_local_branch($name) || self::is_fan_club($name)) {
+            return $aliases;
+        }
+        foreach (self::$brand_rules as $rule) {
+            if (empty($rule['enabled']) || mb_stripos($name, $rule['match']) === false) {
+                continue;
+            }
+            foreach ($rule['aliases'] as $alias) {
+                $aliases['plain'][mb_strtolower($alias)] = $alias;
+            }
+            foreach ($rule['quoted'] as $alias) {
+                $aliases['quoted'][mb_strtolower($alias)] = $alias;
             }
         }
-        return $set;
+        return $aliases;
     }
 
     public static function is_local_branch($name) {
@@ -641,13 +647,14 @@ class LEM_Scanner {
         return empty($entity['is_person']) ? self::organization_aliases($entity['name'], $aliases) : $aliases;
     }
 
-    /** Recheck previously saved matches whose aliases may now be ineligible. */
+    /** Recheck saved organisation matches against the current alias rules. */
     public static function is_current_mention($match, $settings) {
-        $name = $match['name'] ?? '';
-        if (!empty($match['is_person']) || (!self::is_local_branch($name) && !self::is_fan_club($name))) {
+        if (!empty($match['is_person'])) {
             return true;
         }
-        $body = self::build_pattern_body($match, $settings);
+
+        $variant = empty($match['editor_asterisk']) ? 'strict' : 'all';
+        $body = self::build_pattern_body($match, $settings, $variant);
         return $body !== null && preg_match('/\A(?:' . $body . ')\z/ui', $match['matched_as'] ?? '') === 1;
     }
 
@@ -810,9 +817,9 @@ class LEM_Scanner {
     }
 
     public function scan_text($text, $entities = null) {
-        $settings = lem()->get_settings();
+        $settings = clem_plugin()->get_settings();
         if ($entities === null) {
-            $entities = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
+            $entities = clem_plugin()->entities->get_for_marking(!empty($settings['mark_excluded']));
         }
         $plain    = wp_strip_all_tags($text);
         $context  = null;
@@ -825,7 +832,7 @@ class LEM_Scanner {
         // материал - самая дорогая часть прохода по архиву, а большинство
         // сущностей в тексте не встречается ни в каком виде
         // Отключается фильтром на случай, если отсев когда-нибудь ошибётся
-        $prefilter  = (bool) apply_filters('lem_scan_prefilter', true);
+        $prefilter  = (bool) apply_filters('clem_scan_prefilter', true);
         $text_stems = $prefilter ? self::text_stems($plain) : [];
 
         foreach ($entities as $entity) {
@@ -848,7 +855,8 @@ class LEM_Scanner {
             $hit = self::match_entity($plain, $entity, $settings, $allow_bare);
             // Ручная звёздочка редактора («Монгайт**») подтверждает сущность
             // даже там, где обычные правила её пропустили бы
-            if ($hit === null && $has_star) {
+            $editor_asterisk = $hit === null && $has_star;
+            if ($editor_asterisk) {
                 $hit = self::asterisk_hit($plain, $entity, $settings);
             }
             if ($hit === null) {
@@ -863,6 +871,9 @@ class LEM_Scanner {
                 'position'   => $hit['position'],
             ];
 
+            if ($editor_asterisk) {
+                $match['editor_asterisk'] = true;
+            }
             if ($entity['type'] === 'fedsfm_person') {
                 $match['full_name_match'] = true;
             }
@@ -911,7 +922,7 @@ class LEM_Scanner {
      */
     public function collect_text($post, $settings = null) {
         if ($settings === null) {
-            $settings = lem()->get_settings();
+            $settings = clem_plugin()->get_settings();
         }
         $parts = [$post->post_title, $post->post_content];
 
@@ -942,7 +953,7 @@ class LEM_Scanner {
          * @param string  $extra
          * @param WP_Post $post
          */
-        $extra = apply_filters('lem_scan_extra_text', '', $post);
+        $extra = apply_filters('clem_scan_extra_text', '', $post);
         if (is_string($extra) && trim($extra) !== '') {
             $text .= "\n\n" . $extra;
         }
@@ -960,7 +971,7 @@ class LEM_Scanner {
      */
     public static function discover_meta_keys($limit = 40) {
         global $wpdb;
-        $types = lem()->get_settings()['post_types'];
+        $types = clem_plugin()->get_settings()['post_types'];
         if (empty($types)) {
             return [];
         }
@@ -1018,7 +1029,7 @@ class LEM_Scanner {
     public static function write_matches($post_id, array $found, $now = null) {
         $now = $now ?: current_time('mysql');
 
-        $old  = json_decode((string) get_post_meta($post_id, LEM_META_KEY, true), true);
+        $old  = json_decode((string) get_post_meta($post_id, CLEM_META_KEY, true), true);
         $seen = [];
         foreach ((array) ($old['entities'] ?? []) as $m) {
             $key = ($m['id'] ?? 0) . '|' . ($m['type'] ?? '');
@@ -1040,15 +1051,15 @@ class LEM_Scanner {
         unset($match);
 
         if (empty($found)) {
-            delete_post_meta($post_id, LEM_META_KEY);
+            delete_post_meta($post_id, CLEM_META_KEY);
             return 0;
         }
 
         // wp_slash: update_post_meta снимает слэши и ломает экранирование в JSON
-        update_post_meta($post_id, LEM_META_KEY, wp_slash(wp_json_encode([
+        update_post_meta($post_id, CLEM_META_KEY, wp_slash(wp_json_encode([
             'entities'     => $found,
             'scanned_at'   => $now,
-            'list_version' => get_option('lem_list_version', ''),
+            'list_version' => get_option('clem_list_version', ''),
         ], JSON_UNESCAPED_UNICODE)));
 
         return $fresh;
@@ -1060,7 +1071,7 @@ class LEM_Scanner {
             return [];
         }
 
-        $settings   = lem()->get_settings();
+        $settings   = clem_plugin()->get_settings();
         $post_types = $settings['post_types'] ?: [''];
         if (!in_array($post->post_type, $post_types, true)) {
             return [];
@@ -1077,7 +1088,7 @@ class LEM_Scanner {
      * ------------------------------------------------------------------ */
 
     public function on_post_publish($new_status, $old_status, $post) {
-        $settings = lem()->get_settings();
+        $settings = clem_plugin()->get_settings();
         if (!$settings['auto_scan_on_publish']) {
             return;
         }
@@ -1115,17 +1126,17 @@ class LEM_Scanner {
             $budget = min(15.0, $max * 0.5);
             $budget = max(2.0, min($budget, $max - 3.0));
         }
-        return (float) apply_filters('lem_scan_time_budget', $budget, $max);
+        return (float) apply_filters('clem_scan_time_budget', $budget, $max);
     }
 
     public function ajax_scan_init() {
-        check_ajax_referer('lem_scan_nonce', 'nonce');
+        check_ajax_referer('clem_scan_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized');
         }
 
         global $wpdb;
-        $settings   = lem()->get_settings();
+        $settings   = clem_plugin()->get_settings();
         $post_types = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
@@ -1160,7 +1171,7 @@ class LEM_Scanner {
     }
 
     public function ajax_scan_process() {
-        check_ajax_referer('lem_scan_nonce', 'nonce');
+        check_ajax_referer('clem_scan_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized');
         }
@@ -1171,7 +1182,7 @@ class LEM_Scanner {
         }
 
         global $wpdb;
-        $settings     = lem()->get_settings();
+        $settings     = clem_plugin()->get_settings();
         $post_types   = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
@@ -1197,7 +1208,7 @@ class LEM_Scanner {
         )) ;
         /* phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber */
 
-        $entities = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
+        $entities = clem_plugin()->entities->get_for_marking(!empty($settings['mark_excluded']));
         $now      = current_time('mysql');
 
         $budget    = self::time_budget();
@@ -1251,7 +1262,7 @@ class LEM_Scanner {
     }
 
     public function ajax_scan_cancel() {
-        check_ajax_referer('lem_scan_nonce', 'nonce');
+        check_ajax_referer('clem_scan_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized');
         }
@@ -1272,7 +1283,7 @@ class LEM_Scanner {
     public function batch_scan($args = []) {
         global $wpdb;
 
-        $settings     = lem()->get_settings();
+        $settings     = clem_plugin()->get_settings();
         $post_types   = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
@@ -1304,7 +1315,7 @@ class LEM_Scanner {
             return ['posts_with_matches' => 0, 'total_mentions' => 0];
         }
 
-        $entities = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
+        $entities = clem_plugin()->entities->get_for_marking(!empty($settings['mark_excluded']));
         $now      = current_time('mysql');
         $offset   = 0;
         $posts_with_matches = 0;
@@ -1334,7 +1345,7 @@ class LEM_Scanner {
                     $total_mentions += count($found);
                 } else {
                     if (!$dry_run) {
-                        delete_post_meta($post->ID, LEM_META_KEY);
+                        delete_post_meta($post->ID, CLEM_META_KEY);
                     }
                 }
             }

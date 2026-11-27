@@ -1,19 +1,19 @@
 <?php
 defined('ABSPATH') || exit;
 
-class LEM_Link_Scanner {
+class CLEM_Link_Scanner {
 
-    const SCAN_STATE_KEY   = 'lem_banned_scan_state';
-    const REMOVE_STATE_KEY = 'lem_banned_remove_state';
+    const SCAN_STATE_KEY   = 'clem_banned_scan_state';
+    const REMOVE_STATE_KEY = 'clem_banned_remove_state';
 
     public function __construct() {
-        add_action('wp_ajax_lem_banned_scan_init',    [$this, 'ajax_scan_init']);
-        add_action('wp_ajax_lem_banned_scan_process', [$this, 'ajax_scan_process']);
-        add_action('wp_ajax_lem_banned_scan_cancel',  [$this, 'ajax_scan_cancel']);
+        add_action('wp_ajax_clem_banned_scan_init',    [$this, 'ajax_scan_init']);
+        add_action('wp_ajax_clem_banned_scan_process', [$this, 'ajax_scan_process']);
+        add_action('wp_ajax_clem_banned_scan_cancel',  [$this, 'ajax_scan_cancel']);
 
-        add_action('wp_ajax_lem_banned_remove_init',    [$this, 'ajax_remove_init']);
-        add_action('wp_ajax_lem_banned_remove_process', [$this, 'ajax_remove_process']);
-        add_action('wp_ajax_lem_banned_remove_post',    [$this, 'ajax_remove_post']);
+        add_action('wp_ajax_clem_banned_remove_init',    [$this, 'ajax_remove_init']);
+        add_action('wp_ajax_clem_banned_remove_process', [$this, 'ajax_remove_process']);
+        add_action('wp_ajax_clem_banned_remove_post',    [$this, 'ajax_remove_post']);
     }
 
     /* ------------------------------------------------------------------
@@ -57,26 +57,26 @@ class LEM_Link_Scanner {
      */
     public function scan_post_content($content, $banned_domains, $accounts = null) {
         if ($accounts === null) {
-            $accounts = lem()->banned_sites->get_accounts();
+            $accounts = clem_plugin()->banned_sites->get_accounts();
         }
         $links = $this->extract_links($content);
         $found = [];
         foreach ($links as $link) {
-            $matched = LEM_Banned_Sites::is_domain_banned($link['host'], $banned_domains);
+            $matched = CLEM_Banned_Sites::is_domain_banned($link['host'], $banned_domains);
             if ($matched === null) {
                 // Домен разрешён, но ссылка может вести на аккаунт организации
-                $matched = LEM_Banned_Sites::match_account($link['host'], $link['url'], $accounts);
+                $matched = CLEM_Banned_Sites::match_account($link['host'], $link['url'], $accounts);
             }
             if ($matched !== null) {
                 // Реестр владельца: ссылка на сайт иноагента законом не запрещена,
                 // а ссылка на ресурс нежелательной организации это уже риск
-                $type = lem()->banned_sites->type_of($matched);
+                $type = clem_plugin()->banned_sites->type_of($matched);
                 $found[] = [
                     'url'            => $link['url'],
                     'anchor'         => $link['anchor'],
                     'matched_domain' => $matched,
                     'registry'       => $type,
-                    'removable'      => lem()->banned_sites->is_removable($type),
+                    'removable'      => clem_plugin()->banned_sites->is_removable($type),
                     'offset'         => $link['offset'],
                 ];
             }
@@ -94,7 +94,7 @@ class LEM_Link_Scanner {
      */
     public function remove_banned_links($content, $banned_domains, $accounts = null) {
         if ($accounts === null) {
-            $accounts = lem()->banned_sites->get_accounts();
+            $accounts = clem_plugin()->banned_sites->get_accounts();
         }
         $pattern = '/<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)<\/a>/si';
         return preg_replace_callback($pattern, function ($m) use ($banned_domains, $accounts) {
@@ -105,15 +105,15 @@ class LEM_Link_Scanner {
                 return $m[0];
             }
             $host = mb_strtolower(preg_replace('/^www\./i', '', $host));
-            $matched = LEM_Banned_Sites::is_domain_banned($host, $banned_domains);
+            $matched = CLEM_Banned_Sites::is_domain_banned($host, $banned_domains);
             if ($matched === null) {
-                $matched = LEM_Banned_Sites::match_account($host, $url, $accounts);
+                $matched = CLEM_Banned_Sites::match_account($host, $url, $accounts);
             }
             // Ресурсы иноагентов из текста не вычищаем: ссылка на них разрешена,
             // достаточно маркировки. Иначе кнопка «удалить» снесла бы
             // нормальные ссылки на издания
-            if ($matched !== null && lem()->banned_sites->is_removable(
-                    lem()->banned_sites->type_of($matched))) {
+            if ($matched !== null && clem_plugin()->banned_sites->is_removable(
+                    clem_plugin()->banned_sites->type_of($matched))) {
                 return $m[2]; // только текст ссылки
             }
             return $m[0];
@@ -133,7 +133,7 @@ class LEM_Link_Scanner {
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT post_id, meta_value FROM {$wpdb->postmeta}
              WHERE meta_key = %s AND meta_value != '' LIMIT 5000",
-            LEM_BANNED_LINKS_META_KEY
+            CLEM_BANNED_LINKS_META_KEY
         )) ;
         /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
 
@@ -159,9 +159,9 @@ class LEM_Link_Scanner {
      * определяем по текущему списку ресурсов.
      */
     public static function link_is_removable(array $link) {
-        $index = lem()->banned_sites->get_index();
+        $index = clem_plugin()->banned_sites->get_index();
         $key = $link['matched_domain'] ?? '';
-        return array_key_exists($key, $index) && lem()->banned_sites->is_removable($index[$key]);
+        return array_key_exists($key, $index) && clem_plugin()->banned_sites->is_removable($index[$key]);
     }
 
     /**
@@ -198,13 +198,13 @@ class LEM_Link_Scanner {
         // (ресурсы иноагентов), и отчёт должен их видеть
         $left = $this->scan_post_content($cleaned, $banned_domains);
         if (!empty($left)) {
-            update_post_meta($post_id, LEM_BANNED_LINKS_META_KEY, wp_slash(wp_json_encode([
+            update_post_meta($post_id, CLEM_BANNED_LINKS_META_KEY, wp_slash(wp_json_encode([
                 'links' => $left, 'scanned_at' => current_time('mysql'),
             ], JSON_UNESCAPED_UNICODE)));
         } else {
-            delete_post_meta($post_id, LEM_BANNED_LINKS_META_KEY);
+            delete_post_meta($post_id, CLEM_BANNED_LINKS_META_KEY);
         }
-        lem()->cache->purge_post($post_id);
+        clem_plugin()->cache->purge_post($post_id);
 
         return 1;
     }
@@ -214,18 +214,18 @@ class LEM_Link_Scanner {
      * ------------------------------------------------------------------ */
 
     public function ajax_scan_init() {
-        check_ajax_referer('lem_scan_nonce', 'nonce');
+        check_ajax_referer('clem_scan_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Нет доступа');
         }
 
-        $banned = lem()->banned_sites->get_all_domains();
+        $banned = clem_plugin()->banned_sites->get_all_domains();
         if (empty($banned)) {
             wp_send_json_error('Реестр ресурсов пуст. Добавьте домены перед сканированием.');
         }
 
         global $wpdb;
-        $settings     = lem()->get_settings();
+        $settings     = clem_plugin()->get_settings();
         $post_types   = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
@@ -250,7 +250,7 @@ class LEM_Link_Scanner {
     }
 
     public function ajax_scan_process() {
-        check_ajax_referer('lem_scan_nonce', 'nonce');
+        check_ajax_referer('clem_scan_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Нет доступа');
         }
@@ -261,10 +261,10 @@ class LEM_Link_Scanner {
         }
 
         global $wpdb;
-        $settings     = lem()->get_settings();
+        $settings     = clem_plugin()->get_settings();
         $post_types   = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
-        $banned       = lem()->banned_sites->get_all_domains();
+        $banned       = clem_plugin()->banned_sites->get_all_domains();
 
         $batch_size = 25;
         $offset     = (int) $state['offset'];
@@ -284,7 +284,7 @@ class LEM_Link_Scanner {
 
         $now = current_time('mysql');
 
-        $budget    = LEM_Scanner::time_budget();
+        $budget    = CLEM_Scanner::time_budget();
         $start     = microtime(true);
         $processed = 0;
 
@@ -299,11 +299,11 @@ class LEM_Link_Scanner {
                         'scanned_at' => $now,
                     ], JSON_UNESCAPED_UNICODE);
 
-                    update_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY, wp_slash($meta_json));
+                    update_post_meta($post->ID, CLEM_BANNED_LINKS_META_KEY, wp_slash($meta_json));
                     $state['posts_with_links']++;
                     $state['total_links'] += count($found);
                 } else {
-                    delete_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY);
+                    delete_post_meta($post->ID, CLEM_BANNED_LINKS_META_KEY);
                 }
 
                 $processed++;
@@ -334,7 +334,7 @@ class LEM_Link_Scanner {
     }
 
     public function ajax_scan_cancel() {
-        check_ajax_referer('lem_scan_nonce', 'nonce');
+        check_ajax_referer('clem_scan_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Нет доступа');
         }
@@ -352,7 +352,7 @@ class LEM_Link_Scanner {
      * ------------------------------------------------------------------ */
 
     public function ajax_remove_init() {
-        check_ajax_referer('lem_scan_nonce', 'nonce');
+        check_ajax_referer('clem_scan_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Нет доступа');
         }
@@ -374,7 +374,7 @@ class LEM_Link_Scanner {
     }
 
     public function ajax_remove_process() {
-        check_ajax_referer('lem_scan_nonce', 'nonce');
+        check_ajax_referer('clem_scan_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Нет доступа');
         }
@@ -385,7 +385,7 @@ class LEM_Link_Scanner {
         }
 
         global $wpdb;
-        $banned = lem()->banned_sites->get_all_domains();
+        $banned = clem_plugin()->banned_sites->get_all_domains();
 
         // Берём батч из 20 материалов, где есть что удалять
         $post_ids = array_slice(self::posts_with_removable(), 0, 20);
@@ -421,7 +421,7 @@ class LEM_Link_Scanner {
      * AJAX: удаление ссылок из одного поста.
      */
     public function ajax_remove_post() {
-        check_ajax_referer('lem_scan_nonce', 'nonce');
+        check_ajax_referer('clem_scan_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Нет доступа');
         }
@@ -431,7 +431,7 @@ class LEM_Link_Scanner {
             wp_send_json_error('Неверный ID статьи');
         }
 
-        $banned = lem()->banned_sites->get_all_domains();
+        $banned = clem_plugin()->banned_sites->get_all_domains();
         $result = $this->clean_post($post_id, $banned);
         wp_send_json_success(['cleaned' => $result, 'post_id' => $post_id]);
     }
@@ -443,13 +443,13 @@ class LEM_Link_Scanner {
     public function batch_scan($args = []) {
         global $wpdb;
 
-        $settings     = lem()->get_settings();
+        $settings     = clem_plugin()->get_settings();
         $post_types   = $settings['post_types'] ?: [''];
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
 
         $batch_size = (int) ($args['batch'] ?? 500);
         $log        = $args['log'] ?? function ($msg) {};
-        $banned     = lem()->banned_sites->get_all_domains();
+        $banned     = clem_plugin()->banned_sites->get_all_domains();
 
         if (empty($banned)) {
             $log('Реестр ресурсов пуст.');
@@ -464,11 +464,11 @@ class LEM_Link_Scanner {
             $now     = current_time('mysql');
             if (!empty($found)) {
                 // wp_slash: update_post_meta снимает слэши и иначе ломает экранирование кавычек в JSON
-                update_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY, wp_slash(wp_json_encode([
+                update_post_meta($post->ID, CLEM_BANNED_LINKS_META_KEY, wp_slash(wp_json_encode([
                     'links' => $found, 'scanned_at' => $now,
                 ], JSON_UNESCAPED_UNICODE)));
             } else {
-                delete_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY);
+                delete_post_meta($post->ID, CLEM_BANNED_LINKS_META_KEY);
             }
             return ['posts_with_links' => empty($found) ? 0 : 1, 'total_links' => count($found), 'total_posts' => 1];
         }
@@ -512,11 +512,11 @@ class LEM_Link_Scanner {
                     $meta_json = wp_json_encode([
                         'links' => $found, 'scanned_at' => $now,
                     ], JSON_UNESCAPED_UNICODE);
-                    update_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY, wp_slash($meta_json));
+                    update_post_meta($post->ID, CLEM_BANNED_LINKS_META_KEY, wp_slash($meta_json));
                     $posts_with_links++;
                     $total_links += count($found);
                 } else {
-                    delete_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY);
+                    delete_post_meta($post->ID, CLEM_BANNED_LINKS_META_KEY);
                 }
             }
 
@@ -544,7 +544,7 @@ class LEM_Link_Scanner {
         $batch_size = (int) ($args['batch'] ?? 100);
         $dry_run    = !empty($args['dry_run']);
         $log        = $args['log'] ?? function ($msg) {};
-        $banned     = lem()->banned_sites->get_all_domains();
+        $banned     = clem_plugin()->banned_sites->get_all_domains();
 
         if (!empty($args['post_id'])) {
             if ($dry_run) {

@@ -18,8 +18,8 @@ require_once __DIR__ . '/../includes/class-lem-banned-sites.php';
 require_once __DIR__ . '/../includes/class-lem-scanner.php';
 require_once __DIR__ . '/../includes/class-lem-importer.php';
 
-/** REGISTRY_TYPES живёт в LEM_Plugin, который тянет за собой весь WordPress. */
-class LEM_Plugin { const REGISTRY_TYPES = ['inoagent', 'extremist', 'terrorist', 'undesirable']; }
+/** REGISTRY_TYPES живёт в CLEM_Plugin, который тянет за собой весь WordPress. */
+class CLEM_Plugin { const REGISTRY_TYPES = ['inoagent', 'extremist', 'terrorist', 'undesirable']; }
 
 $fail = 0;
 function ok($d, $cond, $detail = '') {
@@ -53,7 +53,7 @@ if (is_array($sites)) {
     foreach ($sites as $entry) {
         if (trim((string) ($entry['domain'] ?? '')) === '') { $no_domain++; }
         // Тип должен пережить очистку: иначе домен станет «добавленным вручную»
-        if (LEM_Banned_Sites::clean_registry($entry['type'] ?? '') === '') { $bad_type++; }
+        if (CLEM_Banned_Sites::clean_registry($entry['type'] ?? '') === '') { $bad_type++; }
     }
     ok('у всех записей есть домен', $no_domain === 0, $no_domain ? "без домена: $no_domain" : '');
     ok('у всех записей понятный реестр', $bad_type === 0, $bad_type ? "без реестра: $bad_type" : '');
@@ -61,7 +61,7 @@ if (is_array($sites)) {
     // Домен должен разбираться так же, как при вставке в базу
     $broken = [];
     foreach ($sites as $entry) {
-        $t = LEM_Banned_Sites::split_target($entry['domain']);
+        $t = CLEM_Banned_Sites::split_target($entry['domain']);
         if ($t['domain'] === '') { $broken[] = $entry['domain']; }
     }
     ok('все домены разбираются', empty($broken),
@@ -93,7 +93,7 @@ if (is_array($brands)) {
     $branch_alias = [];
     foreach (['extremist-orgs.json', 'undesirable-orgs.json'] as $f) {
         foreach ((array) load($f) as $e) {
-            if (!LEM_Importer::is_local_branch($e['name'] ?? '')) {
+            if (!CLEM_Importer::is_local_branch($e['name'] ?? '')) {
                 continue;
             }
             foreach (($e['aliases'] ?? []) as $a) {
@@ -124,7 +124,7 @@ foreach ($files as $file => $type) {
         $name = trim((string) ($entry['name'] ?? $entry['fullName'] ?? ''));
         if ($name === '') { $no_name++; continue; }
         // Обрывки описаний со страниц Минюста в комплект попадать не должны
-        if (LEM_Importer::is_junk_name($name)) { $junk++; }
+        if (CLEM_Importer::is_junk_name($name)) { $junk++; }
     }
     ok("$file: записи с именем", $no_name === 0, count($data) . " записей" . ($no_name ? ", без имени: $no_name" : ''));
     ok("$file: без обрывков описаний", $junk === 0, $junk ? "мусорных: $junk" : '');

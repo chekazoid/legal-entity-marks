@@ -1,9 +1,9 @@
 <?php
 defined('ABSPATH') || exit;
 
-class LEM_Entities {
+class CLEM_Entities {
 
-    const TRANSIENT_KEY = 'lem_entities_active';
+    const TRANSIENT_KEY = 'clem_entities_active';
     const TRANSIENT_TTL = HOUR_IN_SECONDS;
 
     private static $request_cache = [];
@@ -19,7 +19,7 @@ class LEM_Entities {
      *                               Нужно для опции «маркировать бывших».
      */
     public function get_for_marking($include_excluded = false) {
-        $people = in_array(lem()->get_settings()['fedsfm_people_mode'] ?? 'off', ['track', 'mark'], true);
+        $people = in_array(clem_plugin()->get_settings()['fedsfm_people_mode'] ?? 'off', ['track', 'mark'], true);
         $key = self::TRANSIENT_KEY . ($include_excluded ? '_all' : '') . ($people ? '_people' : '');
         if (array_key_exists($key, self::$request_cache)) {
             return self::$request_cache[$key];
@@ -33,7 +33,7 @@ class LEM_Entities {
         }
 
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
         $where = ($include_excluded ? '1=1' : 'is_active = 1')
             . ' AND (registry_present = 1 OR date_excluded IS NOT NULL OR is_manual = 1)';
         $where .= $people
@@ -72,11 +72,11 @@ class LEM_Entities {
             return [];
         }
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
         $in = implode(',', array_fill(0, count($ids), '%d'));
         $where = ($include_excluded ? '1=1' : 'is_active = 1')
             . ' AND (registry_present = 1 OR date_excluded IS NOT NULL OR is_manual = 1)';
-        $people = in_array(lem()->get_settings()['fedsfm_people_mode'] ?? 'off', ['track', 'mark'], true);
+        $people = in_array(clem_plugin()->get_settings()['fedsfm_people_mode'] ?? 'off', ['track', 'mark'], true);
         $where .= $people
             ? " AND (type <> 'fedsfm_person' OR is_active = 1)"
             : " AND type <> 'fedsfm_person'";
@@ -102,12 +102,12 @@ class LEM_Entities {
         delete_transient(self::TRANSIENT_KEY . '_all');
         delete_transient(self::TRANSIENT_KEY . '_people');
         delete_transient(self::TRANSIENT_KEY . '_all_people');
-        if (isset(lem()->banned_sites)) { lem()->banned_sites->flush_cache(); }
+        if (isset(clem_plugin()->banned_sites)) { clem_plugin()->banned_sites->flush_cache(); }
     }
 
     public function get_by_id($id) {
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $row   = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $id), ARRAY_A) ;
         /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
@@ -119,7 +119,7 @@ class LEM_Entities {
 
     public function insert($data) {
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
 
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. */
         $result = $wpdb->insert($table, [
@@ -145,7 +145,7 @@ class LEM_Entities {
 
     public function update($id, $data) {
         global $wpdb;
-        $table  = $wpdb->prefix . LEM_TABLE;
+        $table  = $wpdb->prefix . CLEM_TABLE;
         $update = [];
 
         foreach (['type', 'name', 'is_person', 'status_text', 'source_url', 'date_included', 'date_excluded', 'is_active'] as $field) {
@@ -168,7 +168,7 @@ class LEM_Entities {
 
     public function delete($id) {
         global $wpdb;
-        $table  = $wpdb->prefix . LEM_TABLE;
+        $table  = $wpdb->prefix . CLEM_TABLE;
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
         $result = $wpdb->delete($table, ['id' => $id]) ;
         /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
@@ -180,7 +180,7 @@ class LEM_Entities {
 
     public function count_by_type() {
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         $rows  = $wpdb->get_results(
             "SELECT type, is_active, COUNT(*) as cnt FROM $table GROUP BY type, is_active ORDER BY type",
@@ -197,7 +197,7 @@ class LEM_Entities {
 
     public function search($args = []) {
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
 
         $type = (string) ($args['type'] ?? '');
         $has_active = isset($args['is_active']);

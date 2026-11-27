@@ -8,7 +8,7 @@ defined('ABSPATH') || exit;
  * ссылка на нежелательную организацию может быть истолкована как участие
  * в её деятельности, поэтому важно видеть список таких материалов.
  */
-class LEM_Report {
+class CLEM_Report {
 
     /** Разобранная мета в пределах запроса: страница отчёта строит её дважды. */
     private $rows_cache  = null;
@@ -19,7 +19,7 @@ class LEM_Report {
      * съедает память; предел можно поднять фильтром.
      */
     private function max_posts() {
-        return (int) apply_filters('lem_report_max_posts', 5000);
+        return (int) apply_filters('clem_report_max_posts', 5000);
     }
 
     /**
@@ -32,7 +32,7 @@ class LEM_Report {
     public function get_rows($args = []) {
         global $wpdb;
 
-        $settings = lem()->get_settings();
+        $settings = clem_plugin()->get_settings();
         $track    = $settings['track_registries'];
 
         $registry = $args['registry'] ?? '';
@@ -57,14 +57,14 @@ class LEM_Report {
                    AND p.post_status IN ('publish','draft','pending','private','future')
                  ORDER BY p.post_date DESC
                  LIMIT %d",
-                LEM_META_KEY, $this->max_posts()
+                CLEM_META_KEY, $this->max_posts()
             )) ;
             /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
         }
         $rows = $this->rows_cache;
 
         $entities = [];
-        foreach (lem()->entities->get_for_marking(true) as $e) {
+        foreach (clem_plugin()->entities->get_for_marking(true) as $e) {
             $entities[(int) $e['id']] = $e;
         }
 
@@ -76,13 +76,13 @@ class LEM_Report {
             if (empty($meta['entities'])) {
                 continue;
             }
-            $overrides = LEM_Frontend::get_overrides($row->ID);
+            $overrides = CLEM_Frontend::get_overrides($row->ID);
 
             foreach ($meta['entities'] as $match) {
                 $eid = (int) ($match['id'] ?? 0);
                 if (!isset($entities[$eid])) { continue; }
                 $match = array_merge($match, $entities[$eid]);
-                if (!LEM_Scanner::is_current_mention($match, $settings)) { continue; }
+                if (!CLEM_Scanner::is_current_mention($match, $settings)) { continue; }
                 $type = $match['type'] ?? '';
                 if (!in_array($type, $track, true)) {
                     continue; // реестр не отслеживается
@@ -91,7 +91,7 @@ class LEM_Report {
                     continue;
                 }
 
-                $is_marked = LEM_Frontend::should_mark($match, $settings, $overrides);
+                $is_marked = CLEM_Frontend::should_mark($match, $settings, $overrides);
 
                 if ($mode === 'marked' && !$is_marked) {
                     continue;
@@ -251,15 +251,15 @@ class LEM_Report {
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT post_id, meta_value FROM {$wpdb->postmeta}
              WHERE meta_key = %s AND meta_value != '' LIMIT %d",
-            LEM_BANNED_LINKS_META_KEY, $this->max_posts()
+            CLEM_BANNED_LINKS_META_KEY, $this->max_posts()
         )) ;
         /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
 
         // Чей это ресурс: домены Минюст публикует вместе с записью реестра,
         // поэтому по ссылке видно организацию и её реестр
         $owners = [];
-        $sites  = $wpdb->prefix . 'lem_banned_sites';
-        $ents   = $wpdb->prefix . LEM_TABLE;
+        $sites  = $wpdb->prefix . 'clem_banned_sites';
+        $ents   = $wpdb->prefix . CLEM_TABLE;
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         foreach ($wpdb->get_results(
             "SELECT s.domain, s.account, s.label, e.name, e.type, e.first_seen, e.date_included
@@ -268,6 +268,9 @@ class LEM_Report {
         ) as $s) {
         /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
             $key = $s->account !== '' ? $s->domain . '/' . $s->account : $s->domain;
+            if (CLEM_Banned_Sites::requires_account($key)) {
+                continue;
+            }
             $owners[$key] = [
                 'org'           => $s->name ?: $s->label,
                 'type'          => $s->type ?: '',

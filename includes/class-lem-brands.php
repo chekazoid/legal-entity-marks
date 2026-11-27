@@ -10,9 +10,9 @@ defined('ABSPATH') || exit;
  * при обновлении плагина оттуда доезжают новые правила, но правки
  * пользователя не перетираются.
  */
-class LEM_Brands {
+class CLEM_Brands {
 
-    const OPTION = 'lem_brand_rules';
+    const OPTION = 'clem_brand_rules';
 
     /**
      * Все правила. При первом обращении наполняются из комплектного файла.
@@ -31,7 +31,7 @@ class LEM_Brands {
     public function save_rules($rules) {
         $clean = array_values(array_filter(array_map([$this, 'normalize'], (array) $rules)));
         update_option(self::OPTION, $clean);
-        lem()->entities->flush_cache();
+        clem_plugin()->entities->flush_cache();
         return $clean;
     }
 
@@ -39,7 +39,7 @@ class LEM_Brands {
      * Правила из комплектного файла (стартовое наполнение).
      */
     public function bundled() {
-        $file = LEM_DATA_DIR . '/brand-aliases.json';
+        $file = CLEM_DATA_DIR . '/brand-aliases.json';
         if (!file_exists($file)) {
             return [];
         }
@@ -77,7 +77,7 @@ class LEM_Brands {
         }
         if ($added > 0) {
             update_option(self::OPTION, $current);
-            lem()->entities->flush_cache();
+            clem_plugin()->entities->flush_cache();
         }
         return $added;
     }
@@ -92,7 +92,7 @@ class LEM_Brands {
         if ($match === '') {
             return 0;
         }
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
         return (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM $table WHERE name LIKE %s",

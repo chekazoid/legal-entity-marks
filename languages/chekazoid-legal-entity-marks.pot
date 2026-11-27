@@ -2,21 +2,21 @@
 # This file is distributed under the GPL-2.0+.
 msgid ""
 msgstr ""
-"Project-Id-Version: Legal Entity Marks 1.15.2\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/legal-entity-marks\n"
+"Project-Id-Version: Chekazoid Legal Entity Marks 1.16.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/chekazoid-legal-entity-marks\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-26T18:43:39+00:00\n"
+"POT-Creation-Date: 2026-11-27T15:49:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: legal-entity-marks\n"
+"X-Domain: chekazoid-legal-entity-marks\n"
 
 #. Plugin Name of the plugin
 #: legal-entity-marks.php
-msgid "Legal Entity Marks"
+msgid "Chekazoid Legal Entity Marks"
 msgstr ""
 
 #. Plugin URI of the plugin
@@ -39,222 +39,229 @@ msgstr ""
 msgid "https://shliapuzhnikov.com"
 msgstr ""
 
-#: admin/class-lem-admin.php:28
 #: admin/class-lem-admin.php:29
+#: admin/class-lem-admin.php:30
 #: includes/class-lem-metabox.php:42
 #: includes/class-lem-postlist.php:98
 msgid "Маркировка"
 msgstr ""
 
-#: admin/class-lem-admin.php:37
+#: admin/class-lem-admin.php:40
 msgid "Обзор"
 msgstr ""
 
-#: admin/class-lem-admin.php:38
-#: admin/views/banned-links.php:110
-#: admin/views/banned-links.php:249
-#: admin/views/banned-links.php:313
+#: admin/class-lem-admin.php:41
+#: admin/views/banned-links.php:118
+#: admin/views/banned-links.php:258
+#: admin/views/banned-links.php:322
 #: admin/views/report.php:136
 #: admin/views/settings.php:59
 msgid "Реестр"
 msgstr ""
 
-#: admin/class-lem-admin.php:39
+#: admin/class-lem-admin.php:43
 #: admin/views/scanner.php:6
 msgid "Сканер"
 msgstr ""
 
-#: admin/class-lem-admin.php:40
+#: admin/class-lem-admin.php:45
 msgid "Ссылки"
 msgstr ""
 
-#: admin/class-lem-admin.php:41
+#: admin/class-lem-admin.php:47
 #: admin/views/report.php:48
 msgid "Упоминания"
 msgstr ""
 
-#: admin/class-lem-admin.php:42
+#: admin/class-lem-admin.php:49
 #: admin/views/brands.php:7
 msgid "Бренды СМИ"
 msgstr ""
 
-#: admin/class-lem-admin.php:43
+#: admin/class-lem-admin.php:51
 msgid "Настройки"
 msgstr ""
 
-#: admin/class-lem-admin.php:163
+#: admin/class-lem-admin.php:183
 msgid "Правила сохранены. Алиасов применено: "
 msgstr ""
 
-#: admin/class-lem-admin.php:164
+#: admin/class-lem-admin.php:184
 msgid ". Не забудьте пересканировать статьи."
 msgstr ""
 
-#: admin/class-lem-admin.php:168
+#: admin/class-lem-admin.php:188
 msgid "Не нашли ни одной записи в реестре (проверьте текст в «Искать в названии»): "
 msgstr ""
 
-#: admin/class-lem-admin.php:181
-#: admin/class-lem-admin.php:194
-#: admin/class-lem-admin.php:226
-#: admin/class-lem-admin.php:272
+#: admin/class-lem-admin.php:201
+#: admin/class-lem-admin.php:214
+#: admin/class-lem-admin.php:246
+#: admin/class-lem-admin.php:295
 msgid "Маркировка:"
 msgstr ""
 
-#: admin/class-lem-admin.php:182
+#: admin/class-lem-admin.php:202
 msgid "Реестры обновились не полностью. "
 msgstr ""
 
-#: admin/class-lem-admin.php:195
+#: admin/class-lem-admin.php:215
 msgid "Реестр сущностей пуст! Перейдите в Маркировка > Обзор для импорта данных."
 msgstr ""
 
 #. translators: 1: newly mentioned registry entries, 2: number of articles.
-#: admin/class-lem-admin.php:229
+#: admin/class-lem-admin.php:249
 #, php-format
 msgid "После обновления реестров в материалах сайта нашлись новые организации: %1$d в %2$d публикациях."
 msgstr ""
 
-#: admin/class-lem-admin.php:232
+#: admin/class-lem-admin.php:252
 msgid "Посмотреть список"
 msgstr ""
 
-#: admin/class-lem-admin.php:233
+#: admin/class-lem-admin.php:253
 msgid "Скрыть"
 msgstr ""
 
-#: admin/class-lem-admin.php:256
+#: admin/class-lem-admin.php:279
 msgid "Реестры ни разу не обновлялись из источников, а плагин установлен "
 msgstr ""
 
-#: admin/class-lem-admin.php:258
+#: admin/class-lem-admin.php:281
 msgid " назад. Скорее всего не работает WP-Cron, и списки останутся на дате сборки плагина."
 msgstr ""
 
-#: admin/class-lem-admin.php:263
+#: admin/class-lem-admin.php:286
 msgid "Реестры не обновлялись "
 msgstr ""
 
-#: admin/class-lem-admin.php:264
+#: admin/class-lem-admin.php:287
 msgid ". Обычно это значит, что не работает WP-Cron."
 msgstr ""
 
-#: admin/class-lem-admin.php:273
+#: admin/class-lem-admin.php:296
 msgid "Обновить сейчас"
 msgstr ""
 
-#: admin/class-lem-admin.php:274
+#: admin/class-lem-admin.php:297
 msgid "или запустите"
 msgstr ""
 
-#: admin/class-lem-admin.php:435
+#: admin/class-lem-admin.php:466
 msgid "Настройки сохранены."
 msgstr ""
 
-#: admin/class-lem-admin.php:442
+#: admin/class-lem-admin.php:473
 msgid "Правила поиска изменились. Запустите пересканирование в разделе «Сканер», "
 msgstr ""
 
-#: admin/class-lem-admin.php:443
+#: admin/class-lem-admin.php:474
 msgid "иначе для ранее отсканированных статей останется прежний результат."
 msgstr ""
 
-#: admin/class-lem-admin.php:453
+#: admin/class-lem-admin.php:484
 msgid "Не выбран ни один реестр: плагин ничего не будет ни маркировать, ни отслеживать."
 msgstr ""
 
-#: admin/class-lem-admin.php:460
+#: admin/class-lem-admin.php:491
 msgid "Маркировка отключена полностью. Упоминания будут видны только в разделе «Упоминания»."
 msgstr ""
 
-#: admin/class-lem-admin.php:469
-#: admin/class-lem-admin.php:502
-#: admin/class-lem-admin.php:517
-#: admin/class-lem-admin.php:550
-#: admin/class-lem-admin.php:565
+#: admin/class-lem-admin.php:500
+#: admin/class-lem-admin.php:533
+#: admin/class-lem-admin.php:548
 #: admin/class-lem-admin.php:590
-#: admin/class-lem-admin.php:625
-#: admin/class-lem-admin.php:640
-#: admin/class-lem-admin.php:651
-#: admin/class-lem-admin.php:682
-#: admin/class-lem-admin.php:697
+#: admin/class-lem-admin.php:615
+#: admin/class-lem-admin.php:653
+#: admin/class-lem-admin.php:668
+#: admin/class-lem-admin.php:679
+#: admin/class-lem-admin.php:717
+#: admin/class-lem-admin.php:732
 msgid "Нет доступа"
 msgstr ""
 
-#: admin/class-lem-admin.php:483
+#: admin/class-lem-admin.php:514
 msgid "Укажите название"
 msgstr ""
 
-#: admin/class-lem-admin.php:494
+#: admin/class-lem-admin.php:525
 msgid "Не удалось создать запись"
 msgstr ""
 
-#: admin/class-lem-admin.php:510
-#: admin/class-lem-admin.php:690
+#: admin/class-lem-admin.php:541
+#: admin/class-lem-admin.php:725
 msgid "Неверный ID"
 msgstr ""
 
-#: admin/class-lem-admin.php:523
+#: admin/class-lem-admin.php:558
 msgid ". Из записей реестра добавлено доменов: "
 msgstr ""
 
-#: admin/class-lem-admin.php:526
+#: admin/class-lem-admin.php:562
 msgid ". Проверка архива запущена в фоне"
 msgstr ""
 
-#: admin/class-lem-admin.php:527
+#: admin/class-lem-admin.php:564
 msgid "Все реестры обновлены"
 msgstr ""
 
-#: admin/class-lem-admin.php:529
+#: admin/class-lem-admin.php:566
 msgid "Основные реестры обновлены"
 msgstr ""
 
-#: admin/class-lem-admin.php:532
+#: admin/class-lem-admin.php:569
 msgid ". Физлица Росфинмониторинга не обновлены: "
 msgstr ""
 
-#: admin/class-lem-admin.php:533
+#: admin/class-lem-admin.php:570
 msgid ". Физлица Росфинмониторинга загружаются отдельно в фоне"
 msgstr ""
 
-#: admin/class-lem-admin.php:539
+#: admin/class-lem-admin.php:576
 msgid "Завершено с ошибками"
 msgstr ""
 
-#: admin/class-lem-admin.php:599
+#: admin/class-lem-admin.php:627
 msgid "дата не указана"
 msgstr ""
 
-#: admin/class-lem-admin.php:600
+#: admin/class-lem-admin.php:628
 msgid "Канал доступен, последний срез: "
 msgstr ""
 
-#: admin/class-lem-admin.php:602
+#: admin/class-lem-admin.php:630
 msgid "Канал недоступен: "
 msgstr ""
 
-#: admin/class-lem-admin.php:608
+#: admin/class-lem-admin.php:636
 msgid "Выгрузка не удалась: "
 msgstr ""
 
-#: admin/class-lem-admin.php:609
+#: admin/class-lem-admin.php:637
 msgid "Тестовая выгрузка: "
 msgstr ""
 
-#: admin/class-lem-admin.php:609
+#: admin/class-lem-admin.php:637
 msgid " записей"
 msgstr ""
 
-#: admin/class-lem-admin.php:612
+#: admin/class-lem-admin.php:640
 msgid "Токен не задан, и для этих реестров он не нужен"
 msgstr ""
 
-#: admin/class-lem-admin.php:663
+#: admin/class-lem-admin.php:691
 msgid "Укажите домен"
 msgstr ""
 
-#: admin/class-lem-admin.php:674
+#: admin/class-lem-admin.php:696
+msgid "Укажите ссылку на конкретный аккаунт на площадке."
+msgstr ""
+
+#: admin/class-lem-admin.php:701
+msgid "Не удалось сохранить запись"
+msgstr ""
+
+#: admin/class-lem-admin.php:709
 msgid "Не удалось создать запись (возможно, домен уже существует)"
 msgstr ""
 
@@ -286,15 +293,15 @@ msgstr ""
 msgid "добавлен вручную"
 msgstr ""
 
-#: admin/views/banned-links.php:63
+#: admin/views/banned-links.php:71
 msgid "Ссылки на ресурсы из реестров"
 msgstr ""
 
-#: admin/views/banned-links.php:67
+#: admin/views/banned-links.php:75
 msgid "Реестр ресурсов"
 msgstr ""
 
-#: admin/views/banned-links.php:69
+#: admin/views/banned-links.php:77
 msgid ""
 "Ресурсы организаций из реестров. Часть приезжает автоматически: у записей\n"
 "            об иноагентах Минюст публикует ссылки на их сайты и аккаунты.\n"
@@ -302,17 +309,17 @@ msgid ""
 "            ("
 msgstr ""
 
-#: admin/views/banned-links.php:72
+#: admin/views/banned-links.php:80
 msgid ""
 "): помечен\n"
 "            будет этот аккаунт, а не весь телеграм или YouTube."
 msgstr ""
 
-#: admin/views/banned-links.php:76
+#: admin/views/banned-links.php:84
 msgid "Удаляются из текста не все."
 msgstr ""
 
-#: admin/views/banned-links.php:76
+#: admin/views/banned-links.php:84
 msgid ""
 "Ссылка на ресурс нежелательной\n"
 "            организации может толковаться как участие в её деятельности, её убирают.\n"
@@ -320,387 +327,244 @@ msgid ""
 "            и чистка её не трогает. Список удаляемых реестров задаётся в настройках."
 msgstr ""
 
-#: admin/views/banned-links.php:93
+#: admin/views/banned-links.php:101
 msgid "Добавить ресурс"
 msgstr ""
 
-#: admin/views/banned-links.php:94
+#: admin/views/banned-links.php:102
 msgid "Массовый импорт"
 msgstr ""
 
-#: admin/views/banned-links.php:95
+#: admin/views/banned-links.php:103
 msgid "Всего ресурсов:"
 msgstr ""
 
-#: admin/views/banned-links.php:100
-#: admin/views/banned-links.php:102
+#: admin/views/banned-links.php:108
+#: admin/views/banned-links.php:110
 msgid "Найти ресурс"
 msgstr ""
 
-#: admin/views/banned-links.php:109
+#: admin/views/banned-links.php:117
 msgid "Ресурс"
 msgstr ""
 
-#: admin/views/banned-links.php:111
-#: admin/views/banned-links.php:330
+#: admin/views/banned-links.php:119
+#: admin/views/banned-links.php:339
 msgid "Название организации"
 msgstr ""
 
-#: admin/views/banned-links.php:112
+#: admin/views/banned-links.php:120
 msgid "Добавлен"
 msgstr ""
 
-#: admin/views/banned-links.php:113
+#: admin/views/banned-links.php:121
 #: admin/views/entities.php:58
 msgid "Действия"
 msgstr ""
 
-#: admin/views/banned-links.php:128
-#: admin/views/banned-links.php:274
+#: admin/views/banned-links.php:136
+#: admin/views/banned-links.php:283
 msgid "не удаляется"
 msgstr ""
 
-#: admin/views/banned-links.php:135
+#: admin/views/banned-links.php:143
 #: admin/views/entities.php:73
 msgid "Изменить"
 msgstr ""
 
-#: admin/views/banned-links.php:137
+#: admin/views/banned-links.php:145
 #: admin/views/brands.php:47
 #: admin/views/entities.php:74
 msgid "Удалить"
 msgstr ""
 
-#: admin/views/banned-links.php:152
+#: admin/views/banned-links.php:160
 msgid "Ресурсы не найдены. Измените поиск или добавьте записи вручную."
 msgstr ""
 
-#: admin/views/banned-links.php:158
+#: admin/views/banned-links.php:166
 msgid "Сканер ссылок"
 msgstr ""
 
-#: admin/views/banned-links.php:160
+#: admin/views/banned-links.php:168
 msgid "Сканирует все опубликованные статьи и отмечает ссылки на ресурсы организаций из реестров."
 msgstr ""
 
-#: admin/views/banned-links.php:166
+#: admin/views/banned-links.php:174
 #: admin/views/scanner.php:17
 msgid "Сканировать все статьи"
 msgstr ""
 
-#: admin/views/banned-links.php:176
+#: admin/views/banned-links.php:184
 #: admin/views/scanner.php:31
 msgid "Отменить"
 msgstr ""
 
 #. translators: 1: scan date, 2: articles with links, 3: total links.
-#: admin/views/banned-links.php:191
+#: admin/views/banned-links.php:199
 #, php-format
 msgid "Последний скан: %1$s - %2$d статей со ссылками, %3$d ссылок всего"
 msgstr ""
 
-#: admin/views/banned-links.php:209
+#: admin/views/banned-links.php:217
 msgid "Найденные ссылки на ресурсы из реестров"
 msgstr ""
 
-#: admin/views/banned-links.php:211
+#: admin/views/banned-links.php:219
 msgid "Найдено"
 msgstr ""
 
-#: admin/views/banned-links.php:211
+#: admin/views/banned-links.php:219
 msgid ""
 "ссылок\n"
 "            в"
 msgstr ""
 
-#: admin/views/banned-links.php:212
+#: admin/views/banned-links.php:220
 msgid ""
 "статьях.\n"
 "            Из них подлежат удалению:"
 msgstr ""
 
-#: admin/views/banned-links.php:214
+#: admin/views/banned-links.php:222
 #: admin/views/dashboard.php:68
 #: admin/views/dashboard.php:82
 #: admin/views/dashboard.php:94
 msgid "в"
 msgstr ""
 
-#: admin/views/banned-links.php:214
+#: admin/views/banned-links.php:222
 msgid "статьях."
 msgstr ""
 
-#: admin/views/banned-links.php:216
+#: admin/views/banned-links.php:224
 msgid ""
 "Остальные - ресурсы иноагентов, ссылаться на них не запрещено,\n"
 "                чистка их не тронет."
 msgstr ""
 
-#: admin/views/banned-links.php:224
+#: admin/views/banned-links.php:233
 msgid "Удалить ссылки, подлежащие удалению ("
 msgstr ""
 
-#: admin/views/banned-links.php:245
+#: admin/views/banned-links.php:254
 msgid "Статья"
 msgstr ""
 
-#: admin/views/banned-links.php:246
+#: admin/views/banned-links.php:255
 msgid "URL ссылки"
 msgstr ""
 
-#: admin/views/banned-links.php:247
+#: admin/views/banned-links.php:256
 msgid "Текст ссылки"
 msgstr ""
 
-#: admin/views/banned-links.php:248
+#: admin/views/banned-links.php:257
 msgid "Совпавший ресурс"
 msgstr ""
 
-#: admin/views/banned-links.php:250
+#: admin/views/banned-links.php:259
 msgid "Действие"
 msgstr ""
 
-#: admin/views/banned-links.php:280
+#: admin/views/banned-links.php:289
 msgid "Удалить ссылки"
 msgstr ""
 
-#: admin/views/banned-links.php:290
+#: admin/views/banned-links.php:299
 msgid "Результаты"
 msgstr ""
 
-#: admin/views/banned-links.php:291
+#: admin/views/banned-links.php:300
 msgid "Ссылок на ресурсы из реестров не найдено."
 msgstr ""
 
-#: admin/views/banned-links.php:299
-#: admin/views/banned-links.php:367
+#: admin/views/banned-links.php:308
+#: admin/js/banned-links.js:11
 msgid "Добавить домен"
 msgstr ""
 
-#: admin/views/banned-links.php:303
+#: admin/views/banned-links.php:312
 msgid "Домен или аккаунт"
 msgstr ""
 
-#: admin/views/banned-links.php:305
+#: admin/views/banned-links.php:314
 msgid "example.org или t.me/doxajournal"
 msgstr ""
 
-#: admin/views/banned-links.php:307
+#: admin/views/banned-links.php:316
 msgid ""
 "Можно указать URL целиком. Для обычного сайта помечается весь домен,\n"
 "                        для телеграма, YouTube и соцсетей - только указанный аккаунт."
 msgstr ""
 
-#: admin/views/banned-links.php:316
+#: admin/views/banned-links.php:325
 msgid "Не указан"
 msgstr ""
 
-#: admin/views/banned-links.php:317
+#: admin/views/banned-links.php:326
 #: admin/views/dashboard.php:139
 #: admin/views/settings.php:49
 msgid "Иностранные агенты"
 msgstr ""
 
-#: admin/views/banned-links.php:318
+#: admin/views/banned-links.php:327
 #: admin/views/settings.php:50
 msgid "Экстремистские организации"
 msgstr ""
 
-#: admin/views/banned-links.php:319
+#: admin/views/banned-links.php:328
 #: admin/views/settings.php:51
 msgid "Террористические организации"
 msgstr ""
 
-#: admin/views/banned-links.php:320
+#: admin/views/banned-links.php:329
 #: admin/views/settings.php:52
 msgid "Нежелательные организации"
 msgstr ""
 
-#: admin/views/banned-links.php:323
+#: admin/views/banned-links.php:332
 msgid ""
 "От реестра зависит, убирать ли такие ссылки из текста.\n"
 "                        Без указания ссылки на домен считаются подлежащими удалению: раз внесли руками,\n"
 "                        значит, ссылаться на него не собираетесь."
 msgstr ""
 
-#: admin/views/banned-links.php:335
+#: admin/views/banned-links.php:344
 #: admin/views/entities.php:134
 msgid "Сохранить"
 msgstr ""
 
-#: admin/views/banned-links.php:336
-#: admin/views/banned-links.php:351
+#: admin/views/banned-links.php:345
+#: admin/views/banned-links.php:360
 #: admin/views/entities.php:135
 msgid "Отмена"
 msgstr ""
 
-#: admin/views/banned-links.php:345
+#: admin/views/banned-links.php:354
 msgid "Массовый импорт доменов"
 msgstr ""
 
-#: admin/views/banned-links.php:346
+#: admin/views/banned-links.php:355
 msgid "По одному домену на строку. Формат:"
 msgstr ""
 
-#: admin/views/banned-links.php:346
+#: admin/views/banned-links.php:355
 msgid "домен | Название организации"
 msgstr ""
 
-#: admin/views/banned-links.php:346
+#: admin/views/banned-links.php:355
 msgid "(название необязательно)."
 msgstr ""
 
-#: admin/views/banned-links.php:347
+#: admin/views/banned-links.php:356
 msgid ""
 "example.org | Организация X\n"
 "another-site.com"
 msgstr ""
 
-#: admin/views/banned-links.php:350
+#: admin/views/banned-links.php:359
 msgid "Импортировать"
-msgstr ""
-
-#: admin/views/banned-links.php:367
-#: admin/views/entities.php:147
-msgid "Редактирование"
-msgstr ""
-
-#: admin/views/banned-links.php:388
-#: admin/views/entities.php:170
-msgid "Сохранение..."
-msgstr ""
-
-#: admin/views/banned-links.php:403
-#: admin/views/banned-links.php:449
-#: admin/views/banned-links.php:495
-#: admin/views/banned-links.php:552
-#: admin/views/banned-links.php:555
-#: admin/views/banned-links.php:606
-#: admin/views/dashboard.php:334
-#: admin/views/dashboard.php:338
-#: admin/views/dashboard.php:355
-#: admin/views/dashboard.php:369
-#: admin/views/dashboard.php:389
-#: admin/views/dashboard.php:426
-#: admin/views/dashboard.php:429
-#: admin/views/entities.php:189
-#: admin/views/entities.php:191
-#: admin/views/scanner.php:102
-msgid "Ошибка"
-msgstr ""
-
-#: admin/views/banned-links.php:405
-#: admin/views/banned-links.php:452
-#: admin/views/dashboard.php:400
-#: admin/views/settings.php:560
-#: admin/views/settings.php:579
-msgid "Ошибка сети"
-msgstr ""
-
-#: admin/views/banned-links.php:410
-msgid "Удалить этот домен из реестра?"
-msgstr ""
-
-#: admin/views/banned-links.php:433
-msgid "Введите хотя бы один домен"
-msgstr ""
-
-#: admin/views/banned-links.php:435
-msgid "Импорт..."
-msgstr ""
-
-#: admin/views/banned-links.php:470
-#: admin/views/scanner.php:77
-msgid "Инициализация..."
-msgstr ""
-
-#: admin/views/banned-links.php:479
-#: admin/views/banned-links.php:482
-#: admin/views/banned-links.php:520
-#: admin/views/banned-links.php:590
-#: admin/views/banned-links.php:593
-#: admin/views/banned-links.php:624
-#: admin/views/scanner.php:86
-#: admin/views/scanner.php:89
-#: admin/views/scanner.php:126
-msgid "Ошибка: "
-msgstr ""
-
-#: admin/views/banned-links.php:479
-#: admin/views/banned-links.php:590
-#: admin/views/scanner.php:86
-msgid "Неизвестная"
-msgstr ""
-
-#: admin/views/banned-links.php:500
-#: admin/views/banned-links.php:611
-#: admin/views/scanner.php:107
-msgid " статей ("
-msgstr ""
-
-#: admin/views/banned-links.php:501
-msgid " со ссылками, "
-msgstr ""
-
-#: admin/views/banned-links.php:501
-#: admin/views/banned-links.php:509
-msgid " ссылок"
-msgstr ""
-
-#: admin/views/banned-links.php:508
-#: admin/views/scanner.php:115
-msgid "Сканирование завершено: "
-msgstr ""
-
-#: admin/views/banned-links.php:508
-msgid " статей со ссылками, "
-msgstr ""
-
-#: admin/views/banned-links.php:513
-#: admin/views/scanner.php:119
-msgid "Отменено."
-msgstr ""
-
-#: admin/views/banned-links.php:537
-msgid "Удалить из этой статьи ссылки, подлежащие удалению? Тег <a> будет заменён текстом ссылки. Ресурсы иноагентов останутся."
-msgstr ""
-
-#: admin/views/banned-links.php:550
-#: admin/views/dashboard.php:334
-msgid "Готово"
-msgstr ""
-
-#: admin/views/banned-links.php:564
-msgid "Будут удалены "
-msgstr ""
-
-#: admin/views/banned-links.php:564
-msgid " ссылок из "
-msgstr ""
-
-#: admin/views/banned-links.php:564
-msgid ""
-" статей.\n"
-"Тег <a> будет заменён текстом ссылки.\n"
-"Ссылки на ресурсы иноагентов не затрагиваются.\n"
-"\n"
-"Продолжить?"
-msgstr ""
-
-#: admin/views/banned-links.php:581
-msgid "Инициализация удаления..."
-msgstr ""
-
-#: admin/views/banned-links.php:611
-msgid "Очищено "
-msgstr ""
-
-#: admin/views/banned-links.php:617
-msgid "Удаление завершено: очищено "
-msgstr ""
-
-#: admin/views/banned-links.php:617
-msgid " статей."
 msgstr ""
 
 #: admin/views/brands.php:10
@@ -1055,115 +919,63 @@ msgid "канал реестров"
 msgstr ""
 
 #: admin/views/dashboard.php:232
-msgid "встроенный перечень"
+msgid "локальные данные"
 msgstr ""
 
 #: admin/views/dashboard.php:233
-msgid "прежний подтверждённый список"
+msgid "встроенный перечень"
 msgstr ""
 
 #: admin/views/dashboard.php:234
+msgid "прежний подтверждённый список"
+msgstr ""
+
+#: admin/views/dashboard.php:235
 msgid "данных нет"
 msgstr ""
 
-#: admin/views/dashboard.php:241
+#: admin/views/dashboard.php:242
 msgid "Источник данных:"
 msgstr ""
 
-#: admin/views/dashboard.php:243
+#: admin/views/dashboard.php:244
 msgid "официальные реестры"
 msgstr ""
 
-#: admin/views/dashboard.php:259
+#: admin/views/dashboard.php:260
 msgid "Диагностика источников"
 msgstr ""
 
-#: admin/views/dashboard.php:271
+#: admin/views/dashboard.php:272
 msgid "Последнее обновление прошло не полностью:"
 msgstr ""
 
-#: admin/views/dashboard.php:279
+#: admin/views/dashboard.php:280
 msgid "Быстрые действия"
 msgstr ""
 
-#: admin/views/dashboard.php:282
+#: admin/views/dashboard.php:284
 msgid "Обновить реестры"
 msgstr ""
 
-#: admin/views/dashboard.php:288
+#: admin/views/dashboard.php:289
+msgid "Подключить канал обновлений"
+msgstr ""
+
+#: admin/views/dashboard.php:295
 msgid "Запустить сканер"
 msgstr ""
 
-#: admin/views/dashboard.php:293
+#: admin/views/dashboard.php:300
 msgid "Проверить ссылки"
 msgstr ""
 
-#: admin/views/dashboard.php:298
+#: admin/views/dashboard.php:305
 msgid "Очистить кеш"
 msgstr ""
 
-#: admin/views/dashboard.php:304
+#: admin/views/dashboard.php:311
 msgid "Проверить архив"
-msgstr ""
-
-#: admin/views/dashboard.php:310
-msgid "Проверить источники"
-msgstr ""
-
-#: admin/views/dashboard.php:326
-msgid "Обновление..."
-msgstr ""
-
-#: admin/views/dashboard.php:345
-msgid "Опрашиваем..."
-msgstr ""
-
-#: admin/views/dashboard.php:357
-msgid "Недоступны: "
-msgstr ""
-
-#: admin/views/dashboard.php:357
-msgid "Все источники отвечают"
-msgstr ""
-
-#: admin/views/dashboard.php:364
-msgid "<p class=\"description\">При недоступности официального источника плагин "
-msgstr ""
-
-#: admin/views/dashboard.php:365
-msgid "пробует канал реестров, затем зеркало (если оно есть) и встроенный перечень. "
-msgstr ""
-
-#: admin/views/dashboard.php:366
-msgid "Источник последней загрузки указан в блоке «Статус».</p>"
-msgstr ""
-
-#: admin/views/dashboard.php:390
-msgid " из "
-msgstr ""
-
-#: admin/views/dashboard.php:394
-msgid "Проверка завершена"
-msgstr ""
-
-#: admin/views/dashboard.php:410
-msgid "Проверить весь архив на упоминания и ссылки на ресурсы из реестров? "
-msgstr ""
-
-#: admin/views/dashboard.php:411
-msgid "Это может занять несколько минут, вкладку надо держать открытой."
-msgstr ""
-
-#: admin/views/dashboard.php:418
-msgid "Очистка..."
-msgstr ""
-
-#: admin/views/dashboard.php:426
-msgid "Очищено для "
-msgstr ""
-
-#: admin/views/dashboard.php:426
-msgid " статей"
 msgstr ""
 
 #: admin/views/entities.php:26
@@ -1248,7 +1060,7 @@ msgid "%1$s записей"
 msgstr ""
 
 #: admin/views/entities.php:102
-#: admin/views/entities.php:147
+#: admin/js/entities.js:7
 msgid "Добавить запись"
 msgstr ""
 
@@ -1258,10 +1070,6 @@ msgstr ""
 
 #: admin/views/entities.php:129
 msgid "Свой текст дисклеймера"
-msgstr ""
-
-#: admin/views/entities.php:196
-msgid "Удалить эту запись?"
 msgstr ""
 
 #: admin/views/report.php:51
@@ -1423,19 +1231,6 @@ msgstr ""
 msgid "Последний скан: %1$s - %2$d статей с совпадениями, %3$d упоминаний всего"
 msgstr ""
 
-#: admin/views/scanner.php:108
-msgid " совпадений, "
-msgstr ""
-
-#: admin/views/scanner.php:108
-#: admin/views/scanner.php:116
-msgid " упоминаний"
-msgstr ""
-
-#: admin/views/scanner.php:115
-msgid " статей с совпадениями, "
-msgstr ""
-
 #: admin/views/settings.php:9
 msgid "Настройки маркировки"
 msgstr ""
@@ -1557,76 +1352,83 @@ msgid "Канал реестров"
 msgstr ""
 
 #: admin/views/settings.php:166
-msgid ""
-"Запасной источник на случай, когда официальный реестр не отвечает:\n"
-"                        сайт Минюста бывает недоступен, а хостинг может резать исходящие\n"
-"                        соединения. Данные там свежее снимка из поставки плагина.\n"
-"                        Порядок такой: официальный реестр, потом канал, зеркало (если оно есть)\n"
-"                        и встроенный перечень. Канал поддерживает все четыре реестра плагина."
+msgid "Наблюдатель получает четыре публичных перечня и отдаёт их плагину. Сервис по умолчанию ведёт автор плагина, Алексей Шляпужников. При обновлении и проверке канала сервис получает IP-адрес сервера и обычные HTTP-заголовки. Содержимое публикаций и найденные упоминания остаются на вашем сайте."
 msgstr ""
 
-#: admin/views/settings.php:175
-msgid "Использовать канал реестров как запасной источник"
+#: admin/views/settings.php:167
+msgid "Условия использования"
 msgstr ""
 
-#: admin/views/settings.php:179
+#: admin/views/settings.php:168
+msgid "Конфиденциальность"
+msgstr ""
+
+#: admin/views/settings.php:173
+msgid "Разрешить плановые и ручные запросы к каналу по указанному адресу"
+msgstr ""
+
+#: admin/views/settings.php:176
+msgid "Пока согласие не сохранено, плагин работает с локальными данными. При смене адреса сначала сохраните новый HTTPS-адрес, затем включите запросы. Для другого сервера действуют условия его оператора."
+msgstr ""
+
+#: admin/views/settings.php:180
 msgid "Адрес"
 msgstr ""
 
-#: admin/views/settings.php:192
+#: admin/views/settings.php:193
 msgid "Токен"
 msgstr ""
 
-#: admin/views/settings.php:195
+#: admin/views/settings.php:196
 msgid "сохранён, оставьте пустым"
 msgstr ""
 
-#: admin/views/settings.php:195
+#: admin/views/settings.php:196
 msgid "не требуется"
 msgstr ""
 
-#: admin/views/settings.php:200
+#: admin/views/settings.php:201
 msgid "удалить"
 msgstr ""
 
-#: admin/views/settings.php:205
+#: admin/views/settings.php:206
 msgid "Для четырёх основных реестров токен не нужен"
 msgstr ""
 
-#: admin/views/settings.php:205
+#: admin/views/settings.php:206
 msgid ""
 ", выгрузки открыты.\n"
 "                        Токен требуется для добровольной загрузки физических лиц из перечня\n"
 "                        Росфинмониторинга. Без её включения этот перечень не скачивается."
 msgstr ""
 
-#: admin/views/settings.php:209
+#: admin/views/settings.php:210
 msgid "Сейчас токен задан константой"
 msgstr ""
 
-#: admin/views/settings.php:210
+#: admin/views/settings.php:211
 msgid "в wp-config.php и настройкой не перекрывается."
 msgstr ""
 
-#: admin/views/settings.php:212
+#: admin/views/settings.php:213
 msgid ""
 "Токен хранится в настройках сайта и на страницу не выводится.\n"
 "                            Его можно держать вне базы, добавив в wp-config.php строку"
 msgstr ""
 
-#: admin/views/settings.php:219
+#: admin/views/settings.php:220
 msgid "Проверить канал"
 msgstr ""
 
-#: admin/views/settings.php:226
+#: admin/views/settings.php:227
 msgid "Обновление и удаление"
 msgstr ""
 
-#: admin/views/settings.php:229
-msgid "Обновляйте загрузкой поверх."
+#: admin/views/settings.php:230
+msgid "Для обновления в той же папке загрузите ZIP поверх установленной версии."
 msgstr ""
 
-#: admin/views/settings.php:229
+#: admin/views/settings.php:230
 msgid ""
 "«Плагины → Добавить новый →\n"
 "                        Загрузить плагин», выбрать архив, на вопрос об уже установленной версии\n"
@@ -1634,10 +1436,8 @@ msgid ""
 "                        сканирования при этом сохраняются."
 msgstr ""
 
-#: admin/views/settings.php:233
-msgid ""
-"Удалять плагин перед установкой новой версии не нужно: раньше так\n"
-"                        приходилось делать, и каждый такой круг стирал всё нажитое."
+#: admin/views/settings.php:234
+msgid "При переходе со старого ZIP из GitHub на версию из каталога сначала деактивируйте прежний плагин. Новая версия перенесёт данные при активации."
 msgstr ""
 
 #: admin/views/settings.php:239
@@ -1660,8 +1460,8 @@ msgstr ""
 msgid ""
 "Плагин раздаётся бесплатно, и понять, сколько людей им пользуется,\n"
 "                        можно только с вашей помощью. Ничего обязательного тут нет:\n"
-"                        и счётчик, и регистрацию можно не включать, плагин будет работать\n"
-"                        точно так же."
+"                        Счётчик и регистрацию можно оставить выключенными.\n"
+"                        Подключённый канал всё равно будет обновлять списки."
 msgstr ""
 
 #: admin/views/settings.php:267
@@ -1669,125 +1469,117 @@ msgid "Разрешить отправку случайного идентифи
 msgstr ""
 
 #: admin/views/settings.php:270
-msgid ""
-"По умолчанию счётчик выключен. Чтобы разрешить отправку, отметьте галочку и сохраните настройки.\n"
-"                        Раз в неделю, вместе с обновлением реестров, плагин проверяет\n"
-"                        доступность канала - это нужно и само по себе, чтобы знать\n"
-"                        о запасном источнике заранее, а не в тот момент, когда официальный\n"
-"                        реестр уже упал. С этим запросом уходят две вещи: случайный\n"
-"                        идентификатор установки\n"
-"                        ("
+msgid "Счётчик по умолчанию выключен. Если включить его вместе с каналом, запросы к перечням и проверка канала будут передавать случайный идентификатор установки"
+msgstr ""
+
+#: admin/views/settings.php:272
+msgid "и версию плагина. Снятие галочки прекращает отправку идентификатора."
+msgstr ""
+
+#: admin/views/settings.php:273
+msgid "Какие данные хранит счётчик"
 msgstr ""
 
 #: admin/views/settings.php:276
-msgid ""
-")\n"
-"                        и версия плагина. Ни домена, ни адреса, ни чего-либо о содержимом\n"
-"                        сайта. Идентификатор к сайту не привязан и сохраняется вместе с настройками плагина.\n"
-"                        Со снятой галочкой проверка канала остаётся, но уходит без этих\n"
-"                        заголовков, и посчитать установку по ней нельзя."
-msgstr ""
-
-#: admin/views/settings.php:283
 msgid "Зарегистрировать сайт"
 msgstr ""
 
-#: admin/views/settings.php:285
+#: admin/views/settings.php:278
 msgid ""
 "Это уже не анонимно. Регистрация нужна, чтобы автор мог предупредить\n"
 "                        о важном обновлении или о поломке в реестрах. Отправляется"
 msgstr ""
 
-#: admin/views/settings.php:287
+#: admin/views/settings.php:280
 msgid "только по нажатию кнопки"
 msgstr ""
 
-#: admin/views/settings.php:287
+#: admin/views/settings.php:280
 msgid "и ровно в таком составе:"
 msgstr ""
 
-#: admin/views/settings.php:291
+#: admin/views/settings.php:284
 msgid "Адрес сайта"
 msgstr ""
 
-#: admin/views/settings.php:293
+#: admin/views/settings.php:286
 msgid "Название сайта"
 msgstr ""
 
-#: admin/views/settings.php:295
+#: admin/views/settings.php:288
 msgid "Версия плагина"
 msgstr ""
 
-#: admin/views/settings.php:297
+#: admin/views/settings.php:290
 msgid "Версия WordPress"
 msgstr ""
 
-#: admin/views/settings.php:299
+#: admin/views/settings.php:292
 msgid "Версия PHP"
 msgstr ""
 
-#: admin/views/settings.php:301
+#: admin/views/settings.php:294
 msgid "Идентификатор установки"
 msgstr ""
 
-#: admin/views/settings.php:303
+#: admin/views/settings.php:296
 msgid "Почта для связи"
 msgstr ""
 
-#: admin/views/settings.php:305
+#: admin/views/settings.php:298
 msgid "необязательно"
 msgstr ""
 
-#: admin/views/settings.php:309
+#: admin/views/settings.php:302
 msgid ""
 "Больше ничего не уходит: ни содержимое статей, ни списки найденных\n"
 "                        организаций, ни данные редакции."
 msgstr ""
 
-#: admin/views/settings.php:314
+#: admin/views/settings.php:307
 msgid "Отправить ещё раз"
 msgstr ""
 
-#: admin/views/settings.php:314
+#: admin/views/settings.php:307
 msgid "Отправить"
 msgstr ""
 
-#: admin/views/settings.php:318
+#: admin/views/settings.php:311
 msgid "Сайт зарегистрирован"
 msgstr ""
 
-#: admin/views/settings.php:326
+#: admin/views/settings.php:319
 msgid "Поиск имён"
 msgstr ""
 
-#: admin/views/settings.php:331
+#: admin/views/settings.php:324
 msgid "Искать фамилии и имена во всех падежах"
 msgstr ""
 
-#: admin/views/settings.php:334
+#: admin/views/settings.php:327
 msgid ""
 "Без этого найдётся только «Иванов Иван» из реестра, а «по словам Иванова»\n"
 "                        или «интервью с Ивановым» пройдут мимо. Учитывается род: женские фамилии\n"
 "                        на согласную не склоняются."
 msgstr ""
 
-#: admin/views/settings.php:338
+#: admin/views/settings.php:331
 msgid "Упоминание одной фамилии без имени"
 msgstr ""
 
-#: admin/views/settings.php:341
+#: admin/views/settings.php:334
 msgid "Только если в статье есть полное имя (рекомендуется)"
 msgstr ""
 
-#: admin/views/settings.php:344
+#: admin/views/settings.php:337
 msgid "Не искать, нужно полное «Имя Фамилия»"
 msgstr ""
 
-#: admin/views/settings.php:347
+#: admin/views/settings.php:340
 msgid "Искать всегда"
 msgstr ""
 
-#: admin/views/settings.php:351
+#: admin/views/settings.php:344
 msgid ""
 "В статьях принято называть человека полностью при первом упоминании,\n"
 "                        а дальше по фамилии. Рекомендуемый режим это учитывает: «Лев Пономарев\n"
@@ -1795,74 +1587,74 @@ msgid ""
 "                        однофамильца-чиновника не попадёт под маркировку."
 msgstr ""
 
-#: admin/views/settings.php:356
+#: admin/views/settings.php:349
 msgid ""
 "Режим «искать всегда» даёт ложные срабатывания на однофамильцах:\n"
 "                        13 из 24 самых частых русских фамилий есть в реестре иноагентов.\n"
 "                        После изменения запустите пересканирование."
 msgstr ""
 
-#: admin/views/settings.php:364
+#: admin/views/settings.php:357
 msgid "Иноагенты: только в цитатах"
 msgstr ""
 
-#: admin/views/settings.php:369
+#: admin/views/settings.php:362
 msgid "Маркировать иноагентов только там, где их цитируют или дают ссылку"
 msgstr ""
 
-#: admin/views/settings.php:372
+#: admin/views/settings.php:365
 msgid ""
 "Обычное упоминание фамилии в тексте маркироваться не будет.\n"
 "                        Остальные три реестра правило не затрагивает."
 msgstr ""
 
-#: admin/views/settings.php:377
+#: admin/views/settings.php:370
 msgid "Что считать поводом для маркировки:"
 msgstr ""
 
-#: admin/views/settings.php:380
+#: admin/views/settings.php:373
 msgid "Блок цитаты (blockquote, q) вместе с подводкой и подписью"
 msgstr ""
 
-#: admin/views/settings.php:381
+#: admin/views/settings.php:374
 msgid "Абзац с гиперссылкой, текст и адрес ссылки"
 msgstr ""
 
-#: admin/views/settings.php:382
+#: admin/views/settings.php:375
 msgid "Абзац с прямой речью в кавычках «…»"
 msgstr ""
 
-#: admin/views/settings.php:383
+#: admin/views/settings.php:376
 msgid "Встроенный пост из соцсети вместе с подводкой и подписью"
 msgstr ""
 
-#: admin/views/settings.php:394
+#: admin/views/settings.php:387
 msgid ""
 "После изменения этих условий запустите пересканирование:\n"
 "                            признак «упомянут в цитате» вычисляется во время сканирования."
 msgstr ""
 
-#: admin/views/settings.php:402
+#: admin/views/settings.php:395
 msgid "Дополнительные поля"
 msgstr ""
 
-#: admin/views/settings.php:407
+#: admin/views/settings.php:400
 msgid "Не сканировать (только заголовок и текст записи)"
 msgstr ""
 
-#: admin/views/settings.php:411
+#: admin/views/settings.php:404
 msgid "Сканировать выбранные поля"
 msgstr ""
 
-#: admin/views/settings.php:415
+#: admin/views/settings.php:408
 msgid "Сканировать все произвольные поля"
 msgstr ""
 
-#: admin/views/settings.php:420
+#: admin/views/settings.php:413
 msgid "Полей с текстом на сайте не найдено."
 msgstr ""
 
-#: admin/views/settings.php:436
+#: admin/views/settings.php:429
 msgid ""
 "Темы часто выводят подзаголовок или лид отдельным блоком, мимо основного\n"
 "                        текста записи - такие упоминания сканер не видит. Здесь показаны\n"
@@ -1870,19 +1662,19 @@ msgid ""
 "                        После изменения запустите пересканирование."
 msgstr ""
 
-#: admin/views/settings.php:441
+#: admin/views/settings.php:434
 msgid "Если текст собирается темой на лету и в базе его нет, используйте фильтр"
 msgstr ""
 
-#: admin/views/settings.php:448
+#: admin/views/settings.php:441
 msgid "Исключённые из реестра"
 msgstr ""
 
-#: admin/views/settings.php:453
+#: admin/views/settings.php:446
 msgid "Маркировать и тех, кого уже исключили из реестра"
 msgstr ""
 
-#: admin/views/settings.php:456
+#: admin/views/settings.php:449
 msgid ""
 "По закону после исключения из реестра маркировка не требуется, поэтому\n"
 "                        по умолчанию плагин помечает только действующих. Если включить, исключённые\n"
@@ -1891,138 +1683,116 @@ msgid ""
 "                        После изменения запустите пересканирование."
 msgstr ""
 
-#: admin/views/settings.php:467
+#: admin/views/settings.php:460
 msgid "Приоритет фильтра"
 msgstr ""
 
-#: admin/views/settings.php:473
+#: admin/views/settings.php:466
 msgid "Приоритет фильтра the_content. Чем больше - тем позже выполняется. По умолчанию: 9999."
 msgstr ""
 
-#: admin/views/settings.php:479
+#: admin/views/settings.php:472
 msgid "Цвет маркера"
 msgstr ""
 
-#: admin/views/settings.php:484
+#: admin/views/settings.php:477
 msgid "Цвет сносок-маркеров в тексте статьи."
 msgstr ""
 
-#: admin/views/settings.php:490
+#: admin/views/settings.php:483
 msgid "Фон дисклеймера"
 msgstr ""
 
-#: admin/views/settings.php:500
+#: admin/views/settings.php:493
 msgid "Рамка дисклеймера"
 msgstr ""
 
-#: admin/views/settings.php:510
+#: admin/views/settings.php:503
 msgid "Интервал обновления"
 msgstr ""
 
-#: admin/views/settings.php:514
+#: admin/views/settings.php:507
 msgid "Ежедневно"
 msgstr ""
 
-#: admin/views/settings.php:515
+#: admin/views/settings.php:508
 msgid "Дважды в день"
 msgstr ""
 
-#: admin/views/settings.php:516
+#: admin/views/settings.php:509
 msgid "Еженедельно"
 msgstr ""
 
-#: admin/views/settings.php:518
+#: admin/views/settings.php:511
 msgid "Как часто автоматически проверять обновления реестров."
 msgstr ""
 
-#: admin/views/settings.php:523
+#: admin/views/settings.php:516
 msgid "Автоскан при публикации"
 msgstr ""
 
-#: admin/views/settings.php:528
+#: admin/views/settings.php:521
 msgid "Автоматически сканировать статьи при публикации."
 msgstr ""
 
-#: admin/views/settings.php:534
+#: admin/views/settings.php:527
 msgid "Сохранить настройки"
 msgstr ""
 
-#: admin/views/settings.php:544
-msgid ""
-"Отправить автору плагина адрес сайта, его название, версии и почту?\n"
-""
+#: includes/class-lem-channel.php:76
+msgid "Чтобы обновлять реестры, разрешите запросы к каналу в настройках и сохраните изменения."
 msgstr ""
 
-#: admin/views/settings.php:546
-msgid "Содержимое статей и результаты поиска не отправляются."
-msgstr ""
-
-#: admin/views/settings.php:549
-msgid "Отправляем..."
-msgstr ""
-
-#: admin/views/settings.php:558
-msgid "не получилось"
-msgstr ""
-
-#: admin/views/settings.php:568
-msgid "Проверяем..."
-msgstr ""
-
-#: admin/views/settings.php:577
-msgid "Ошибка проверки"
-msgstr ""
-
-#: includes/class-lem-channel.php:115
+#: includes/class-lem-channel.php:128
 msgid "канал такой реестр не ведёт"
 msgstr ""
 
-#: includes/class-lem-channel.php:143
-#: includes/class-lem-channel.php:259
+#: includes/class-lem-channel.php:149
+#: includes/class-lem-channel.php:268
 msgid "соединение не удалось: "
 msgstr ""
 
-#: includes/class-lem-channel.php:153
+#: includes/class-lem-channel.php:159
 msgid "канал вернул неожиданный ответ"
 msgstr ""
 
-#: includes/class-lem-channel.php:161
+#: includes/class-lem-channel.php:167
 msgid "канал не подтвердил полноту и версию списка"
 msgstr ""
 
-#: includes/class-lem-channel.php:173
+#: includes/class-lem-channel.php:179
 msgid "Для физических лиц нужен включённый канал и его токен."
 msgstr ""
 
-#: includes/class-lem-channel.php:183
+#: includes/class-lem-channel.php:189
 msgid "Канал физических лиц недоступен: "
 msgstr ""
 
-#: includes/class-lem-channel.php:195
+#: includes/class-lem-channel.php:201
 msgid "Канал вернул неподходящий формат перечня физических лиц."
 msgstr ""
 
-#: includes/class-lem-channel.php:213
+#: includes/class-lem-channel.php:219
 msgid "канал требует токен для этого реестра: укажите его в настройках"
 msgstr ""
 
-#: includes/class-lem-channel.php:215
+#: includes/class-lem-channel.php:221
 msgid "токен не признан или отозван: нужен новый"
 msgstr ""
 
-#: includes/class-lem-channel.php:217
+#: includes/class-lem-channel.php:223
 msgid "в канале нет такого реестра"
 msgstr ""
 
-#: includes/class-lem-channel.php:219
+#: includes/class-lem-channel.php:225
 msgid "слишком частые запросы к каналу, попробуйте позже"
 msgstr ""
 
-#: includes/class-lem-channel.php:264
+#: includes/class-lem-channel.php:273
 msgid "сервер пока не принимает регистрации, попробуйте позже"
 msgstr ""
 
-#: includes/class-lem-channel.php:271
+#: includes/class-lem-channel.php:280
 msgid "сайт зарегистрирован"
 msgstr ""
 
@@ -2036,126 +1806,72 @@ msgstr ""
 msgid "и ещё %1$d %2$s реестра с этим названием"
 msgstr ""
 
-#: includes/class-lem-frontend.php:297
+#: includes/class-lem-frontend.php:300
 msgid ", включён(-а) в перечень Росфинмониторинга организаций и физических лиц, "
 msgstr ""
 
-#: includes/class-lem-frontend.php:298
+#: includes/class-lem-frontend.php:301
 msgid "в отношении которых имеются сведения об их причастности к экстремистской деятельности или терроризму"
 msgstr ""
 
-#: includes/class-lem-frontend.php:301
+#: includes/class-lem-frontend.php:304
 msgid ", признанный(-ая) в РФ иностранным агентом"
 msgstr ""
 
-#: includes/class-lem-frontend.php:303
+#: includes/class-lem-frontend.php:306
 msgid ", признанная в РФ иностранным агентом"
 msgstr ""
 
-#: includes/class-lem-frontend.php:309
+#: includes/class-lem-frontend.php:312
 msgid ", деятельность которой признана экстремистской и запрещена на территории РФ"
 msgstr ""
 
-#: includes/class-lem-frontend.php:311
+#: includes/class-lem-frontend.php:314
 msgid ", признанная террористической и запрещённая на территории РФ организация"
 msgstr ""
 
-#: includes/class-lem-frontend.php:313
+#: includes/class-lem-frontend.php:316
 msgid ", признанная нежелательной на территории РФ организация"
 msgstr ""
 
-#: includes/class-lem-frontend.php:331
+#: includes/class-lem-frontend.php:334
 msgid " (исключён(-а) из реестра "
 msgstr ""
 
-#: includes/class-lem-frontend.php:333
+#: includes/class-lem-frontend.php:336
 msgid " (исключена из реестра "
 msgstr ""
 
-#: includes/class-lem-frontend.php:339
+#: includes/class-lem-frontend.php:342
 msgid ", ранее признанный(-ая) в РФ иностранным агентом"
 msgstr ""
 
-#: includes/class-lem-frontend.php:341
+#: includes/class-lem-frontend.php:344
 msgid ", ранее признанная в РФ иностранным агентом"
 msgstr ""
 
-#: includes/class-lem-frontend.php:343
+#: includes/class-lem-frontend.php:346
 msgid ", деятельность которой ранее была признана экстремистской"
 msgstr ""
 
-#: includes/class-lem-frontend.php:345
+#: includes/class-lem-frontend.php:348
 msgid ", ранее признанная террористической организация"
 msgstr ""
 
-#: includes/class-lem-frontend.php:347
+#: includes/class-lem-frontend.php:350
 msgid ", ранее признанная нежелательной на территории РФ организация"
 msgstr ""
 
-#: includes/class-lem-frontend.php:358
+#: includes/class-lem-frontend.php:361
 msgid "запись"
 msgstr ""
 
-#: includes/class-lem-frontend.php:361
+#: includes/class-lem-frontend.php:364
 msgid "записи"
 msgstr ""
 
-#: includes/class-lem-frontend.php:363
+#: includes/class-lem-frontend.php:366
 msgid "записей"
-msgstr ""
-
-#: includes/class-lem-importer.php:990
-msgid "реестр Минюста не подтвердил версию списка"
-msgstr ""
-
-#: includes/class-lem-importer.php:994
-msgid "реестр Минюста вернул неподходящую версию списка"
-msgstr ""
-
-#: includes/class-lem-importer.php:1014
-msgid "реестр Минюста не отдал весь список"
-msgstr ""
-
-#: includes/class-lem-importer.php:1019
-msgid "полнота списка Минюста не подтверждена"
-msgstr ""
-
-#: includes/class-lem-importer.php:1023
-msgid "реестр Минюста вернул неполную страницу"
-msgstr ""
-
-#: includes/class-lem-importer.php:1026
-msgid "реестр Минюста вернул повреждённую строку"
-msgstr ""
-
-#: includes/class-lem-importer.php:1029
-msgid "реестр Минюста вернул повреждённое поле"
-msgstr ""
-
-#: includes/class-lem-importer.php:1033
-msgid "страницы реестра Минюста пересекаются"
-msgstr ""
-
-#: includes/class-lem-importer.php:1040
-msgid "реестр Минюста изменился во время загрузки"
-msgstr ""
-
-#: includes/class-lem-importer.php:1063
-#: includes/class-lem-importer.php:1237
-msgid "реестр Минюста содержит строку без наименования"
-msgstr ""
-
-#: includes/class-lem-importer.php:1123
-#: includes/class-lem-importer.php:1257
-msgid "реестр Минюста ответил, но записей не разобрано"
-msgstr ""
-
-#: includes/class-lem-importer.php:1172
-msgid "зеркало вернуло неожиданный ответ"
-msgstr ""
-
-#: includes/class-lem-importer.php:1279
-msgid "канал реестров выключен в настройках"
 msgstr ""
 
 #: includes/class-lem-metabox.php:62
@@ -2236,27 +1952,27 @@ msgstr ""
 msgid "Не удалось завершить полную сверку физических лиц. Прежние статусы сохранены."
 msgstr ""
 
-#: includes/class-lem-plugin.php:244
+#: includes/class-lem-plugin.php:245
 msgid "СМИ"
 msgstr ""
 
-#: includes/class-lem-plugin.php:245
+#: includes/class-lem-plugin.php:246
 msgid "Маркируются все четыре реестра, как требует закон о СМИ."
 msgstr ""
 
-#: includes/class-lem-plugin.php:246
+#: includes/class-lem-plugin.php:247
 msgid "Не СМИ"
 msgstr ""
 
-#: includes/class-lem-plugin.php:247
+#: includes/class-lem-plugin.php:248
 msgid "Маркируются экстремистские и террористические. Нежелательные только отслеживаются: упоминания и ссылки видны в отчёте, но меток на сайте нет. Иноагенты не затрагиваются."
 msgstr ""
 
-#: includes/class-lem-plugin.php:248
+#: includes/class-lem-plugin.php:249
 msgid "Вручную"
 msgstr ""
 
-#: includes/class-lem-plugin.php:249
+#: includes/class-lem-plugin.php:250
 msgid "Отмечайте галочками сами."
 msgstr ""
 
@@ -2334,4 +2050,236 @@ msgstr ""
 
 #: includes/class-lem-registry-sync.php:190
 msgid "Не удалось сохранить полный срез. Прежние данные сохранены."
+msgstr ""
+
+#: legal-entity-marks.php:35
+msgid "Для Chekazoid Legal Entity Marks нужны PHP 7.4 и WordPress 6.1 или более новые версии."
+msgstr ""
+
+#: legal-entity-marks.php:38
+msgid "Для Chekazoid Legal Entity Marks требуется расширение PHP mbstring."
+msgstr ""
+
+#: legal-entity-marks.php:41
+msgid "Деактивируйте прежнюю версию Legal Entity Marks перед переходом на Chekazoid Legal Entity Marks."
+msgstr ""
+
+#: legal-entity-marks.php:46
+msgid "Не удалось перенести данные Legal Entity Marks. Проверьте доступ к базе и наличие таблиц с обоими префиксами."
+msgstr ""
+
+#: admin/js/banned-links.js:11
+#: admin/js/entities.js:7
+msgid "Редактирование"
+msgstr ""
+
+#: admin/js/banned-links.js:32
+#: admin/js/entities.js:30
+msgid "Сохранение..."
+msgstr ""
+
+#: admin/js/banned-links.js:47
+#: admin/js/banned-links.js:93
+#: admin/js/banned-links.js:139
+#: admin/js/banned-links.js:196
+#: admin/js/banned-links.js:199
+#: admin/js/banned-links.js:246
+#: admin/js/dashboard.js:16
+#: admin/js/dashboard.js:20
+#: admin/js/dashboard.js:40
+#: admin/js/dashboard.js:77
+#: admin/js/dashboard.js:80
+#: admin/js/entities.js:49
+#: admin/js/entities.js:51
+#: admin/js/scanner.js:45
+msgid "Ошибка"
+msgstr ""
+
+#: admin/js/banned-links.js:49
+#: admin/js/banned-links.js:96
+#: admin/js/dashboard.js:51
+#: admin/js/settings.js:23
+#: admin/js/settings.js:42
+msgid "Ошибка сети"
+msgstr ""
+
+#: admin/js/banned-links.js:54
+msgid "Удалить этот домен из реестра?"
+msgstr ""
+
+#: admin/js/banned-links.js:77
+msgid "Введите хотя бы один домен"
+msgstr ""
+
+#: admin/js/banned-links.js:79
+msgid "Импорт..."
+msgstr ""
+
+#: admin/js/banned-links.js:114
+#: admin/js/scanner.js:20
+msgid "Инициализация..."
+msgstr ""
+
+#: admin/js/banned-links.js:123
+#: admin/js/banned-links.js:126
+#: admin/js/banned-links.js:164
+#: admin/js/banned-links.js:230
+#: admin/js/banned-links.js:233
+#: admin/js/banned-links.js:264
+#: admin/js/scanner.js:29
+#: admin/js/scanner.js:32
+#: admin/js/scanner.js:69
+msgid "Ошибка: "
+msgstr ""
+
+#: admin/js/banned-links.js:123
+#: admin/js/banned-links.js:230
+#: admin/js/scanner.js:29
+msgid "Неизвестная"
+msgstr ""
+
+#: admin/js/banned-links.js:144
+#: admin/js/banned-links.js:251
+#: admin/js/scanner.js:50
+msgid " статей ("
+msgstr ""
+
+#: admin/js/banned-links.js:145
+msgid " со ссылками, "
+msgstr ""
+
+#: admin/js/banned-links.js:145
+#: admin/js/banned-links.js:153
+msgid " ссылок"
+msgstr ""
+
+#: admin/js/banned-links.js:152
+#: admin/js/scanner.js:58
+msgid "Сканирование завершено: "
+msgstr ""
+
+#: admin/js/banned-links.js:152
+msgid " статей со ссылками, "
+msgstr ""
+
+#: admin/js/banned-links.js:157
+#: admin/js/scanner.js:62
+msgid "Отменено."
+msgstr ""
+
+#: admin/js/banned-links.js:181
+msgid "Удалить из этой статьи ссылки, подлежащие удалению? Тег <a> будет заменён текстом ссылки. Ресурсы иноагентов останутся."
+msgstr ""
+
+#: admin/js/banned-links.js:194
+#: admin/js/dashboard.js:16
+msgid "Готово"
+msgstr ""
+
+#: admin/js/banned-links.js:208
+msgid "Будут удалены "
+msgstr ""
+
+#: admin/js/banned-links.js:208
+msgid " ссылок из "
+msgstr ""
+
+#: admin/js/banned-links.js:208
+msgid ""
+" статей.\n"
+"Тег <a> будет заменён текстом ссылки.\n"
+"Ссылки на ресурсы иноагентов не затрагиваются.\n"
+"\n"
+"Продолжить?"
+msgstr ""
+
+#: admin/js/banned-links.js:221
+msgid "Инициализация удаления..."
+msgstr ""
+
+#: admin/js/banned-links.js:251
+msgid "Очищено "
+msgstr ""
+
+#: admin/js/banned-links.js:257
+msgid "Удаление завершено: очищено "
+msgstr ""
+
+#: admin/js/banned-links.js:257
+msgid " статей."
+msgstr ""
+
+#: admin/js/dashboard.js:8
+msgid "Обновление..."
+msgstr ""
+
+#: admin/js/dashboard.js:41
+msgid " из "
+msgstr ""
+
+#: admin/js/dashboard.js:45
+msgid "Проверка завершена"
+msgstr ""
+
+#: admin/js/dashboard.js:61
+msgid "Проверить весь архив на упоминания и ссылки на ресурсы из реестров? "
+msgstr ""
+
+#: admin/js/dashboard.js:62
+msgid "Это может занять несколько минут, вкладку надо держать открытой."
+msgstr ""
+
+#: admin/js/dashboard.js:69
+msgid "Очистка..."
+msgstr ""
+
+#: admin/js/dashboard.js:77
+msgid "Очищено для "
+msgstr ""
+
+#: admin/js/dashboard.js:77
+msgid " статей"
+msgstr ""
+
+#: admin/js/entities.js:56
+msgid "Удалить эту запись?"
+msgstr ""
+
+#: admin/js/scanner.js:51
+msgid " совпадений, "
+msgstr ""
+
+#: admin/js/scanner.js:51
+#: admin/js/scanner.js:59
+msgid " упоминаний"
+msgstr ""
+
+#: admin/js/scanner.js:58
+msgid " статей с совпадениями, "
+msgstr ""
+
+#: admin/js/settings.js:8
+msgid ""
+"Отправить автору плагина адрес сайта, его название, версии и почту?\n"
+""
+msgstr ""
+
+#: admin/js/settings.js:9
+msgid "Содержимое статей и результаты поиска не отправляются."
+msgstr ""
+
+#: admin/js/settings.js:12
+msgid "Отправляем..."
+msgstr ""
+
+#: admin/js/settings.js:21
+msgid "не получилось"
+msgstr ""
+
+#: admin/js/settings.js:31
+msgid "Проверяем..."
+msgstr ""
+
+#: admin/js/settings.js:40
+msgid "Ошибка проверки"
 msgstr ""

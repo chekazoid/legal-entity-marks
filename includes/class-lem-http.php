@@ -2,19 +2,9 @@
 defined('ABSPATH') || exit;
 
 /**
- * Запросы наружу.
- *
- * Отдельный слой понадобился из-за одной живой поломки: на сайте редакции
- * обновление реестров падало с «cURL error 28: Connection timeout after
- * 10000 ms», хотя плагин просил сорок пять секунд. Значение подменял чужой
- * фильтр http_request_args - так делают плагины ускорения и безопасности,
- * и спорить с ними бессмысленно, они правы для обычных запросов.
- *
- * Наши запросы другие: страница Минюста отвечает медленно, а выгрузка
- * иноагентов весит четверть мегабайта. Поэтому свой таймаут мы отстаиваем,
- * и только для своих запросов.
+ * Preserves the channel timeout when a site-wide HTTP filter sets a shorter one.
  */
-class LEM_Http {
+class CLEM_Http {
 
     public static function get($url, $args = []) {
         return self::request('get', $url, $args);
@@ -29,19 +19,23 @@ class LEM_Http {
 
         // Возвращаем свой таймаут последним слоем, поверх чужих фильтров
         $keep = static function ($request) use ($timeout) {
-            if (empty($request['_lem'])) {
+            if (empty($request['_clem_request'])) {
                 return $request;
             }
             $request['timeout'] = max((float) ($request['timeout'] ?? 0), $timeout);
+            $request['redirection'] = 0;
+            $request['sslverify'] = true;
+            $request['reject_unsafe_urls'] = true;
             return $request;
         };
 
-        $args['_lem'] = true;
+        $args['_clem_request'] = true;
+        $args['redirection'] = 0;
         add_filter('http_request_args', $keep, PHP_INT_MAX);
         try {
             $response = $method === 'post'
-                ? wp_remote_post($url, $args)
-                : wp_remote_get($url, $args);
+                ? wp_safe_remote_post($url, $args)
+                : wp_safe_remote_get($url, $args);
         } finally {
             remove_filter('http_request_args', $keep, PHP_INT_MAX);
         }

@@ -6,15 +6,15 @@ function add_action() {} function add_filter() {}
 function apply_filters($name, $value) { return $value; }
 function wp_parse_args($saved, $defaults) { return array_merge($defaults, $saved); }
 function get_option($key, $default = false) { return $GLOBALS['opts'][$key] ?? $default; }
-class LEM_Banned_Sites { const REMOVABLE_TYPES = ['extremist','terrorist','undesirable']; }
+class CLEM_Banned_Sites { const REMOVABLE_TYPES = ['extremist','terrorist','undesirable']; }
 require_once __DIR__ . '/../includes/class-lem-channel.php';
 require_once __DIR__ . '/../includes/class-lem-plugin.php';
 require_once __DIR__ . '/../includes/class-lem-morphology.php';
 require_once __DIR__ . '/../includes/class-lem-scanner.php';
 require_once __DIR__ . '/../includes/class-lem-frontend.php';
 $GLOBALS['opts'] = [];
-$GLOBALS['test_plugin'] = (new ReflectionClass('LEM_Plugin'))->newInstanceWithoutConstructor();
-function lem() { return $GLOBALS['test_plugin']; }
+$GLOBALS['test_plugin'] = (new ReflectionClass('CLEM_Plugin'))->newInstanceWithoutConstructor();
+function clem_plugin() { return $GLOBALS['test_plugin']; }
 $fail = 0;
 function check($label, $condition) {
     global $fail;
@@ -22,14 +22,14 @@ function check($label, $condition) {
     echo ($condition ? 'OK  ' : 'FAIL ') . $label . "\n";
 }
 function settings($mode = 'off', $profile = 'media', $extra = []) {
-    $GLOBALS['opts']['lem_settings'] = array_merge([
+    $GLOBALS['opts']['clem_settings'] = array_merge([
         'fedsfm_people_mode'=>$mode,'preset'=>$profile,
     ], $extra);
-    return lem()->get_settings();
+    return clem_plugin()->get_settings();
 }
 function hit($text, $entity, $settings) {
-    LEM_Scanner::flush_pattern_cache();
-    return LEM_Scanner::match_entity($text, $entity, $settings) !== null;
+    CLEM_Scanner::flush_pattern_cache();
+    return CLEM_Scanner::match_entity($text, $entity, $settings) !== null;
 }
 foreach (['media','nonmedia','manual'] as $profile) {
     $s = settings('off', $profile, ['mark_registries'=>['fedsfm_person'],'track_registries'=>['fedsfm_person']]);
@@ -69,21 +69,21 @@ $yo = $person; $yo['name']='Семёнов Пётр Фёдорович'; $yo['id
 $s=settings('mark');
 check('Е и ё в полном ФИО', hit('Семенов Петр Федорович',$yo,$s));
 check('Отсев по основам не теряет е/ё', (bool)array_intersect_key(
-    LEM_Scanner::entity_stems($yo),LEM_Scanner::text_stems('Семенов Петр Федорович')));
-$scanner = new LEM_Scanner();
+    CLEM_Scanner::entity_stems($yo),CLEM_Scanner::text_stems('Семенов Петр Федорович')));
+$scanner = new CLEM_Scanner();
 $found = $scanner->scan_text('<p>Иванов сообщил. Затем выступил Иванов Иван Петрович.</p>',[$person]);
 check('В результат попадает полное упоминание, а не первая фамилия', count($found)===1
     && $found[0]['matched_as']==='Иванов Иван Петрович' && !empty($found[0]['full_name_match']));
-check('Ручная звёздочка не обходит полное ФИО', LEM_Scanner::asterisk_hit('Иванов*',$person,$s)===null);
+check('Ручная звёздочка не обходит полное ФИО', CLEM_Scanner::asterisk_hit('Иванов*',$person,$s)===null);
 $overrides=['excluded'=>[],'forced'=>[901]];
 $match=['id'=>901,'type'=>'fedsfm_person','full_name_match'=>true];
-check('Полное ФИО маркируется в выбранном режиме', LEM_Frontend::should_mark($match,settings('mark'),$overrides));
-check('Отслеживание не маркируется даже при ручном force', !LEM_Frontend::should_mark($match,settings('track'),$overrides));
-check('Выключение убирает старые метки даже при ручном force', !LEM_Frontend::should_mark($match,settings('off'),$overrides));
+check('Полное ФИО маркируется в выбранном режиме', CLEM_Frontend::should_mark($match,settings('mark'),$overrides));
+check('Отслеживание не маркируется даже при ручном force', !CLEM_Frontend::should_mark($match,settings('track'),$overrides));
+check('Выключение убирает старые метки даже при ручном force', !CLEM_Frontend::should_mark($match,settings('off'),$overrides));
 $match['full_name_match']=false;
-check('Частичное совпадение нельзя принудительно промаркировать', !LEM_Frontend::should_mark($match,settings('mark'),$overrides));
+check('Частичное совпадение нельзя принудительно промаркировать', !CLEM_Frontend::should_mark($match,settings('mark'),$overrides));
 $old = $person; $old['type']='inoagent';
 check('Поиск иноагентов по имени и фамилии сохранён', hit('Иван Иванов',$old,settings('off')));
-check('Новая формулировка описывает включение в перечень', strpos(LEM_Frontend::disclaimer_text($person),'включён(-а) в перечень Росфинмониторинга')!==false);
+check('Новая формулировка описывает включение в перечень', strpos(CLEM_Frontend::disclaimer_text($person),'включён(-а) в перечень Росфинмониторинга')!==false);
 echo $fail ? "\nПРОВАЛЕНО: $fail\n" : "\nВСЕ ПРОВЕРКИ ПРОЙДЕНЫ\n";
 exit($fail ? 1 : 0);

@@ -9,11 +9,11 @@ function scan($text,$ents,$s){ // эмулируем scan_text проход по
   $plain=$text; $has_star=mb_strpos($plain,'*')!==false; $out=[];
   $mode=$s['surname_mode'];
   foreach($ents as $e){
-    $strict=LEM_Scanner::build_pattern($e,$s,'strict');
+    $strict=CLEM_Scanner::build_pattern($e,$s,'strict');
     $sh=$strict?(preg_match($strict,$plain)?true:false):false;
     $allow=($mode==='always')||($mode==='confirmed'&&$sh);
-    $hit=LEM_Scanner::match_entity($plain,$e,$s,$allow);
-    if(!$hit && $has_star) $hit=LEM_Scanner::asterisk_hit($plain,$e,$s);
+    $hit=CLEM_Scanner::match_entity($plain,$e,$s,$allow);
+    if(!$hit && $has_star) $hit=CLEM_Scanner::asterisk_hit($plain,$e,$s);
     if($hit) $out[]=$hit['matched_as'];
   }
   return $out;

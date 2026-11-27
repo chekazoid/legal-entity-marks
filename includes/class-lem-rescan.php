@@ -12,12 +12,12 @@ defined('ABSPATH') || exit;
  * Работа идёт частями по расписанию: большой сайт за один запрос не обойти,
  * а ронять его ради проверки нельзя.
  */
-class LEM_Rescan {
+class CLEM_Rescan {
 
-    const STATE_OPTION  = 'lem_rescan_state';
-    const REPORT_OPTION = 'lem_last_update_report';
-    const HOOK          = 'lem_run_rescan';
-    const SCHEDULE      = 'lem_every_minute';
+    const STATE_OPTION  = 'clem_rescan_state';
+    const REPORT_OPTION = 'clem_last_update_report';
+    const HOOK          = 'clem_run_rescan';
+    const SCHEDULE      = 'clem_every_minute';
     const SLICE         = 25;
 
     /** Сколько ждать зависший запуск, прежде чем считать его умершим. */
@@ -76,7 +76,7 @@ class LEM_Rescan {
     public function enqueue($trigger = 'registry-update', $since = null) {
         global $wpdb;
 
-        $settings   = lem()->get_settings();
+        $settings   = clem_plugin()->get_settings();
         $post_types = $settings['post_types'];
         if (empty($post_types)) {
             return false;
@@ -122,6 +122,13 @@ class LEM_Rescan {
     }
 
     /** Состояние для админки. */
+    public function resume() {
+        $state = $this->status();
+        if ($state && empty($state['done']) && !wp_next_scheduled(self::HOOK)) {
+            wp_schedule_event(time() + 10, self::SCHEDULE, self::HOOK);
+        }
+    }
+
     public function status() {
         $state = get_option(self::STATE_OPTION, []);
         if (empty($state)) {
@@ -141,7 +148,7 @@ class LEM_Rescan {
     public function cancel() {
         delete_option(self::STATE_OPTION);
         wp_clear_scheduled_hook(self::HOOK);
-        delete_transient('lem_rescan_lock'); // хвост от версий до 1.14.0
+        delete_transient('clem_rescan_lock'); // хвост от версий до 1.14.0
     }
 
     /**
@@ -149,7 +156,7 @@ class LEM_Rescan {
      */
     public function run() {
         // Задача сработала - значит, планировщик жив, каким бы он ни был
-        update_option('lem_cron_last_run', time(), false);
+        update_option('clem_cron_last_run', time(), false);
 
         $state = get_option(self::STATE_OPTION, []);
         if (empty($state) || !empty($state['done'])) {
@@ -171,14 +178,14 @@ class LEM_Rescan {
         update_option(self::STATE_OPTION, $state, false);
 
         global $wpdb;
-        $settings   = lem()->get_settings();
+        $settings   = clem_plugin()->get_settings();
         $post_types = $settings['post_types'];
-        $entities   = lem()->entities->get_for_marking(!empty($settings['mark_excluded']));
-        $banned     = lem()->banned_sites->get_all_domains();
-        $accounts   = lem()->banned_sites->get_accounts();
+        $entities   = clem_plugin()->entities->get_for_marking(!empty($settings['mark_excluded']));
+        $banned     = clem_plugin()->banned_sites->get_all_domains();
+        $accounts   = clem_plugin()->banned_sites->get_accounts();
         $now        = current_time('mysql');
 
-        $budget = LEM_Scanner::time_budget();
+        $budget = CLEM_Scanner::time_budget();
         $start  = microtime(true);
 
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
@@ -201,11 +208,11 @@ class LEM_Rescan {
 
                 foreach ($posts as $post) {
                     // Текст и ссылки за один проход: контент уже загружен
-                    $found = lem()->scanner->scan_text(
-                        lem()->scanner->collect_text($post, $settings),
+                    $found = clem_plugin()->scanner->scan_text(
+                        clem_plugin()->scanner->collect_text($post, $settings),
                         $entities
                     );
-                    $fresh = LEM_Scanner::write_matches($post->ID, $found, $now);
+                    $fresh = CLEM_Scanner::write_matches($post->ID, $found, $now);
 
                     $state['counters']['scanned']++;
                     if (!empty($found)) {
@@ -214,18 +221,18 @@ class LEM_Rescan {
                     $state['counters']['fresh'] += $fresh;
 
                     if (!empty($banned) || !empty($accounts)) {
-                        $links = lem()->link_scanner->scan_post_content(
+                        $links = clem_plugin()->link_scanner->scan_post_content(
                             $post->post_content, $banned, $accounts
                         );
                         if (!empty($links)) {
-                            update_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY,
+                            update_post_meta($post->ID, CLEM_BANNED_LINKS_META_KEY,
                                 wp_slash(wp_json_encode([
                                     'links' => $links, 'scanned_at' => $now,
                                 ], JSON_UNESCAPED_UNICODE)));
                             $state['counters']['with_links']++;
                             $state['counters']['links'] += count($links);
                         } else {
-                            delete_post_meta($post->ID, LEM_BANNED_LINKS_META_KEY);
+                            delete_post_meta($post->ID, CLEM_BANNED_LINKS_META_KEY);
                         }
                     }
                 }
@@ -262,7 +269,7 @@ class LEM_Rescan {
      */
     private function finish(array $state) {
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
         $since = $state['since'];
 
         // Первичное наполнение: новичков нет, есть просто первая опись архива
@@ -283,7 +290,7 @@ class LEM_Rescan {
         $posts     = [];
         if (!empty($new_entities)) {
             $new_ids = array_flip(array_map('intval', array_column($new_entities, 'id')));
-            $rows    = lem()->report->get_rows(['limit' => 100000]);
+            $rows    = clem_plugin()->report->get_rows(['limit' => 100000]);
             foreach ($rows['items'] as $row) {
                 if (isset($new_ids[(int) $row['entity_id']])) {
                     $mentioned[(int) $row['entity_id']] = true;
@@ -315,7 +322,7 @@ class LEM_Rescan {
         ], false);
 
         if ($state['counters']['with_matches'] > 0) {
-            lem()->cache->purge_all_marked();
+            clem_plugin()->cache->purge_all_marked();
         }
     }
 }

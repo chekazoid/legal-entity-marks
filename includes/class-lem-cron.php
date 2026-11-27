@@ -1,43 +1,43 @@
 <?php
 defined('ABSPATH') || exit;
 
-class LEM_Cron {
+class CLEM_Cron {
 
     public function __construct() {
         add_filter('cron_schedules', [$this, 'add_weekly_schedule']);
-        add_action('lem_fetch_registries', [$this, 'run_fetch']);
-        add_action('lem_scan_updated', [$this, 'run_scan_updated']);
+        add_action('clem_fetch_registries', [$this, 'run_fetch']);
+        add_action('clem_scan_updated', [$this, 'run_scan_updated']);
     }
 
     public function add_weekly_schedule($schedules) {
         if (!isset($schedules['weekly'])) {
             $schedules['weekly'] = [
                 'interval' => WEEK_IN_SECONDS,
-                'display'  => __('Раз в неделю', 'legal-entity-marks'),
+                'display'  => __('Раз в неделю', 'chekazoid-legal-entity-marks'),
             ];
         }
         return $schedules;
     }
 
     public function schedule_events() {
-        $settings = lem()->get_settings();
+        $settings = clem_plugin()->get_settings();
         $interval = $settings['cron_interval'] ?: 'weekly';
 
-        if (!wp_next_scheduled('lem_fetch_registries')) {
-            wp_schedule_event(time(), $interval, 'lem_fetch_registries');
+        if ($settings['channel_enabled'] && !wp_next_scheduled('clem_fetch_registries')) {
+            wp_schedule_event(time(), $interval, 'clem_fetch_registries');
         }
 
-        if (!wp_next_scheduled('lem_scan_updated')) {
-            wp_schedule_event(time() + HOUR_IN_SECONDS, $interval, 'lem_scan_updated');
+        if (!wp_next_scheduled('clem_scan_updated')) {
+            wp_schedule_event(time() + HOUR_IN_SECONDS, $interval, 'clem_scan_updated');
         }
     }
 
     public function clear_events() {
-        wp_clear_scheduled_hook('lem_fetch_registries');
-        wp_clear_scheduled_hook('lem_scan_updated');
-        wp_clear_scheduled_hook('lem_import_people');
-        wp_clear_scheduled_hook(LEM_Rescan::HOOK);
-        delete_transient('lem_rescan_lock'); // хвост от версий до 1.14.0
+        wp_clear_scheduled_hook('clem_fetch_registries');
+        wp_clear_scheduled_hook('clem_scan_updated');
+        wp_clear_scheduled_hook('clem_import_people');
+        wp_clear_scheduled_hook(CLEM_Rescan::HOOK);
+        delete_transient('clem_rescan_lock'); // хвост от версий до 1.14.0
     }
 
     /**
@@ -48,7 +48,7 @@ class LEM_Cron {
      * посетители сайта. Судить надо по тому, выполняются ли они на самом деле.
      */
     public static function last_run() {
-        return (int) get_option('lem_cron_last_run', 0);
+        return (int) get_option('clem_cron_last_run', 0);
     }
 
     public static function looks_alive() {
@@ -73,8 +73,11 @@ class LEM_Cron {
     }
 
     public function run_fetch() {
-        update_option('lem_cron_last_run', time(), false);
-        lem()->importer->fetch_all(function ($msg) {
+        if (!clem_plugin()->channel->is_enabled()) {
+            return;
+        }
+        update_option('clem_cron_last_run', time(), false);
+        clem_plugin()->importer->fetch_all(function ($msg) {
             if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- WordPress debug logging is explicitly enabled by the site administrator.
                 error_log('[LEM] ' . $msg);
@@ -88,12 +91,12 @@ class LEM_Cron {
      * на лимит выполнения, иначе на большом сайте задача обрывалась молча.
      */
     public function run_scan_updated() {
-        update_option('lem_cron_last_run', time(), false);
+        update_option('clem_cron_last_run', time(), false);
 
-        $state = lem()->rescan->status();
+        $state = clem_plugin()->rescan->status();
         if ($state && empty($state['done'])) {
             return; // проверка и так идёт
         }
-        lem()->rescan->enqueue('weekly', current_time('mysql'));
+        clem_plugin()->rescan->enqueue('weekly', current_time('mysql'));
     }
 }

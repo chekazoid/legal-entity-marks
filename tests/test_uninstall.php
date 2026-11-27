@@ -17,10 +17,10 @@ function check($name, $value) { global $failed; if (!$value) {$failed++;} echo (
 include __DIR__ . '/../uninstall.php';
 check('Default uninstall keeps registry tables', $wpdb->queries === []);
 check('Default uninstall keeps article metadata', $GLOBALS['removed_meta'] === []);
-check('Default uninstall keeps settings and identifier', !in_array('lem_settings',$GLOBALS['removed_options'],true) && !in_array('lem_install_id',$GLOBALS['removed_options'],true));
+check('Default uninstall keeps settings and identifier', !in_array('clem_settings',$GLOBALS['removed_options'],true) && !in_array('clem_install_id',$GLOBALS['removed_options'],true));
 $GLOBALS['purge'] = true;
 include __DIR__ . '/../uninstall.php';
-check('Explicit cleanup drops only the two plugin tables', $wpdb->queries === ['DROP TABLE IF EXISTS test_lem_entities','DROP TABLE IF EXISTS test_lem_banned_sites']);
-check('Explicit cleanup uses WordPress metadata deletion for all plugin keys', $GLOBALS['removed_meta'] === ['_lem_matches','_lem_banned_links','_lem_overrides']);
-check('Explicit cleanup deletes settings, identifier and registration marker', in_array('lem_settings',$GLOBALS['removed_options'],true) && in_array('lem_install_id',$GLOBALS['removed_options'],true) && in_array('lem_registered_at',$GLOBALS['removed_options'],true));
+check('Explicit cleanup drops only the two plugin tables', $wpdb->queries === ['DROP TABLE IF EXISTS test_clem_entities','DROP TABLE IF EXISTS test_clem_banned_sites']);
+check('Explicit cleanup uses WordPress metadata deletion for all plugin keys', $GLOBALS['removed_meta'] === ['_clem_matches','_clem_banned_links','_clem_overrides']);
+check('Explicit cleanup deletes settings, identifier and registration marker', in_array('clem_settings',$GLOBALS['removed_options'],true) && in_array('clem_install_id',$GLOBALS['removed_options'],true) && in_array('clem_registered_at',$GLOBALS['removed_options'],true));
 exit($failed?1:0);

@@ -1,7 +1,7 @@
 <?php
 defined('ABSPATH') || exit;
 
-class LEM_Cache {
+class CLEM_Cache {
 
     public function purge_post($post_id) {
         $url = get_permalink($post_id);
@@ -37,7 +37,7 @@ class LEM_Cache {
         }
 
         // Custom cache solutions (nginx FastCGI и другие - подпишитесь на хук)
-        do_action('lem_purge_post_cache', $post_id, $url);
+        do_action('clem_purge_post_cache', $post_id, $url);
     }
 
     public function purge_all_marked() {
@@ -49,7 +49,7 @@ class LEM_Cache {
             $rows = $wpdb->get_results($wpdb->prepare(
                 "SELECT meta_id, post_id FROM {$wpdb->postmeta}
                  WHERE meta_key = %s AND meta_value != '' AND meta_value IS NOT NULL
-                   AND meta_id > %d ORDER BY meta_id LIMIT 500", LEM_META_KEY, $cursor
+                   AND meta_id > %d ORDER BY meta_id LIMIT 500", CLEM_META_KEY, $cursor
             ));
             /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
             foreach ($rows as $row) {
@@ -59,7 +59,7 @@ class LEM_Cache {
             }
         } while (count($rows) === 500);
 
-        do_action('lem_purge_all_cache', $purged);
+        do_action('clem_purge_all_cache', $purged);
         return $purged;
     }
 
@@ -84,6 +84,6 @@ class LEM_Cache {
             LiteSpeed_Cache_API::purge_all();
         }
 
-        do_action('lem_purge_all_cache', 0);
+        do_action('clem_purge_all_cache', 0);
     }
 }

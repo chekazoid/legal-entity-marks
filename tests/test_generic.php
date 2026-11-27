@@ -16,7 +16,7 @@ $fail = 0;
 
 function t($desc, $text, $entity, $settings, $want) {
     global $fail;
-    $hit = LEM_Scanner::match_entity($text, $entity, $settings);
+    $hit = CLEM_Scanner::match_entity($text, $entity, $settings);
     $got = $hit !== null;
     $ok  = ($got === $want);
     if (!$ok) { $fail++; }
@@ -26,7 +26,7 @@ function t($desc, $text, $entity, $settings, $want) {
 
 function g($desc, $term, $want) {
     global $fail;
-    $got = LEM_Scanner::is_generic_phrase($term);
+    $got = CLEM_Scanner::is_generic_phrase($term);
     $ok  = ($got === $want);
     if (!$ok) { $fail++; }
     printf("%s  %-40s только в кавычках: %s\n", $ok ? 'OK  ' : 'ФЕЙЛ',

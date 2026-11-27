@@ -24,13 +24,13 @@ function eq($d, $got, $want) {
 }
 
 echo "=== хвост страны и организационно-правовой формы ===\n";
-eq('Cultural Vistas (США)',      LEM_Importer::strip_legal_suffix('Cultural Vistas (США)'), 'Cultural Vistas');
-eq('Eurasianet, США',            LEM_Importer::strip_legal_suffix('Eurasianet, США'), 'Eurasianet');
-eq('Hidemy.network Ltd.',        LEM_Importer::strip_legal_suffix('Hidemy.network Ltd.'), 'Hidemy.network');
-eq('Dekoder gGmbH, ФРГ (два хвоста)', LEM_Importer::strip_legal_suffix('Dekoder gGmbH, ФРГ'), 'Dekoder');
-eq('Mnenie media z.s., Чешская Республика', LEM_Importer::strip_legal_suffix('Mnenie media z.s., Чешская Республика'), 'Mnenie media');
-eq('без хвоста не трогаем',      LEM_Importer::strip_legal_suffix('Медиазона'), 'Медиазона');
-eq('США внутри названия остаётся', LEM_Importer::strip_legal_suffix('Радио США сегодня'), 'Радио США сегодня');
+eq('Cultural Vistas (США)',      CLEM_Importer::strip_legal_suffix('Cultural Vistas (США)'), 'Cultural Vistas');
+eq('Eurasianet, США',            CLEM_Importer::strip_legal_suffix('Eurasianet, США'), 'Eurasianet');
+eq('Hidemy.network Ltd.',        CLEM_Importer::strip_legal_suffix('Hidemy.network Ltd.'), 'Hidemy.network');
+eq('Dekoder gGmbH, ФРГ (два хвоста)', CLEM_Importer::strip_legal_suffix('Dekoder gGmbH, ФРГ'), 'Dekoder');
+eq('Mnenie media z.s., Чешская Республика', CLEM_Importer::strip_legal_suffix('Mnenie media z.s., Чешская Республика'), 'Mnenie media');
+eq('без хвоста не трогаем',      CLEM_Importer::strip_legal_suffix('Медиазона'), 'Медиазона');
+eq('США внутри названия остаётся', CLEM_Importer::strip_legal_suffix('Радио США сегодня'), 'Радио США сегодня');
 
 echo "\n=== обрывки описания вместо названия ===\n";
 $junk = [
@@ -40,30 +40,30 @@ $junk = [
     'Решением Верховного Суда признана экстремистской',
 ];
 foreach ($junk as $j) {
-    eq(mb_substr($j, 0, 40), LEM_Importer::is_junk_name($j) ? 'мусор' : 'название', 'мусор');
+    eq(mb_substr($j, 0, 40), CLEM_Importer::is_junk_name($j) ? 'мусор' : 'название', 'мусор');
 }
 $real = ['Медиазона', 'Международное религиозное объединение «Свидетели Иеговы»', 'Артподготовка'];
 foreach ($real as $r) {
-    eq($r, LEM_Importer::is_junk_name($r) ? 'мусор' : 'название', 'название');
+    eq($r, CLEM_Importer::is_junk_name($r) ? 'мусор' : 'название', 'название');
 }
 
 echo "\n=== свои домены из поля со ссылками (field_6_s) ===\n";
 eq('DOXA: сайт + соцсети',
-    LEM_Importer::extract_own_domains('https://doxa.team/; https://www.instagram.com/doxa_journal/; https://t.me/doxajournal'),
+    CLEM_Importer::extract_own_domains('https://doxa.team/; https://www.instagram.com/doxa_journal/; https://t.me/doxajournal'),
     ['doxa.team']);
 eq('Вёрстка: www отбрасывается',
-    LEM_Importer::extract_own_domains('https://www.verstka.media/ https://t.me/verstka'),
+    CLEM_Importer::extract_own_domains('https://www.verstka.media/ https://t.me/verstka'),
     ['verstka.media']);
 eq('только соцсети -> пусто',
-    LEM_Importer::extract_own_domains('https://t.me/some_channel; https://youtube.com/@some'),
+    CLEM_Importer::extract_own_domains('https://t.me/some_channel; https://youtube.com/@some'),
     []);
 eq('поддомен соцсети тоже отсекается',
-    LEM_Importer::extract_own_domains('https://music.apple.com/ru/podcast; https://example.org/'),
+    CLEM_Importer::extract_own_domains('https://music.apple.com/ru/podcast; https://example.org/'),
     ['example.org']);
-eq('пустое поле',            LEM_Importer::extract_own_domains(''), []);
-eq('текст вместо ссылок',    LEM_Importer::extract_own_domains('сведения отсутствуют'), []);
+eq('пустое поле',            CLEM_Importer::extract_own_domains(''), []);
+eq('текст вместо ссылок',    CLEM_Importer::extract_own_domains('сведения отсутствуют'), []);
 eq('два своих домена',
-    LEM_Importer::extract_own_domains('https://zona.media/; https://mediazona.ca/'),
+    CLEM_Importer::extract_own_domains('https://zona.media/; https://mediazona.ca/'),
     ['zona.media', 'mediazona.ca']);
 
 echo "\n=== аккаунты организации на чужих площадках ===\n";
@@ -71,29 +71,29 @@ function acc($list) {
     return array_map(static function ($a) { return $a['domain'] . '/' . $a['account']; }, $list);
 }
 eq('телеграм и инстаграм DOXA',
-    acc(LEM_Importer::extract_social_accounts('https://doxa.team/; https://www.instagram.com/doxa_journal/; https://t.me/doxajournal')),
+    acc(CLEM_Importer::extract_social_accounts('https://doxa.team/; https://www.instagram.com/doxa_journal/; https://t.me/doxajournal')),
     ['instagram.com/doxa_journal', 't.me/doxajournal']);
 eq('канал YouTube через /channel/',
-    acc(LEM_Importer::extract_social_accounts('https://www.youtube.com/channel/UCabc123def')),
+    acc(CLEM_Importer::extract_social_accounts('https://www.youtube.com/channel/UCabc123def')),
     ['youtube.com/ucabc123def']);
 eq('YouTube через @',
-    acc(LEM_Importer::extract_social_accounts('https://youtube.com/@doxajournal')),
+    acc(CLEM_Importer::extract_social_accounts('https://youtube.com/@doxajournal')),
     ['youtube.com/doxajournal']);
 eq('ролик YouTube аккаунтом не считается',
-    acc(LEM_Importer::extract_social_accounts('https://www.youtube.com/watch?v=abc')), []);
+    acc(CLEM_Importer::extract_social_accounts('https://www.youtube.com/watch?v=abc')), []);
 eq('свой сайт в аккаунты не идёт',
-    acc(LEM_Importer::extract_social_accounts('https://doxa.team/articles/1')), []);
+    acc(CLEM_Importer::extract_social_accounts('https://doxa.team/articles/1')), []);
 eq('t.me/s/name - служебный сегмент пропускаем',
-    acc(LEM_Importer::extract_social_accounts('https://t.me/s/verstka')), ['t.me/verstka']);
+    acc(CLEM_Importer::extract_social_accounts('https://t.me/s/verstka')), ['t.me/verstka']);
 
 echo "\n=== разбор того, что вводит пользователь ===\n";
-$sp = LEM_Banned_Sites::split_target('t.me/doxajournal');
+$sp = CLEM_Banned_Sites::split_target('t.me/doxajournal');
 eq('t.me/doxajournal', $sp['domain'] . ' + ' . $sp['account'], 't.me + doxajournal');
-$sp = LEM_Banned_Sites::split_target('https://www.Example.ORG/some/page');
+$sp = CLEM_Banned_Sites::split_target('https://www.Example.ORG/some/page');
 eq('обычный сайт: путь игнорируется', $sp['domain'] . ' + ' . $sp['account'], 'example.org + ');
-$sp = LEM_Banned_Sites::split_target('vk.com/doxa_journal');
+$sp = CLEM_Banned_Sites::split_target('vk.com/doxa_journal');
 eq('vk.com/doxa_journal', $sp['domain'] . ' + ' . $sp['account'], 'vk.com + doxa_journal');
-$sp = LEM_Banned_Sites::split_target('не ссылка вовсе');
+$sp = CLEM_Banned_Sites::split_target('не ссылка вовсе');
 eq('мусор вместо адреса', $sp['domain'] . ' + ' . $sp['account'], ' + ');
 
 echo "\n=== сопоставление ссылки с запрещённым аккаунтом ===\n";
@@ -103,7 +103,7 @@ $accounts = [
 ];
 function m($url, $accounts) {
     $host = parse_url($url, PHP_URL_HOST);
-    $r = LEM_Banned_Sites::match_account($host, $url, $accounts);
+    $r = CLEM_Banned_Sites::match_account($host, $url, $accounts);
     return $r === null ? 'нет' : $r;
 }
 eq('ссылка на запрещённый канал',      m('https://t.me/doxajournal', $accounts), 't.me/doxajournal');
@@ -116,56 +116,56 @@ eq('регистр в имени аккаунта',         m('https://t.me/Doxa
 
 echo "\n=== алиасы из названия ===\n";
 eq('содержимое кавычек',
-    LEM_Importer::generate_aliases('Новостной портал «DOXA»'), ['DOXA']);
+    CLEM_Importer::generate_aliases('Новостной портал «DOXA»'), ['DOXA']);
 eq('хвост страны даёт алиас',
-    LEM_Importer::generate_aliases('Eurasianet, США'), ['Eurasianet']);
+    CLEM_Importer::generate_aliases('Eurasianet, США'), ['Eurasianet']);
 eq('кириллический короткий -> в ёлочках',
-    LEM_Importer::generate_aliases('Проект «Центр «Досье»'), ['«Досье»']);
+    CLEM_Importer::generate_aliases('Проект «Центр «Досье»'), ['«Досье»']);
 eq('физлицо: Фамилия Имя без кавычек',
-    LEM_Importer::generate_aliases('Иванов Иван Иванович', true), ['Иванов Иван']);
+    CLEM_Importer::generate_aliases('Иванов Иван Иванович', true), ['Иванов Иван']);
 eq('физлицо с псевдонимом',
-    LEM_Importer::generate_aliases('Федоров Мирон Янович «Оксимирон»', true), ['Федоров Мирон', '«Оксимирон»']);
+    CLEM_Importer::generate_aliases('Федоров Мирон Янович «Оксимирон»', true), ['Федоров Мирон', '«Оксимирон»']);
 
 echo "\n=== местные отделения и аббревиатуры ===\n";
 eq('местное отделение: алиасов нет',
-    LEM_Importer::generate_aliases('Местная религиозная организация Свидетелей Иеговы «Калининград»'), []);
+    CLEM_Importer::generate_aliases('Местная религиозная организация Свидетелей Иеговы «Калининград»'), []);
 eq('первичное отделение: алиасов нет',
-    LEM_Importer::generate_aliases('Первичная организация «Йошкар-Ола»'), []);
+    CLEM_Importer::generate_aliases('Первичная организация «Йошкар-Ола»'), []);
 eq('обычная организация алиасы даёт',
-    LEM_Importer::generate_aliases('Новостной портал «DOXA»'), ['DOXA']);
+    CLEM_Importer::generate_aliases('Новостной портал «DOXA»'), ['DOXA']);
 eq('аббревиатура GIJN',
-    LEM_Importer::acronym('Global Investigative Journalism Network («Глобальная сеть»)'), 'GIJN');
+    CLEM_Importer::acronym('Global Investigative Journalism Network («Глобальная сеть»)'), 'GIJN');
 eq('Reporters without Borders -> RWB',
-    LEM_Importer::acronym('Reporters without Borders'), 'RWB');
+    CLEM_Importer::acronym('Reporters without Borders'), 'RWB');
 eq('короткие служебные слова пропускаются',
-    LEM_Importer::acronym('Committee to Protect Journalists'), 'CPJ');
+    CLEM_Importer::acronym('Committee to Protect Journalists'), 'CPJ');
 eq('кириллица аббревиатуры не даёт',
-    LEM_Importer::acronym('Международный историко-просветительский центр'), '');
+    CLEM_Importer::acronym('Международный историко-просветительский центр'), '');
 eq('двух букв мало',
-    LEM_Importer::acronym('Open Society'), '');
+    CLEM_Importer::acronym('Open Society'), '');
 
 echo "\n=== что ищется только в кавычках ===\n";
 foreach ([['Голос', true], ['Новое поколение', true], ['Аль-Каида', false],
           ['DOXA', false], ['Национал-большевистская партия', false],
           ['Медуза', true], ['Глобальная сеть журналистов-расследователей', false]] as $c) {
-    eq('«' . $c[0] . '»', LEM_Importer::is_risky_alias($c[0]) ? 'в кавычках' : 'как есть',
+    eq('«' . $c[0] . '»', CLEM_Importer::is_risky_alias($c[0]) ? 'в кавычках' : 'как есть',
         $c[1] ? 'в кавычках' : 'как есть');
 }
 
 echo "\n=== копия реестра не возвращает исключённых ===\n";
 // Понасенкова исключили 11.09.2026, в перечне из поставки (июль) он ещё действующий
 eq('копия: исключённый остаётся исключённым',
-    LEM_Importer::resolve_exclusion('2026-09-11', null, false), '2026-09-11');
+    CLEM_Importer::resolve_exclusion('2026-09-11', null, false), '2026-09-11');
 eq('копия может исключить',
-    LEM_Importer::resolve_exclusion(null, '2026-09-11', false), '2026-09-11');
+    CLEM_Importer::resolve_exclusion(null, '2026-09-11', false), '2026-09-11');
 eq('копия: действующий остаётся действующим',
-    (string) LEM_Importer::resolve_exclusion(null, null, false), '');
+    (string) CLEM_Importer::resolve_exclusion(null, null, false), '');
 eq('копия не переписывает дату исключения',
-    LEM_Importer::resolve_exclusion('2026-09-11', '2026-01-01', false), '2026-09-11');
+    CLEM_Importer::resolve_exclusion('2026-09-11', '2026-01-01', false), '2026-09-11');
 eq('свежий источник может вернуть запись',
-    (string) LEM_Importer::resolve_exclusion('2026-09-11', null, true), '');
+    (string) CLEM_Importer::resolve_exclusion('2026-09-11', null, true), '');
 eq('свежий источник исключает',
-    LEM_Importer::resolve_exclusion(null, '2026-09-11', true), '2026-09-11');
+    CLEM_Importer::resolve_exclusion(null, '2026-09-11', true), '2026-09-11');
 
 echo $fail ? "\nПРОВАЛЕНО: $fail\n" : "\nВСЕ ПРОВЕРКИ ПРОЙДЕНЫ\n";
 exit($fail ? 1 : 0);

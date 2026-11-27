@@ -2,11 +2,12 @@
 defined('ABSPATH') || exit;
 require_once __DIR__ . '/class-lem-registry-sync.php';
 
-class LEM_Importer {
+class CLEM_Importer {
     private $verified_generation = '';
     private $defer_activation = false;
 
     /** Итоги последнего обновления реестров: домены, собранные из данных Минюста. */
+    public $last_fetch_updated = false;
     public $last_fetch_domains = 0;
 
     /** Человеческие названия реестров для сообщений в админке. */
@@ -20,10 +21,10 @@ class LEM_Importer {
 
     public function import_all_bundled() {
         $files = [
-            'inoagent'    => LEM_DATA_DIR . '/foreign-agents-raw.json',
-            'extremist'   => LEM_DATA_DIR . '/extremist-orgs.json',
-            'terrorist'   => LEM_DATA_DIR . '/terrorist-orgs.json',
-            'undesirable' => LEM_DATA_DIR . '/undesirable-orgs.json',
+            'inoagent'    => CLEM_DATA_DIR . '/foreign-agents-raw.json',
+            'extremist'   => CLEM_DATA_DIR . '/extremist-orgs.json',
+            'terrorist'   => CLEM_DATA_DIR . '/terrorist-orgs.json',
+            'undesirable' => CLEM_DATA_DIR . '/undesirable-orgs.json',
         ];
 
         $results = [];
@@ -63,7 +64,7 @@ class LEM_Importer {
         // Явно переданный файл нужен только для разовых импортов из CLI.
         if ($file === null) {
             $map = array_values(array_filter(
-                lem()->brands->get_rules(),
+                clem_plugin()->brands->get_rules(),
                 static function ($r) {
                     return !empty($r['enabled']);
                 }
@@ -79,7 +80,7 @@ class LEM_Importer {
         }
 
         global $wpdb;
-        $table    = $wpdb->prefix . LEM_TABLE;
+        $table    = $wpdb->prefix . CLEM_TABLE;
         $applied  = 0;
         $unmatched = [];
 
@@ -138,7 +139,7 @@ class LEM_Importer {
             }
         }
 
-        lem()->entities->flush_cache();
+        clem_plugin()->entities->flush_cache();
         return ['applied' => $applied, 'unmatched' => $unmatched];
     }
 
@@ -152,7 +153,7 @@ class LEM_Importer {
      * даём короткую форму «Фамилия Имя».
      *
      * Опасные фрагменты (общие слова, одиночные короткие) оборачиваем в ёлочки:
-     * такой алиас ищется только в кавычках, см. LEM_Scanner.
+     * такой алиас ищется только в кавычках, см. CLEM_Scanner.
      *
      * @return string[]
      */
@@ -218,7 +219,7 @@ class LEM_Importer {
             }
         }
 
-        return self::clean_aliases(LEM_Scanner::organization_aliases($name, $out), $name);
+        return self::clean_aliases(CLEM_Scanner::organization_aliases($name, $out), $name);
     }
 
     /**
@@ -254,7 +255,7 @@ class LEM_Importer {
      * Правило живёт в сканере: там же оно применяется при поиске.
      */
     public static function is_risky_alias($alias) {
-        return LEM_Scanner::is_risky_term($alias);
+        return CLEM_Scanner::is_risky_term($alias);
     }
 
     /**
@@ -269,7 +270,7 @@ class LEM_Importer {
      */
     public function prune_aliases() {
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
         $fixed = 0;
 
         /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
@@ -309,7 +310,7 @@ class LEM_Importer {
         }
 
         if ($fixed > 0) {
-            lem()->entities->flush_cache();
+            clem_plugin()->entities->flush_cache();
         }
         return $fixed;
     }
@@ -323,7 +324,7 @@ class LEM_Importer {
      * а город даёт ложные срабатывания в любом тексте.
      */
     public static function is_local_branch($name) {
-        return LEM_Scanner::is_local_branch($name);
+        return CLEM_Scanner::is_local_branch($name);
     }
 
     /**
@@ -360,7 +361,7 @@ class LEM_Importer {
      * на YouTube или телеграм считалась бы ссылкой на иноагента.
      */
     const SOCIAL_HOSTS = [
-        'youtube.com', 'youtu.be', 'vk.com', 'ok.ru', 'facebook.com', 'fb.com',
+        'youtube.com', 'youtu.be', 'vk.com', 'vk.ru', 'max.ru', 'ok.ru', 'facebook.com', 'fb.com',
         'instagram.com', 'threads.com', 'threads.net', 'twitter.com', 'x.com',
         't.me', 'telegram.me', 'telegram.org', 'tiktok.com', 'soundcloud.com',
         'podcasts.apple.com', 'music.apple.com', 'open.spotify.com', 'spotify.com',
@@ -382,7 +383,7 @@ class LEM_Importer {
             if ($url === '' || !preg_match('#^https?://#i', $url)) {
                 continue;
             }
-            $host = LEM_Banned_Sites::normalize_domain($url);
+            $host = CLEM_Banned_Sites::normalize_domain($url);
             if ($host === '' || strpos($host, '.') === false) {
                 continue;
             }
@@ -411,7 +412,7 @@ class LEM_Importer {
             if ($url === '' || !preg_match('#^https?://#i', $url)) {
                 continue;
             }
-            $target = LEM_Banned_Sites::split_target($url);
+            $target = CLEM_Banned_Sites::split_target($url);
             if ($target['domain'] === '' || $target['account'] === '') {
                 continue;
             }
@@ -429,7 +430,7 @@ class LEM_Importer {
      */
     private function sync_entity_targets($entity_id, array $targets, $label) {
         global $wpdb;
-        $table = $wpdb->prefix . 'lem_banned_sites';
+        $table = $wpdb->prefix . 'clem_banned_sites';
         $added = 0;
 
         foreach ($targets as $target) {
@@ -469,7 +470,7 @@ class LEM_Importer {
         }
 
         if ($added > 0) {
-            lem()->banned_sites->flush_cache();
+            clem_plugin()->banned_sites->flush_cache();
         }
         return $added;
     }
@@ -556,7 +557,7 @@ class LEM_Importer {
      *                      см. resolve_exclusion()
      */
     public function import_entries(array $data, $type_override = null, $trusted = true) {
-        return LEM_Registry_Sync::with_lock(function () use ($data, $type_override, $trusted) {
+        return CLEM_Registry_Sync::with_lock(function () use ($data, $type_override, $trusted) {
             return $this->import_entries_locked($data, $type_override, $trusted);
         });
     }
@@ -570,12 +571,12 @@ class LEM_Importer {
     }
 
     public function import_snapshot(array $data, $type, array $meta) {
-        return LEM_Registry_Sync::apply($this, $data, $type, $meta);
+        return CLEM_Registry_Sync::apply($this, $data, $type, $meta);
     }
 
     private function import_entries_locked(array $data, $type_override, $trusted) {
         global $wpdb;
-        $table = $wpdb->prefix . LEM_TABLE;
+        $table = $wpdb->prefix . CLEM_TABLE;
 
         $added = 0;
         $skipped = 0;
@@ -604,7 +605,7 @@ class LEM_Importer {
             )));
 
             if (!$is_person) {
-                $aliases = LEM_Scanner::organization_aliases($name, $aliases);
+                $aliases = CLEM_Scanner::organization_aliases($name, $aliases);
             }
 
             $date_in = $this->parse_date($entry['date_included'] ?? $entry['dateIn'] ?? null);
@@ -621,7 +622,7 @@ class LEM_Importer {
             if ($verified && $wpdb->last_error !== '') { throw new RuntimeException('snapshot row read failed'); }
             // A file/partial import is not a complete snapshot, even if its caller
             // used the old default trusted=true flag. Never roll back a verified set.
-            $copy_only = !$verified && LEM_Registry_Sync::has_snapshot($type);
+            $copy_only = !$verified && CLEM_Registry_Sync::has_snapshot($type);
             if ($copy_only && !$existing) { $skipped++; continue; }
             if ($existing) {
                 $date_out = self::resolve_exclusion($existing->date_excluded, $date_out, $verified && $trusted);
@@ -699,10 +700,10 @@ class LEM_Importer {
             }
         }
 
-        lem()->entities->flush_cache();
+        clem_plugin()->entities->flush_cache();
         return ['added' => $added, 'updated' => $updated, 'skipped' => $skipped,
                 'domains' => $domains, 'total' => count($data),
-                'retained_verified_snapshot' => !$this->verified_generation && $type_override && LEM_Registry_Sync::has_snapshot($type_override)];
+                'retained_verified_snapshot' => !$this->verified_generation && $type_override && CLEM_Registry_Sync::has_snapshot($type_override)];
     }
 
     /**
@@ -732,7 +733,7 @@ class LEM_Importer {
      */
     public function import_banned_sites($file = null) {
         if ($file === null) {
-            $file = LEM_DATA_DIR . '/banned-sites.json';
+            $file = CLEM_DATA_DIR . '/banned-sites.json';
         }
         if (!file_exists($file)) {
             return ['added' => 0, 'skipped' => 0, 'error' => "File not found: $file"];
@@ -745,7 +746,7 @@ class LEM_Importer {
         }
 
         global $wpdb;
-        $table   = $wpdb->prefix . 'lem_banned_sites';
+        $table   = $wpdb->prefix . 'clem_banned_sites';
         $added   = 0;
         $skipped = 0;
         $typed   = 0;
@@ -757,9 +758,9 @@ class LEM_Importer {
                 $skipped++;
                 continue;
             }
-            $type = LEM_Banned_Sites::clean_registry($entry['type'] ?? '');
+            $type = CLEM_Banned_Sites::clean_registry($entry['type'] ?? '');
 
-            $result = lem()->banned_sites->insert([
+            $result = clem_plugin()->banned_sites->insert([
                 'domain'   => $raw,
                 'label'    => $entry['label'] ?? '',
                 'registry' => $type,
@@ -774,7 +775,7 @@ class LEM_Importer {
             // Домен уже заведён. До версии 1.12.0 тип из файла не сохранялся,
             // и такие домены выглядели как добавленные вручную
             if ($type !== '') {
-                $target = LEM_Banned_Sites::split_target($raw);
+                $target = CLEM_Banned_Sites::split_target($raw);
                 /* phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names come from WordPress; values are parameterized, and SQL fragments are fixed/allowlisted or generated placeholders. Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Writes invalidate the plugin caches; migration writes run before readers. */
                 $typed += (int) $wpdb->query($wpdb->prepare(
                     "UPDATE $table SET registry = %s
@@ -786,631 +787,89 @@ class LEM_Importer {
         }
 
         if ($typed > 0) {
-            lem()->banned_sites->flush_cache();
+            clem_plugin()->banned_sites->flush_cache();
         }
 
-        lem()->banned_sites->flush_cache();
+        clem_plugin()->banned_sites->flush_cache();
         return ['added' => $added, 'skipped' => $skipped, 'typed' => $typed];
     }
 
-    /* ------------------------------------------------------------------
-     * Registry fetchers (online sources)
-     * ------------------------------------------------------------------ */
-
     public function fetch_all($log_callback = null) {
-        $result = LEM_Registry_Sync::with_lock(function () use ($log_callback) {
+        $this->last_fetch_domains = 0;
+        $this->last_fetch_updated = false;
+        if (!clem_plugin()->channel->is_enabled()) {
+            return [CLEM_Channel::disabled_message()];
+        }
+        $result = CLEM_Registry_Sync::with_lock(function () use ($log_callback) {
             return $this->fetch_all_locked($log_callback);
         });
         return isset($result['error']) ? [$result['error']] : $result;
     }
 
-    private function fetch_all_locked($log_callback = null) {
-        $log     = $log_callback ?: function ($msg) {};
-        $errors  = [];
-        $diagnostics = [];
-        $domains = 0;
-
-        // Всё, что появится в реестре после этой отметки, считается новичком
+    private function fetch_all_locked($log_callback) {
+        $log = $log_callback ?: static function ($message) {};
         $started = current_time('mysql');
+        $errors = [];
+        $diagnostics = [];
         $sources = [];
-        global $wpdb;
-        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
-        $had_entities = (int) $wpdb->get_var(
-            "SELECT COUNT(*) FROM {$wpdb->prefix}lem_entities"
-        ) > 0;
-        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
+        $domains = 0;
+        $updated = 0;
 
-        $fetchers = [
-            'inoagent'    => 'fetch_inoagents',
-            'extremist'   => 'fetch_extremist_orgs',
-            'terrorist'   => 'fetch_terrorist_orgs',
-            'undesirable' => 'fetch_undesirable_orgs',
-        ];
-
-        foreach ($fetchers as $type => $method) {
-            $label = self::REGISTRY_LABELS[$type] ?? $type;
-            $log("Fetching: $type...");
-            $result = $this->$method();
-
-            if (!isset($result['error'])) {
-                $domains += (int) ($result['domains'] ?? 0);
-                $sources[$type] = 'official';
-                $log("  OK: added={$result['added']}, updated={$result['updated']}, total={$result['total']}");
+        foreach (CLEM_Registry_Sync::TYPES as $type) {
+            $result = $this->fetch_from_channel($type);
+            if (isset($result['error'])) {
+                $sources[$type] = CLEM_Registry_Sync::has_snapshot($type) ? 'retained' : 'local';
+                $diagnostics[$type] = [$result['error']];
+                $errors[] = self::REGISTRY_LABELS[$type] . ': ' . $result['error'];
+                $log(end($errors));
                 continue;
             }
-
-            $log("  Официальный источник недоступен: {$result['error']}");
-
-            // Цепочка запасных источников от свежего к старому. Причину отказа
-            // каждого звена сохраняем: администратор должен видеть, что именно
-            // не ответило, а не последнюю ошибку в цепочке
-            $diagnostics[$type] = [$result['error']];
-
-            // Канал: срез раз в сутки, свежее любой копии
-            $channel = $this->fetch_from_channel($type, $log);
-            if (!isset($channel['error'])) {
-                $domains += (int) ($channel['domains'] ?? 0);
-                $sources[$type] = 'channel';
-                // Канал - рабочий источник. Причина переключения остаётся
-                // в диагностике, но успешное обновление не требует предупреждения.
-                $log('  Данные взяты из канала реестров');
-                continue;
-            }
-            if ($channel['error'] !== '') {
-                $diagnostics[$type][] = $channel['error'];
-            }
-
-            // Зеркало в репозитории плагина обновляется с выпусками
-            if (isset(self::MIRRORS[$type])) {
-                $mirror = $this->fetch_mirror(self::MIRRORS[$type], $type);
-                if (!isset($mirror['error'])) {
-                    $domains += (int) ($mirror['domains'] ?? 0);
-                    $sources[$type] = !empty($mirror['retained_verified_snapshot']) ? 'retained' : 'mirror';
-                    $log("  Зеркало: added={$mirror['added']}, updated={$mirror['updated']}");
-                    $errors[] = "$label: " . implode('; ', $diagnostics[$type]) . (!empty($mirror['retained_verified_snapshot'])
-                        ? '. Сохранён прежний подтверждённый список' : '. Перечень взят из зеркала');
-                    continue;
-                }
-                $diagnostics[$type][] = $mirror['error'];
-            }
-
-            $fallback_files = [
-                'inoagent'    => 'foreign-agents-raw.json',
-                'extremist'   => 'extremist-orgs.json',
-                'terrorist'   => 'terrorist-orgs.json',
-                'undesirable' => 'undesirable-orgs.json',
-            ];
-            $fallback = LEM_DATA_DIR . '/' . $fallback_files[$type];
-
-            // Встроенный перечень никуда не делся, поэтому сайт продолжает
-            // работать. Сообщение должно говорить именно это, а не пугать
-            if (file_exists($fallback)) {
-                $fb_result = $this->import_json($fallback, $type, false);
-                $domains  += (int) ($fb_result['domains'] ?? 0);
-                $sources[$type] = !empty($fb_result['retained_verified_snapshot']) ? 'retained' : 'bundled';
-                $log("  Fallback: added={$fb_result['added']}, updated={$fb_result['updated']}");
-                $errors[] = "$label: " . implode('; ', $diagnostics[$type]) . (!empty($fb_result['retained_verified_snapshot'])
-                    ? '. Сохранён прежний подтверждённый список' : '. Применён встроенный перечень, сайт работает по нему');
-            } else {
-                $log("  No fallback file found: $fallback");
-                $sources[$type] = 'none';
-                $errors[] = "$label: " . implode('; ', $diagnostics[$type]) . '. Встроенного перечня нет';
-            }
+            $sources[$type] = 'channel';
+            $domains += (int) ($result['domains'] ?? 0);
+            $updated++;
+            $log(self::REGISTRY_LABELS[$type] . ": added={$result['added']}, updated={$result['updated']}");
         }
 
-        // Обновление запрещённых доменов из встроенного JSON
-        $log('Обновление реестра запрещённых доменов...');
-        $bs = $this->import_banned_sites();
-        $log("  Добавлено={$bs['added']}, пропущено={$bs['skipped']}");
-        if ($domains > 0) {
-            $log("  Из записей реестра взято новых доменов: $domains");
-        }
-
-        // Брендовые алиасы поверх свежих официальных названий
-        $ba = $this->apply_brand_aliases();
-        $log("  Брендовых алиасов применено: {$ba['applied']}");
-
-        // Раз в цикл обновления проверяем канал, даже если он не понадобился.
-        // Иначе о его доступности узнаёшь ровно в тот момент, когда он нужен,
-        // то есть когда официальный источник уже упал
-        if (lem()->channel->is_enabled()) {
-            $health = lem()->channel->health();
-            update_option('lem_channel_health', [
-                'ok'            => !empty($health['ok']),
-                'last_snapshot' => $health['last_snapshot'],
-                'error'         => $health['error'],
-                'checked_at'    => current_time('mysql'),
-            ], false);
-            $log($health['ok']
-                ? '  Канал реестров доступен, срез: ' . $health['last_snapshot']
-                : '  Канал реестров недоступен: ' . $health['error']);
-        }
-
-        update_option('lem_list_version', gmdate('Y-m-d H:i:s'));
-        update_option('lem_last_fetch_time', current_time('mysql'));
-        // Откуда пришли данные в этот раз: видно в админке
-        update_option('lem_last_fetch_sources', $sources, false);
-        if (!empty($diagnostics)) {
-            update_option('lem_last_fetch_diagnostics', $diagnostics, false);
-        } else {
-            delete_option('lem_last_fetch_diagnostics');
-        }
-        if (!empty($errors)) {
-            update_option('lem_last_fetch_error', implode('; ', $errors));
-        } else {
-            delete_option('lem_last_fetch_error');
-        }
-
-        lem()->entities->flush_cache();
         $this->last_fetch_domains = $domains;
-        if (isset(lem()->cache)) { lem()->cache->purge_all_marked(); }
-
-        // Реестр обновился - значит, в старых публикациях могли появиться
-        // упоминания и ссылки, которых вчера ещё не было. Проверяем архив.
-        // При первичном наполнении новичками считался бы весь реестр,
-        // поэтому отсечку берём с текущего момента
-        $first_run = !get_option('lem_first_fetch_done');
-        update_option('lem_first_fetch_done', 1, false);
-
-        lem()->rescan->enqueue(
-            ($first_run || !$had_entities) ? 'initial' : 'registry-update',
-            $started
-        );
-
-        if (isset(lem()->people)) {
-            lem()->people->queue();
+        $this->last_fetch_updated = $updated > 0;
+        update_option('clem_last_fetch_sources', $sources, false);
+        if ($errors) {
+            update_option('clem_last_fetch_diagnostics', $diagnostics, false);
+            update_option('clem_last_fetch_error', implode('; ', $errors), false);
+        } else {
+            delete_option('clem_last_fetch_diagnostics');
+            delete_option('clem_last_fetch_error');
         }
 
+        if ($updated) {
+            $this->import_banned_sites();
+            $this->apply_brand_aliases();
+            update_option('clem_list_version', gmdate('Y-m-d H:i:s'));
+            update_option('clem_last_fetch_time', current_time('mysql'));
+            clem_plugin()->entities->flush_cache();
+            clem_plugin()->cache->purge_all_marked();
+
+            $first_run = !get_option('clem_first_fetch_done');
+            update_option('clem_first_fetch_done', 1, false);
+            clem_plugin()->rescan->enqueue($first_run ? 'initial' : 'registry-update', $started);
+        }
+
+        clem_plugin()->people->queue();
         return $errors;
     }
 
-    /** Гриды реестров на reestrs.minjust.gov.ru. */
-    const INOAGENT_GRID    = '39b95df9-9a68-6b6d-e1e3-e6388507067e';
-    const EXTREMIST_GRID   = '59961ebb-9f0e-d885-7ebc-b90399923b03';
-    const UNDESIRABLE_GRID = 'c2d1692e-a9f6-5a79-13ee-5da5b42980df';
-
-    /** Копии перечней в репозитории плагина, см. fetch_mirror(). */
-    const MIRRORS = [
-        'extremist' => self::EXTREMIST_MIRROR_URL,
-        'terrorist' => self::TERROR_MIRROR_URL,
-    ];
-
-    /**
-     * Все записи реестра Минюста, постранично.
-     *
-     * Либо реестр целиком, либо ошибка с причиной. Обрыв на середине тоже
-     * ошибка: половина реестра, выданная за весь, хуже честного отказа,
-     * после которого плагин сходит за полным списком в канал.
-     *
-     * @return array{values: array}|array{error: string}
-     */
-    private function minjust_revision($grid) {
-        $response = LEM_Http::get('https://reestrs.minjust.gov.ru/rest/registry/' . $grid . '/info', ['timeout' => 30]);
-        if (is_wp_error($response)) { return ['error' => 'реестр Минюста не ответил: ' . $response->get_error_message()]; }
-        if (wp_remote_retrieve_response_code($response) !== 200) { return ['error' => __('реестр Минюста не подтвердил версию списка', 'legal-entity-marks')]; }
-        $info = json_decode(wp_remote_retrieve_body($response), true);
-        $revision = $info['lastModified'] ?? null;
-        if ((!is_int($revision) && !is_string($revision)) || !ctype_digit((string) $revision) || (int) $revision <= 0) {
-            return ['error' => __('реестр Минюста вернул неподходящую версию списка', 'legal-entity-marks')];
-        }
-        return ['revision' => (string) $revision];
+    public function fetch_registry($type) {
+        return CLEM_Registry_Sync::with_lock(function () use ($type) {
+            return $this->fetch_from_channel($type);
+        });
     }
 
-    private function fetch_minjust_values($grid) {
-        $before = $this->minjust_revision($grid);
-        if (isset($before['error'])) { return $before; }
-        $url = 'https://reestrs.minjust.gov.ru/rest/registry/' . $grid . '/values';
-        $values = [];
-        $total = null;
-        $seen = [];
-        $limit = 500;
-        do {
-            $offset = count($values);
-            $response = LEM_Http::post($url, [
-                'timeout' => 30, 'headers' => ['Content-Type' => 'application/json'],
-                'body' => wp_json_encode(['offset' => $offset, 'limit' => $limit, 'search' => '']),
-            ]);
-            if (is_wp_error($response)) { return ['error' => 'реестр Минюста не ответил: ' . $response->get_error_message()]; }
-            if (wp_remote_retrieve_response_code($response) !== 200) { return ['error' => __('реестр Минюста не отдал весь список', 'legal-entity-marks')]; }
-            $data = json_decode(wp_remote_retrieve_body($response), true);
-            if (!is_array($data) || !is_array($data['values'] ?? null)
-                || !is_int($data['size'] ?? null) || $data['size'] <= 0 || $data['size'] > 100000
-                || ($total !== null && $total !== $data['size'])) {
-                return ['error' => __('полнота списка Минюста не подтверждена', 'legal-entity-marks')];
-            }
-            $total = $data['size'];
-            if (count($data['values']) !== min($limit, $total - $offset)) {
-                return ['error' => __('реестр Минюста вернул неполную страницу', 'legal-entity-marks')];
-            }
-            foreach ($data['values'] as $row) {
-                if (!is_array($row)) { return ['error' => __('реестр Минюста вернул повреждённую строку', 'legal-entity-marks')]; }
-                foreach ($row as $field => $value) {
-                    if (substr((string) $field, -2) === '_s' && $value !== null && !is_string($value)) {
-                        return ['error' => __('реестр Минюста вернул повреждённое поле', 'legal-entity-marks')];
-                    }
-                }
-                $key = hash('sha256', wp_json_encode($row));
-                if (isset($seen[$key])) { return ['error' => __('страницы реестра Минюста пересекаются', 'legal-entity-marks')]; }
-                $seen[$key] = true;
-                $values[] = $row;
-            }
-        } while (count($values) < $total);
-        $after = $this->minjust_revision($grid);
-        if (isset($after['error'])) { return $after; }
-        if ($before['revision'] !== $after['revision']) { return ['error' => __('реестр Минюста изменился во время загрузки', 'legal-entity-marks')]; }
-        return ['values' => $values, 'meta' => [
-            'source' => 'official', 'complete' => true, 'count' => count($values),
-            'version' => $grid . ':' . $before['revision'], 'fetched_at' => gmdate('c'),
-            'source_modified' => gmdate('c', (int) floor((int) $before['revision'] / 1000)),
-        ]];
-    }
-
-    /** Иноагенты: REST API reestrs.minjust.gov.ru. */
-    public function fetch_inoagents() {
-        return LEM_Registry_Sync::with_lock(function () { return $this->fetch_inoagents_locked(); });
-    }
-
-    private function fetch_inoagents_locked() {
-        $result = $this->fetch_minjust_values(self::INOAGENT_GRID);
-        if (isset($result['error'])) {
-            return $result;
-        }
-
-        $entries = [];
-        foreach ($result['values'] as $item) {
-            $name = trim($item['field_2_s'] ?? '');
-            if (mb_strlen($name) < 3) {
-                return ['error' => __('реестр Минюста содержит строку без наименования', 'legal-entity-marks')];
-            }
-            // Убираем декоративные кавычки только у имён, обёрнутых в кавычки целиком,
-            // иначе ломаются имена с псевдонимом на конце: Иванов Иван "Псевдоним"
-            if (preg_match('/^[«"]/u', $name)) {
-                $name = trim(preg_replace('/^[«"]+|[»"]+$/u', '', $name));
-            }
-
-            $type_str  = $item['field_7_s'] ?? '';
-            $is_person = ($type_str === 'Физические лица') ? 1 : 0;
-            $dob       = $item['field_12_s'] ?? '';
-
-            // Алиасы для физлиц: "Фамилия Имя" из полного ФИО + псевдонимы из кавычек
-            $aliases = [];
-            if ($is_person) {
-                // Псевдонимы: ФИО «Псевдоним (Alias)» → Псевдоним, Alias
-                if (preg_match('/[«"](.+?)[»"]?$/u', $name, $pm)) {
-                    foreach (preg_split('/[()«»"]+/u', $pm[1]) as $pseudo) {
-                        $pseudo = trim($pseudo, " \t,;");
-                        // Короткие чисто кириллические псевдонимы («Белый») дают ложные срабатывания
-                        $distinctive = preg_match('/[\sA-Za-z0-9-]/u', $pseudo) || mb_strlen($pseudo) >= 6;
-                        if (mb_strlen($pseudo) >= 3 && $distinctive) {
-                            $aliases[] = $pseudo;
-                        }
-                    }
-                }
-                // Убираем псевдоним (включая незакрытую кавычку): ФИО «Псевдоним → ФИО
-                $clean_name = preg_replace('/\s*[«"].*$/u', ' ', $name);
-                $parts = preg_split('/\s+/', trim($clean_name));
-                if (count($parts) >= 2) {
-                    $aliases[] = $parts[0] . ' ' . $parts[1];
-                }
-            }
-
-            $entry = [
-                'name'      => $name,
-                'type'      => 'inoagent',
-                'aliases'   => $aliases,
-                'is_person' => $is_person,
-            ];
-
-            // Минюст публикует официальные ресурсы организации (field_6_s).
-            // Это лучший источник доменов для сканера ссылок: он точный,
-            // обновляется вместе с реестром и не требует ручного списка
-            if (!empty($item['field_6_s'])) {
-                $entry['sites']    = self::extract_own_domains($item['field_6_s']);
-                $entry['accounts'] = self::extract_social_accounts($item['field_6_s']);
-            }
-
-            if (!empty($item['field_4_s'])) {
-                $entry['dateIn'] = $item['field_4_s'];
-            }
-            if (!empty($item['field_5_s'])) {
-                $entry['date_excluded'] = $item['field_5_s'];
-            }
-
-            $entries[] = $entry;
-        }
-
-        if (empty($entries)) {
-            return ['error' => __('реестр Минюста ответил, но записей не разобрано', 'legal-entity-marks')];
-        }
-        return $this->import_snapshot($entries, 'inoagent', $result['meta']);
-    }
-
-    /** Страница Минюста с перечнем экстремистских организаций. */
-    const EXTREMIST_URL = 'https://minjust.gov.ru/ru/documents/7822/';
-
-    /**
-     * Зеркало перечня в репозитории плагина.
-     *
-     * Используется после официальной страницы и канала реестров.
-     * Зеркало обновляется с выпусками и остаётся перед снимком из поставки.
-     */
-    // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Documented JSON registry data mirror; never enqueued or executed.
-    const EXTREMIST_MIRROR_URL = 'https://raw.githubusercontent.com/chekazoid/legal-entity-marks/main/data/extremist-orgs.json';
-
-    public function fetch_extremist_orgs() {
-        return LEM_Registry_Sync::with_lock(function () { return $this->fetch_extremist_orgs_locked(); });
-    }
-
-    private function fetch_extremist_orgs_locked() {
-        $result = $this->fetch_minjust_values(self::EXTREMIST_GRID);
-        if (isset($result['error'])) { return $result; }
-        $entries = [];
-        foreach ($result['values'] as $item) {
-            $name = trim($item['field_2_s'] ?? '') ?: trim($item['field_3_s'] ?? '');
-            $entries[] = ['name' => $name, 'type' => 'extremist', 'is_person' => 0,
-                'aliases' => [], 'date_included' => $item['field_6_s'] ?? null];
-        }
-        return $this->import_snapshot($entries, 'extremist', $result['meta']);
-    }
-
-    /**
-     * Перечень из зеркала в репозитории плагина.
-     *
-     * Зеркало обновляется с выпусками, то есть это копия, и исключённых она
-     * не возвращает. Опрашивается после канала: тот свежее.
-     *
-     * @return array результат импорта либо ['error' => причина]
-     */
-    private function fetch_mirror($url, $type) {
-        $mirror = $this->fetch_url($url, 45);
-        if (isset($mirror['error'])) {
-            return ['error' => 'зеркало недоступно (' . $mirror['error'] . ')'];
-        }
-
-        $data = json_decode($mirror['body'], true);
-        if (!is_array($data) || empty($data)) {
-            return ['error' => __('зеркало вернуло неожиданный ответ', 'legal-entity-marks')];
-        }
-
-        return $this->import_entries($data, $type, false);
-    }
-
-    /** Единый перечень ФСБ; при недоступности HTTPS используется канал. */
-    const TERROR_URL = 'https://www.fsb.ru/fsb/npd/terror.htm';
-
-    /**
-     * Запасной источник - копия перечня в репозитории плагина.
-     * Раньше здесь стоял nac.gov.ru, но там список рисует скрипт уже в браузере:
-     * страница отдавала 200, разбор давал ноль записей, и наружу вылезала
-     * ошибка парсера вместо настоящей причины.
-     */
-    // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Documented JSON registry data mirror; never enqueued or executed.
-    const TERROR_MIRROR_URL = 'https://raw.githubusercontent.com/chekazoid/legal-entity-marks/main/data/terrorist-orgs.json';
-
-    public function fetch_terrorist_orgs() {
-        return LEM_Registry_Sync::with_lock(function () { return $this->fetch_terrorist_orgs_locked(); });
-    }
-
-    private function fetch_terrorist_orgs_locked() {
-        $result = $this->fetch_url(self::TERROR_URL, 45);
-        if (isset($result['error'])) {
-            return ['error' => 'fsb.ru не открылся (' . $result['error'] . ')'];
-        }
-
-        $entries = $this->parse_generic_list($result['body']);
-        if (empty($entries)) {
-            return ['error' => 'fsb.ru ответил, но список не разобран (получено '
-                . strlen($result['body']) . ' байт)'];
-        }
-        foreach ($entries as &$e) {
-            $e['type'] = 'terrorist';
-        }
-        unset($e);
-        return $this->import_snapshot($entries, 'terrorist', [
-            'source' => 'official', 'complete' => true, 'count' => count($entries),
-            'version' => hash('sha256', $result['body']), 'fetched_at' => gmdate('c'),
-            'source_modified' => $result['source_modified'] ?? '',
-        ]);
-    }
-
-    /**
-     * Нежелательные организации: REST API reestrs.minjust.gov.ru.
-     *
-     * Старую страницу minjust.gov.ru/ru/documents/7756/ здесь больше не трогаем:
-     * с февраля 2026 она отвечает 404. Плагин уходил на неё всякий раз, когда
-     * API не ответил, и вместо настоящей причины показывал этот 404.
-     */
-    public function fetch_undesirable_orgs() {
-        return LEM_Registry_Sync::with_lock(function () { return $this->fetch_undesirable_orgs_locked(); });
-    }
-
-    private function fetch_undesirable_orgs_locked() {
-        $result = $this->fetch_minjust_values(self::UNDESIRABLE_GRID);
-        if (isset($result['error'])) {
-            return $result;
-        }
-
-        $entries = [];
-        foreach ($result['values'] as $item) {
-            $name = trim($item['field_5_s'] ?? '');
-            if (mb_strlen($name) < 3) {
-                return ['error' => __('реестр Минюста содержит строку без наименования', 'legal-entity-marks')];
-            }
-            $entry = [
-                'name'      => $name,
-                'type'      => 'undesirable',
-                'aliases'   => [],
-                'is_person' => false,
-            ];
-            $status = $item['field_10_s'] ?? '';
-            if ($status === 'Исключена') {
-                $entry['date_excluded'] = $item['field_7_s'] ?? null;
-                $entry['is_active'] = 0;
-            }
-            if (!empty($item['field_2_s'])) {
-                $entry['dateIn'] = $item['field_2_s'];
-            }
-            $entries[] = $entry;
-        }
-
-        if (empty($entries)) {
-            return ['error' => __('реестр Минюста ответил, но записей не разобрано', 'legal-entity-marks')];
-        }
-        return $this->import_snapshot($entries, 'undesirable', $result['meta']);
-    }
-
-    /* ------------------------------------------------------------------
-     * Helpers
-     * ------------------------------------------------------------------ */
-
-    /**
-     * Данные из канала реестров.
-     *
-     * @return array результат импорта либо ['error' => причина]. Пустая причина -
-     *               канал такой реестр не ведёт, упоминать его в сообщении незачем
-     */
-    private function fetch_from_channel($type, $log) {
-        if (!LEM_Channel::supports($type)) {
-            $log('  Канал такой реестр не ведёт');
-            return ['error' => ''];
-        }
-        if (!lem()->channel->is_enabled()) {
-            $log('  Канал реестров выключен в настройках');
-            return ['error' => __('канал реестров выключен в настройках', 'legal-entity-marks')];
-        }
-
-        $log('  Пробуем канал реестров...');
-        $channel = lem()->channel->fetch($type);
+    private function fetch_from_channel($type) {
+        $channel = clem_plugin()->channel->fetch($type);
         if (isset($channel['error'])) {
-            $log("  Канал не помог: {$channel['error']}");
-            return ['error' => 'канал реестров: ' . $channel['error']];
+            return $channel;
         }
-
-        $imported = $this->import_snapshot($channel['entries'], $type, $channel['meta']);
-        if (isset($imported['error'])) { return $imported; }
-        $log("  Канал: получено {$channel['count']}, добавлено {$imported['added']}, "
-            . "обновлено {$imported['updated']}");
-        return $imported;
-    }
-
-    /**
-     * Опрос источников: что именно видит этот сервер.
-     *
-     * Нужна поддержке. Хостинг может резать исходящие соединения, источник может
-     * банить диапазон адресов - со стороны это выглядит как «плагин не обновляет
-     * реестры», а без доступа к серверу причину не увидеть.
-     *
-     * @return array<int, array{name: string, url: string, ok: bool, detail: string}>
-     */
-    public function check_sources() {
-        $out = [];
-
-        // Реестры Минюста отвечают на POST, обычный GET там ничего не скажет
-        $api = [
-            'Иностранные агенты'        => self::INOAGENT_GRID,
-            'Нежелательные организации' => self::UNDESIRABLE_GRID,
-        ];
-        foreach ($api as $name => $grid) {
-            $url      = 'https://reestrs.minjust.gov.ru/rest/registry/' . $grid . '/values';
-            $response = LEM_Http::post($url, [
-                'timeout'   => 20,
-                'headers'   => ['Content-Type' => 'application/json'],
-                'body'      => wp_json_encode(['offset' => 0, 'limit' => 1, 'search' => '']),
-            ]);
-
-            if (is_wp_error($response)) {
-                $out[] = ['name' => $name, 'url' => $url, 'ok' => false,
-                          'detail' => 'соединение не удалось: ' . $response->get_error_message()];
-                continue;
-            }
-            $code = wp_remote_retrieve_response_code($response);
-            $data = json_decode(wp_remote_retrieve_body($response), true);
-            $ok   = $code === 200 && isset($data['values']);
-
-            // Поле с общим числом записей у реестров называется по-разному,
-            // а в ответе на пробный запрос его может не быть вовсе
-            $total = null;
-            foreach (['count', 'total', 'totalCount', 'recordsTotal'] as $key) {
-                if (isset($data[$key]) && (int) $data[$key] > 0) {
-                    $total = (int) $data[$key];
-                    break;
-                }
-            }
-
-            $out[] = [
-                'name' => $name, 'url' => $url, 'ok' => $ok,
-                'detail' => $ok
-                    ? ('отвечает' . ($total !== null ? ', записей в реестре: ' . $total : ''))
-                    : "HTTP $code, ответ не похож на реестр",
-            ];
-        }
-
-        // Страницы, которые разбираются как HTML
-        $pages = [
-            'Экстремистские организации'   => self::EXTREMIST_URL,
-            'Террористические организации' => self::TERROR_URL,
-        ];
-        foreach ($pages as $name => $url) {
-            $result = $this->fetch_url($url, 30);
-            if (isset($result['error'])) {
-                $out[] = ['name' => $name, 'url' => $url, 'ok' => false,
-                          'detail' => 'не открылась: ' . $result['error']];
-                continue;
-            }
-            $parsed = $name === 'Экстремистские организации'
-                ? $this->parse_minjust_list($result['body'])
-                : $this->parse_generic_list($result['body']);
-            $out[] = [
-                'name' => $name, 'url' => $url, 'ok' => !empty($parsed),
-                'detail' => 'HTTP 200, получено ' . strlen($result['body']) . ' байт, '
-                    . 'разобрано записей: ' . count($parsed),
-            ];
-        }
-
-        // Запасные источники: без них не понять, почему сайт ушёл на встроенный перечень
-        $channel = lem()->channel->health();
-        $out[]   = [
-            'name'   => 'Канал реестров',
-            'url'    => lem()->channel->base_url() . 'health',
-            'ok'     => !empty($channel['ok']),
-            'detail' => !empty($channel['ok'])
-                ? 'отвечает, срез: ' . $channel['last_snapshot']
-                : 'не отвечает: ' . $channel['error'],
-        ];
-
-        $mirror_names = [
-            'extremist' => 'Зеркало экстремистского перечня',
-            'terrorist' => 'Зеркало террористического перечня',
-        ];
-        foreach (self::MIRRORS as $type => $url) {
-            $mirror = $this->fetch_url($url, 30);
-            $data   = isset($mirror['body']) ? json_decode($mirror['body'], true) : null;
-            $out[]  = [
-                'name' => $mirror_names[$type],
-                'url'  => $url,
-                'ok'   => is_array($data) && !empty($data),
-                'detail' => isset($mirror['error'])
-                    ? 'не открылось: ' . $mirror['error']
-                    : 'записей: ' . (is_array($data) ? count($data) : 0),
-            ];
-        }
-
-        return $out;
-    }
-
-    public function fetch_url($url, $timeout = 30) {
-        $response = LEM_Http::get($url, [
-            'timeout'    => $timeout,
-            'user-agent' => 'Mozilla/5.0 (compatible; LegalEntityMarksBot/1.0)',
-        ]);
-        if (is_wp_error($response)) {
-            return ['error' => $response->get_error_message()];
-        }
-        $code = wp_remote_retrieve_response_code($response);
-        if ($code !== 200) {
-            return ['error' => "HTTP $code"];
-        }
-        return ['body' => wp_remote_retrieve_body($response)];
+        return $this->import_snapshot($channel['entries'], $type, $channel['meta']);
     }
 
     private function parse_date($raw) {
@@ -1426,71 +885,4 @@ class LEM_Importer {
         return null;
     }
 
-    private function parse_minjust_list($html) {
-        libxml_use_internal_errors(true);
-        $doc = new DOMDocument();
-        $doc->loadHTML('<?xml encoding="UTF-8">' . $html);
-        libxml_clear_errors();
-
-        $xpath   = new DOMXPath($doc);
-        // Минюст менял структуру: ol/li → div.document p → div.doc p → #documentcontent p
-        $nodes   = $xpath->query('//div[@class="doc"]//p | //div[@id="documentcontent"]//p | //ol/li | //div[contains(@class,"document")]//p');
-        $entries = [];
-
-        foreach ($nodes as $node) {
-            // Нормализуем пробелы (в т.ч. &nbsp;), иначе появляются дубли сущностей
-            $text = trim(preg_replace('/[\x{00A0}\s]+/u', ' ', $node->textContent));
-            $text = preg_replace('/^\d+[\.\)]\s*/', '', $text);
-            if (mb_strlen($text) < 5) {
-                continue;
-            }
-            $name = preg_split('/\s*[-–—]\s*(?:решени|на основании|Верх|Реш)/ui', $text)[0];
-            $name = preg_replace('/\s*\(.*$/', '', $name);
-            $name = trim($name);
-            // Канцелярские абзацы страницы (тексты решений) - не названия организаций
-            if (preg_match('/^(Решение|Приговор|Определение|Постановление)\b/u', $name)) {
-                continue;
-            }
-            if (mb_strlen($name) >= 5) {
-                $entries[] = ['name' => $name, 'aliases' => [], 'is_person' => false];
-            }
-        }
-        return $entries;
-    }
-
-    private function parse_generic_list($html) {
-        // A recovered/truncated DOM is insufficient evidence for removing rows.
-        if (!preg_match('~</html>\s*$~i', trim($html)) || !preg_match('~</body>~i', $html)
-            || substr_count(strtolower($html), '<table') !== substr_count(strtolower($html), '</table>')) {
-            return [];
-        }
-        $previous_errors = libxml_use_internal_errors(true);
-        $doc = new DOMDocument();
-        $doc->loadHTML('<?xml encoding="UTF-8">' . $html);
-        libxml_clear_errors();
-        libxml_use_internal_errors($previous_errors);
-        $xpath = new DOMXPath($doc);
-        $best = [];
-        foreach ($xpath->query('//table') as $table) {
-            $numbered = [];
-            foreach ($xpath->query('./tr | ./tbody/tr | ./thead/tr', $table) as $row) {
-                $cells = $xpath->query('./td | ./th', $row);
-                if ($cells->length < 2) { continue; }
-                $number = trim($cells->item(0)->textContent);
-                if (!preg_match('/^(\d{1,5})\.?$/', $number, $m)) { continue; }
-                // A layout cell containing another table is not an organisation.
-                if ($xpath->query('.//table', $cells->item(1))->length) { return []; }
-                $name = trim(preg_replace('/[\x{00A0}\s]+/u', ' ', $cells->item(1)->textContent));
-                $n = (int) $m[1];
-                if (isset($numbered[$n]) || mb_strlen($name) < 3 || mb_strlen($name) > 16384) { return []; }
-                $numbered[$n] = ['name' => $name, 'type' => 'terrorist', 'aliases' => [], 'is_person' => 0];
-            }
-            if (count($numbered) > count($best)) {
-                ksort($numbered, SORT_NUMERIC);
-                if (array_keys($numbered) !== range(1, count($numbered))) { return []; }
-                $best = $numbered;
-            }
-        }
-        return array_values($best);
-    }
 }

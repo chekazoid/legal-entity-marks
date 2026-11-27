@@ -10,7 +10,7 @@ require_once __DIR__ . '/wp-stubs.php';
  *
  * Запуск: php tests/test_channel.php
  */
-define('ABSPATH', '/tmp/'); define('LEM_VERSION', 'test');
+define('ABSPATH', '/tmp/'); define('CLEM_VERSION', 'test');
 function add_action(){} function add_filter(){}
 function trailingslashit($s) { return rtrim($s, '/\\') . '/'; }
 function home_url($p = '') { return 'https://example.org' . $p; }
@@ -35,23 +35,23 @@ function eq($d, $got, $want) {
 }
 
 echo "=== какие реестры канал ведёт ===\n";
-eq('иноагенты',      LEM_Channel::supports('inoagent'), true);
-eq('нежелательные',  LEM_Channel::supports('undesirable'), true);
-eq('террористические', LEM_Channel::supports('terrorist'), true);
-eq('экстремистские', LEM_Channel::supports('extremist'), true);
+eq('иноагенты',      CLEM_Channel::supports('inoagent'), true);
+eq('нежелательные',  CLEM_Channel::supports('undesirable'), true);
+eq('террористические', CLEM_Channel::supports('terrorist'), true);
+eq('экстремистские', CLEM_Channel::supports('extremist'), true);
 // Перечень Росфинмониторинга не подключаем: тридцать тысяч физлиц
-eq('Росфинмониторинг - нет', LEM_Channel::supports('fedsfm'), false);
-eq('выдуманный тип - нет',   LEM_Channel::supports('нечто'), false);
+eq('Росфинмониторинг - нет', CLEM_Channel::supports('fedsfm'), false);
+eq('выдуманный тип - нет',   CLEM_Channel::supports('нечто'), false);
 
 echo "\n=== адреса выгрузок ===\n";
-$map = LEM_Channel::REGISTRY_MAP;
+$map = CLEM_Channel::REGISTRY_MAP;
 eq('иноагенты -> inoagent',       $map['inoagent'], 'inoagent');
 eq('нежелательные -> undesirable', $map['undesirable'], 'undesirable');
 eq('террористические -> terrorist', $map['terrorist'], 'terrorist');
 eq('экстремистские -> extremist', $map['extremist'] ?? '', 'extremist');
 
 echo "\n=== разбор отказов канала ===\n";
-$explain = new ReflectionMethod('LEM_Channel', 'explain_code');
+$explain = new ReflectionMethod('CLEM_Channel', 'explain_code');
 $explain->setAccessible(true);
 $say = static function ($code, $body = '') use ($explain) {
     return $explain->invoke(null, $code, $body);
@@ -75,12 +75,12 @@ eq('битый ответ не ломает',    $say(502, '<html>oops') !== '',
 
 echo "\n=== таймаут ===\n";
 // Выгрузка иноагентов - четверть мегабайта, пяти секунд по умолчанию мало
-eq('не меньше 30 секунд', LEM_Channel::TIMEOUT >= 30, true);
+eq('не меньше 30 секунд', CLEM_Channel::TIMEOUT >= 30, true);
 
 echo "\n=== что уходит при регистрации сайта ===\n";
 // Состав жёстко зафиксирован: он показан человеку на странице настроек,
 // и любое новое поле должно попадать сначала туда, а не тихо в запрос
-$channel = new LEM_Channel();
+$channel = new CLEM_Channel();
 $payload = $channel->registration_payload('red@example.org');
 $declared = ['install_id', 'site', 'name', 'plugin', 'wordpress', 'php', 'email'];
 sort($declared);
@@ -98,7 +98,7 @@ eq('постоянен',              $channel->install_id(), $id);
 eq('в нём нет адреса сайта', mb_stripos($id, 'example') === false, true);
 
 // Complete snapshot envelope, using an in-memory HTTP response.
-class LEM_Http {
+class CLEM_Http {
     public static $payload = [];
     public static $url = '';
     public static $headers = [];
@@ -107,23 +107,23 @@ class LEM_Http {
         return ['body'=>json_encode(self::$payload),'response'=>['code'=>200]];
     }
 }
-function lem() { static $plugin; if (!$plugin) { $plugin=new class { public function get_settings(){return ['stats_enabled'=>false,'channel_enabled'=>true];} }; } return $plugin; }
+function clem_plugin() { static $plugin; if (!$plugin) { $plugin=new class { public function get_settings(){return ['stats_enabled'=>false,'channel_enabled'=>true,'channel_url'=>CLEM_Channel::DEFAULT_URL];} }; } return $plugin; }
 function is_wp_error($response) { return false; }
 function wp_remote_retrieve_response_code($response) { return $response['response']['code']; }
 function wp_remote_retrieve_body($response) { return $response['body']; }
 $envelope=['registry'=>'inoagent','complete'=>true,'count'=>1,'version'=>'synthetic-v1','fetched_at'=>'2026-11-24T00:00:00Z','source_modified'=>'','entries'=>[['name'=>'Synthetic Alpha','type'=>'inoagent']]];
-LEM_Http::$payload=$envelope;
+CLEM_Http::$payload=$envelope;
 $result=$channel->fetch('inoagent');
 eq('Полный ответ сохраняет метаданные сверки', !isset($result['error']) && $result['meta']['complete'] === true && $result['count'] === 1, true);
-eq('Запрашивается формат полного среза', strpos(LEM_Http::$url,'?format=snapshot') !== false, true);
-eq('Без согласия нет заголовков учёта', LEM_Http::$headers === [], true);
+eq('Запрашивается формат полного среза', strpos(CLEM_Http::$url,'?format=snapshot') !== false, true);
+eq('Без согласия нет заголовков учёта', CLEM_Http::$headers === [], true);
 foreach (['legacy','wrong-registry','wrong-count','incomplete','missing-version'] as $case) {
-    LEM_Http::$payload=$envelope;
-    if($case==='legacy')LEM_Http::$payload=$envelope['entries'];
-    if($case==='wrong-registry')LEM_Http::$payload['registry']='terrorist';
-    if($case==='wrong-count')LEM_Http::$payload['count']=2;
-    if($case==='incomplete')LEM_Http::$payload['complete']=false;
-    if($case==='missing-version')unset(LEM_Http::$payload['version']);
+    CLEM_Http::$payload=$envelope;
+    if($case==='legacy')CLEM_Http::$payload=$envelope['entries'];
+    if($case==='wrong-registry')CLEM_Http::$payload['registry']='terrorist';
+    if($case==='wrong-count')CLEM_Http::$payload['count']=2;
+    if($case==='incomplete')CLEM_Http::$payload['complete']=false;
+    if($case==='missing-version')unset(CLEM_Http::$payload['version']);
     eq('Не подтверждает полноту: '.$case, isset($channel->fetch('inoagent')['error']), true);
 }
 
