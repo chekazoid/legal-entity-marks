@@ -209,8 +209,11 @@ class CLEM_Frontend {
      * @return array ['excluded' => int[], 'forced' => int[]]
      */
     public static function get_overrides($post_id) {
-        $raw = get_post_meta($post_id, CLEM_OVERRIDES_META_KEY, true);
-        $ov  = $raw ? json_decode($raw, true) : [];
+        return self::parse_overrides(get_post_meta($post_id, CLEM_OVERRIDES_META_KEY, true));
+    }
+
+    public static function parse_overrides($raw) {
+        $ov = is_string($raw) ? json_decode($raw, true) : [];
         return [
             'excluded' => array_map('intval', (array) ($ov['excluded'] ?? [])),
             'forced'   => array_map('intval', (array) ($ov['forced'] ?? [])),

@@ -1250,11 +1250,6 @@ class CLEM_Scanner {
         if ($state['offset'] >= $state['total'] || empty($posts)) {
             $state['status']      = 'complete';
             $state['finished_at'] = current_time('mysql');
-            try {
-                wp_cache_flush();
-            } catch (\Throwable $e) {
-                // Ignore cache flush errors
-            }
         }
 
         set_transient(self::SCAN_STATE_KEY, $state, HOUR_IN_SECONDS);
@@ -1356,12 +1351,6 @@ class CLEM_Scanner {
         }
 
         wp_suspend_cache_addition(false);
-
-        try {
-            wp_cache_flush();
-        } catch (\Throwable $e) {
-            // Ignore
-        }
 
         return [
             'posts_with_matches' => $posts_with_matches,

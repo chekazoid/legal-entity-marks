@@ -112,8 +112,22 @@ try {
     $assert('Stale sport matches cannot produce a public footnote', $render($sport_id, $sport) === $sport);
 
     $report = new CLEM_Report();
-    $marked = $report->get_rows(['search' => $tag, 'mode' => 'marked']);
+    $individual_override_reads = 0;
+    $count_override_read = static function ($value, $id, $key) use (&$individual_override_reads) {
+        if ($key === CLEM_OVERRIDES_META_KEY) {
+            $individual_override_reads++;
+        }
+        return $value;
+    };
+    add_filter('get_post_metadata', $count_override_read, 10, 3);
+    try {
+        $marked = $report->get_rows(['search' => $tag, 'mode' => 'marked']);
+        $report->summary();
+    } finally {
+        remove_filter('get_post_metadata', $count_override_read, 10);
+    }
     $assert('Marked report agrees with the frontend', $marked['total'] === 1 && (int) $marked['items'][0]['post_id'] === $post_id);
+    $assert('Report and summary bulk-load overrides without per-post metadata calls', $individual_override_reads === 0);
     $assert('Report filters saved sport matches before rescanning', $report->get_rows(['search' => $tag . ' sport'])['total'] === 0);
     $postlist = new CLEM_Postlist();
     ob_start();

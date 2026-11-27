@@ -4,7 +4,7 @@ Tags: editorial, registry, compliance, media, russian
 Requires at least: 6.1
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.16.0
+Stable tag: 1.16.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -115,6 +115,10 @@ The [Russian manual](https://github.com/chekazoid/legal-entity-marks/blob/main/d
 4. Resource list with search, pagination and explicit link removal controls.
 
 == Changelog ==
+
+= 1.16.1 =
+* Load manual marking decisions in one batch when building the Mentions report and fetch only registry entries referenced in saved mentions.
+* Invalidate only the affected post when purging its cache. Scanning and link cleanup no longer flush the persistent object cache.
 
 = 1.16.0 =
 * Renamed the plugin for the WordPress.org directory and migrated existing settings, registry records and article metadata to the new prefix.

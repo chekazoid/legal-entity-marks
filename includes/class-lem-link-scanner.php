@@ -326,7 +326,6 @@ class CLEM_Link_Scanner {
         if ($state['offset'] >= $state['total'] || empty($posts)) {
             $state['status']      = 'complete';
             $state['finished_at'] = current_time('mysql');
-            try { wp_cache_flush(); } catch (\Throwable $e) {}
         }
 
         set_transient(self::SCAN_STATE_KEY, $state, HOUR_IN_SECONDS);
@@ -394,7 +393,6 @@ class CLEM_Link_Scanner {
             $state['status']      = 'complete';
             $state['finished_at'] = current_time('mysql');
             set_transient(self::REMOVE_STATE_KEY, $state, HOUR_IN_SECONDS);
-            try { wp_cache_flush(); } catch (\Throwable $e) {}
             wp_send_json_success($state);
             return;
         }
@@ -410,7 +408,6 @@ class CLEM_Link_Scanner {
         if ($remaining === 0) {
             $state['status']      = 'complete';
             $state['finished_at'] = current_time('mysql');
-            try { wp_cache_flush(); } catch (\Throwable $e) {}
         }
 
         set_transient(self::REMOVE_STATE_KEY, $state, HOUR_IN_SECONDS);
@@ -526,7 +523,6 @@ class CLEM_Link_Scanner {
         }
 
         wp_suspend_cache_addition(false);
-        try { wp_cache_flush(); } catch (\Throwable $e) {}
 
         return [
             'posts_with_links' => $posts_with_links,
@@ -582,7 +578,6 @@ class CLEM_Link_Scanner {
             $log("Очищено $cleaned / $total ...");
         }
 
-        try { wp_cache_flush(); } catch (\Throwable $e) {}
 
         return ['cleaned' => $cleaned];
     }

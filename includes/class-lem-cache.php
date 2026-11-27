@@ -31,10 +31,8 @@ class CLEM_Cache {
             wpfc_clear_post_cache_by_id($post_id);
         }
 
-        // Starter Cache (WordPress 6.5+)
-        if (function_exists('wp_cache_flush_group')) {
-            wp_cache_flush_group('posts');
-        }
+        // Invalidate the current article without evicting other post objects.
+        wp_cache_delete($post_id, 'posts');
 
         // Custom cache solutions (nginx FastCGI и другие - подпишитесь на хук)
         do_action('clem_purge_post_cache', $post_id, $url);

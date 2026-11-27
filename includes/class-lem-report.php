@@ -13,6 +13,8 @@ class CLEM_Report {
     /** Разобранная мета в пределах запроса: страница отчёта строит её дважды. */
     private $rows_cache  = null;
     private $links_cache = null;
+    private $overrides   = [];
+    private $entity_ids  = [];
 
     /**
      * Сколько материалов разбирать за раз. На больших архивах отчёт иначе
@@ -30,8 +32,6 @@ class CLEM_Report {
      * @return array{items: array, total: int}
      */
     public function get_rows($args = []) {
-        global $wpdb;
-
         $settings = clem_plugin()->get_settings();
         $track    = $settings['track_registries'];
 
@@ -45,49 +45,42 @@ class CLEM_Report {
         $limit    = max(1, (int) ($args['limit'] ?? 100));
         $offset   = max(0, (int) ($args['offset'] ?? 0));
 
-        // Мета пишется сканером и содержит всё найденное, независимо от того,
-        // маркируется реестр или только отслеживается
-        if ($this->rows_cache === null) {
-            /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom registry storage or selected-column report/batch reads require wpdb; core post/metadata writes use WP APIs. Read current import/scan/admin state; a persistent result could be stale after an editorial update. */
-            $this->rows_cache = $wpdb->get_results($wpdb->prepare(
-                "SELECT p.ID, p.post_title, p.post_type, p.post_status, pm.meta_value
-                 FROM {$wpdb->posts} p
-                 INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-                 WHERE pm.meta_key = %s AND pm.meta_value != ''
-                   AND p.post_status IN ('publish','draft','pending','private','future')
-                 ORDER BY p.post_date DESC
-                 LIMIT %d",
-                CLEM_META_KEY, $this->max_posts()
-            )) ;
-            /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching */
-        }
-        $rows = $this->rows_cache;
-
-        $entities = [];
-        foreach (clem_plugin()->entities->get_for_marking(true) as $e) {
-            $entities[(int) $e['id']] = $e;
-        }
+        $rows = $this->mention_rows();
+        $entities = array_column(clem_plugin()->entities->get_for_marking_ids(array_keys($this->entity_ids), true), null, 'id');
 
         $links_by_post = $this->links_by_post();
 
         $items = [];
+        $automatic = CLEM_Frontend::parse_overrides(null);
         foreach ($rows as $row) {
-            $meta = json_decode($row->meta_value, true);
-            if (empty($meta['entities'])) {
+            $links = $links_by_post[$row->ID] ?? [];
+            if ($links_only && !$links) {
                 continue;
             }
-            $overrides = CLEM_Frontend::get_overrides($row->ID);
 
-            foreach ($meta['entities'] as $match) {
+            $overrides = isset($this->overrides[$row->ID])
+                ? CLEM_Frontend::parse_overrides($this->overrides[$row->ID]->meta_value)
+                : $automatic;
+
+            foreach ($row->mentions as $match) {
                 $eid = (int) ($match['id'] ?? 0);
-                if (!isset($entities[$eid])) { continue; }
-                $match = array_merge($match, $entities[$eid]);
-                if (!CLEM_Scanner::is_current_mention($match, $settings)) { continue; }
-                $type = $match['type'] ?? '';
-                if (!in_array($type, $track, true)) {
-                    continue; // реестр не отслеживается
+                if (!isset($entities[$eid])) {
+                    continue;
                 }
-                if ($registry !== '' && $type !== $registry) {
+                $entity = $entities[$eid];
+                $type = $entity['type'];
+                if (!in_array($type, $track, true) || ($registry !== '' && $type !== $registry)) {
+                    continue;
+                }
+                $name = $entity['name'];
+                if ($search !== ''
+                    && mb_stripos($name, $search) === false
+                    && mb_stripos($row->post_title, $search) === false) {
+                    continue;
+                }
+
+                $match = array_merge($match, $entity);
+                if (!CLEM_Scanner::is_current_mention($match, $settings)) {
                     continue;
                 }
 
@@ -100,20 +93,6 @@ class CLEM_Report {
                     continue;
                 }
 
-                $name = $match['name'] ?? '';
-                if ($search !== ''
-                    && mb_stripos($name, $search) === false
-                    && mb_stripos($row->post_title, $search) === false) {
-                    continue;
-                }
-
-                $eid   = (int) ($match['id'] ?? 0);
-                $links = $links_by_post[$row->ID] ?? [];
-                if ($links_only && empty($links)) {
-                    continue;
-                }
-
-                $entity     = $entities[$eid] ?? [];
                 $first_seen = $match['first_seen'] ?? '';
                 $in_registry_since = $entity['first_seen'] ?? '';
                 if ($since !== '' && !self::is_new($first_seen, $in_registry_since, $since)) {
@@ -132,7 +111,7 @@ class CLEM_Report {
                     'marked'     => $is_marked,
                     'in_context' => $match['in_context'] ?? null,
                     'links'      => $links,
-                    'active'     => isset($entities[$eid]) ? (int) $entities[$eid]['is_active'] : 0,
+                    'active'     => (int) $entity['is_active'],
                     'first_seen'    => $first_seen,
                     'date_included' => $entity['date_included'] ?? '',
                     'is_new'        => $since !== '',
@@ -150,6 +129,54 @@ class CLEM_Report {
 
         $total = count($items);
         return ['items' => array_slice($items, $offset, $limit), 'total' => $total];
+    }
+
+    private function mention_rows() {
+        if ($this->rows_cache !== null) {
+            return $this->rows_cache;
+        }
+
+        global $wpdb;
+        /* phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Report reads only its two private metadata keys; post IDs are integers from the first query. No whole-post metadata is loaded into the object cache. */
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT p.ID, p.post_title, p.post_type, p.post_status, pm.meta_value
+             FROM {$wpdb->posts} p
+             INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+             WHERE pm.meta_key = %s AND pm.meta_value != ''
+               AND p.post_status IN ('publish','draft','pending','private','future')
+             ORDER BY p.post_date DESC
+             LIMIT %d",
+            CLEM_META_KEY,
+            $this->max_posts()
+        ));
+
+        $this->rows_cache = [];
+        foreach ((array) $rows as $row) {
+            $meta = json_decode($row->meta_value, true);
+            if (empty($meta['entities']) || !is_array($meta['entities'])) {
+                continue;
+            }
+            $row->mentions = $meta['entities'];
+            unset($row->meta_value);
+            $this->rows_cache[] = $row;
+            foreach ($row->mentions as $mention) {
+                $this->entity_ids[(int) ($mention['id'] ?? 0)] = true;
+            }
+        }
+
+        $in = implode(',', array_map('intval', array_column($this->rows_cache, 'ID')));
+        if ($in !== '') {
+            // OBJECT_K keeps the first value, as a single-value metadata read does.
+            $this->overrides = $wpdb->get_results($wpdb->prepare(
+                "SELECT post_id, meta_value FROM {$wpdb->postmeta}
+                 WHERE meta_key = %s AND post_id IN ($in)
+                 ORDER BY meta_id",
+                CLEM_OVERRIDES_META_KEY
+            ), OBJECT_K);
+        }
+        /* phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared */
+
+        return $this->rows_cache;
     }
 
     /**

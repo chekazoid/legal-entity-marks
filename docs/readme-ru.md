@@ -7,7 +7,7 @@ Tags: legal, media, foreign agents, extremism, compliance, russia, smi, inoagent
 Requires at least: 6.1
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.15.1
+Stable tag: 1.16.1
 License: GPL-2.0+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -367,6 +367,10 @@ Chekazoid Legal Entity Marks - плагин для сайтов, которые 
 * **Маркировка → Настройки** - типы записей, стили, расписание
 
 == Changelog ==
+
+= 1.16.1 =
+* Ускорен отчёт «Упоминания» на больших архивах. Ручные решения читаются одним запросом, а из реестров загружаются только записи, найденные в материалах.
+* Сканирование и чистка ссылок сохраняют общий объектный кеш. При очистке кеша статьи затрагивается только эта статья.
 
 = 1.16.0 =
 * Подготовлена сборка Chekazoid Legal Entity Marks для каталога WordPress.org.

@@ -3,7 +3,7 @@
  * Plugin Name: Chekazoid Legal Entity Marks
  * Plugin URI:  https://github.com/chekazoid/legal-entity-marks
  * Description: Маркировка и отслеживание упоминаний иноагентов, экстремистских, террористических и нежелательных организаций. Сноски и дисклеймеры для СМИ, отчёт по упоминаниям и ссылкам для остальных сайтов.
- * Version:     1.16.0
+ * Version:     1.16.1
  * Author:      Алексей Шляпужников
  * Author URI:  https://shliapuzhnikov.com
  * License:     GPL-2.0+
@@ -15,7 +15,7 @@
 
 defined('ABSPATH') || exit;
 
-define('CLEM_VERSION', '1.16.0');
+define('CLEM_VERSION', '1.16.1');
 define('CLEM_FILE', __FILE__);
 define('CLEM_DIR', plugin_dir_path(__FILE__));
 define('CLEM_URL', plugin_dir_url(__FILE__));
